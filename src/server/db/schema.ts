@@ -9,6 +9,7 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/mysql-core";
+import { createInsertSchema } from "drizzle-valibot";
 import { type AdapterAccount } from "next-auth/adapters";
 
 /**
@@ -35,6 +36,8 @@ export const posts = mysqlTable(
     nameIndex: index("name_idx").on(example.name),
   }),
 );
+
+export const createPostSchema = createInsertSchema(posts);
 
 export const users = mysqlTable("user", {
   id: varchar("id", { length: 255 }).notNull().primaryKey(),
