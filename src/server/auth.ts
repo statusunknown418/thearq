@@ -52,6 +52,11 @@ export const authOptions: NextAuthOptions = {
         id: token.id,
       },
     }),
+    signIn: async ({ user, account, profile }) => {
+      console.log({ user });
+
+      return true;
+    },
   },
   session: {
     strategy: "jwt",

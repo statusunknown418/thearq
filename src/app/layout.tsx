@@ -2,6 +2,7 @@ import "~/styles/globals.css";
 
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
+import { AuthProvider } from "~/components/auth-provider";
 import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata = {
@@ -14,7 +15,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+        <AuthProvider>
+          <TRPCReactProvider>{children}</TRPCReactProvider>
+        </AuthProvider>
       </body>
     </html>
   );

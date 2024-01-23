@@ -1,12 +1,13 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
 import { api } from "~/trpc/react";
 
 export function CreatePost() {
   const router = useRouter();
+  const { data } = useSession();
   const [name, setName] = useState("");
 
   const createPost = api.post.create.useMutation({
@@ -20,7 +21,7 @@ export function CreatePost() {
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        createPost.mutate({ name });
+        createPost.mutate({ name, createdById: String(data?.user!.id) });
       }}
       className="flex flex-col gap-2"
     >
