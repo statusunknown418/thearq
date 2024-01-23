@@ -1,15 +1,17 @@
 import { wrap } from "@decs/typeschema";
-import { object, string } from "valibot";
+import { object, parse, string } from "valibot";
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "~/server/api/trpc";
 import { createPostSchema, posts } from "~/server/db/schema";
 
 export const postRouter = createTRPCRouter({
-  hello: publicProcedure.input(wrap(object({ text: string() }))).query(({ input }) => {
-    return {
-      greeting: `Hello ${input.text}`,
-    };
-  }),
+  hello: publicProcedure
+    .input((i) => parse(object({ text: string() }), i))
+    .query(({ input }) => {
+      return {
+        greeting: `Hello ${input.text}`,
+      };
+    }),
 
   create: protectedProcedure
     .input(wrap(createPostSchema))
