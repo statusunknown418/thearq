@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { useAuthStore } from "~/lib/stores/auth-store";
 import { getServerAuthSession } from "~/server/auth";
+import { CreatePost } from "./_components/create-post";
 
 export default async function Home() {
   noStore();
@@ -21,6 +22,8 @@ export default async function Home() {
       <Link href={user ? "/api/auth/signout" : "/api/auth/signin"}>
         Sign {user ? "out" : "in"}
       </Link>
+
+      <CreatePost />
     </main>
   );
 }

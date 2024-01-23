@@ -40,6 +40,9 @@ export function CreatePost() {
       >
         {createPost.isLoading ? "Submitting..." : "Submit"}
       </button>
+
+      <p>From client comp</p>
+      {JSON.stringify(user, null, 2)}
     </form>
   );
 }
