@@ -5,6 +5,7 @@ import DiscordProvider from "next-auth/providers/discord";
 import GoogleProvider from "next-auth/providers/google";
 
 import { env } from "~/env";
+import { useAuthStore } from "~/lib/stores/auth-store";
 import { db } from "~/server/db";
 import { mysqlTable } from "~/server/db/schema";
 
@@ -54,6 +55,7 @@ export const authOptions: NextAuthOptions = {
     }),
     signIn: async ({ user, account, profile }) => {
       console.log({ user });
+      useAuthStore.setState({ user });
 
       return true;
     },

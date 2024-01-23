@@ -3,6 +3,7 @@ import "~/styles/globals.css";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import { AuthProvider } from "~/components/auth-provider";
+import { getServerAuthSession } from "~/server/auth";
 import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata = {
@@ -11,11 +12,17 @@ export const metadata = {
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const t1 = performance.now();
+  const session = await getServerAuthSession();
+  const t2 = performance.now();
+
   return (
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <AuthProvider>
+        <p>took {t2 - t1}ms</p>
+
+        <AuthProvider session={session}>
           <TRPCReactProvider>{children}</TRPCReactProvider>
         </AuthProvider>
       </body>
