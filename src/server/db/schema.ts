@@ -1,12 +1,14 @@
 import { relations, sql } from "drizzle-orm";
 import {
   bigint,
+  datetime,
   index,
   int,
+  mysqlEnum,
   mysqlTableCreator,
   primaryKey,
+  serial,
   text,
-  timestamp,
   varchar,
 } from "drizzle-orm/mysql-core";
 import { createInsertSchema } from "drizzle-valibot";
@@ -26,10 +28,12 @@ export const posts = mysqlTable(
     id: bigint("id", { mode: "number" }).primaryKey().autoincrement(),
     name: varchar("name", { length: 256 }),
     createdById: varchar("createdById", { length: 255 }).notNull(),
-    createdAt: timestamp("created_at")
+    createdAt: datetime("created_at")
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    updatedAt: timestamp("updatedAt").onUpdateNow(),
+    updatedAt: datetime("updatedAt").default(
+      sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`,
+    ),
   },
   (example) => ({
     createdByIdIdx: index("createdById_idx").on(example.createdById),
@@ -43,9 +47,9 @@ export const users = mysqlTable("user", {
   id: varchar("id", { length: 255 }).notNull().primaryKey(),
   name: varchar("name", { length: 255 }),
   email: varchar("email", { length: 255 }).notNull(),
-  emailVerified: timestamp("emailVerified", {
-    mode: "date",
+  emailVerified: datetime("emailVerified", {
     fsp: 3,
+    mode: "date",
   }).default(sql`CURRENT_TIMESTAMP(3)`),
   image: varchar("image", { length: 255 }),
 });
@@ -53,6 +57,61 @@ export const users = mysqlTable("user", {
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
   sessions: many(sessions),
+  workspaces: many(usersOnWorkspaces),
+}));
+
+export const workspaces = mysqlTable(
+  "workspace",
+  {
+    id: serial("id").primaryKey(),
+    slug: varchar("slug", { length: 255 }).notNull().unique(),
+    name: varchar("name", { length: 255 }),
+    createdById: varchar("createdById", { length: 255 }).notNull(),
+    createdAt: datetime("created_at", { fsp: 3, mode: "date" })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP(3)`),
+    updatedAt: datetime("updatedAt", { mode: "date" }).default(
+      sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`,
+    ),
+  },
+  (workspace) => ({
+    createdByIdIdx: index("createdById_idx").on(workspace.createdById),
+    nameIndex: index("name_idx").on(workspace.name),
+  }),
+);
+
+export const createWorkspaceSchema = createInsertSchema(workspaces);
+
+export const workspacesRelations = relations(workspaces, ({ many }) => ({
+  members: many(usersOnWorkspaces),
+}));
+
+export const roles = ["admin", "manager", "member"] as const;
+
+export const usersOnWorkspaces = mysqlTable(
+  "usersOnWorkspaces",
+  {
+    userId: varchar("userId", { length: 255 }).notNull(),
+    workspaceId: int("workspaceId").notNull(),
+    role: mysqlEnum("role", roles).default("member").notNull(),
+  },
+  (userOnWorkspace) => ({
+    compoundKey: primaryKey({
+      columns: [userOnWorkspace.userId, userOnWorkspace.workspaceId],
+    }),
+    userIdIdx: index("userId_idx").on(userOnWorkspace.userId),
+    workspaceIdIdx: index("workspaceId_idx").on(userOnWorkspace.workspaceId),
+  }),
+);
+
+export const addUsersOnWorkspacesSchema = createInsertSchema(usersOnWorkspaces);
+
+export const usersOnWorkspacesRelations = relations(usersOnWorkspaces, ({ one }) => ({
+  user: one(users, { fields: [usersOnWorkspaces.userId], references: [users.id] }),
+  workspace: one(workspaces, {
+    fields: [usersOnWorkspaces.workspaceId],
+    references: [workspaces.id],
+  }),
 }));
 
 export const accounts = mysqlTable(
@@ -85,7 +144,7 @@ export const sessions = mysqlTable(
   {
     sessionToken: varchar("sessionToken", { length: 255 }).notNull().primaryKey(),
     userId: varchar("userId", { length: 255 }).notNull(),
-    expires: timestamp("expires", { mode: "date" }).notNull(),
+    expires: datetime("expires", { mode: "date" }).notNull(),
   },
   (session) => ({
     userIdIdx: index("userId_idx").on(session.userId),
@@ -101,7 +160,7 @@ export const verificationTokens = mysqlTable(
   {
     identifier: varchar("identifier", { length: 255 }).notNull(),
     token: varchar("token", { length: 255 }).notNull(),
-    expires: timestamp("expires", { mode: "date" }).notNull(),
+    expires: datetime("expires", { mode: "date" }).notNull(),
   },
   (vt) => ({
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
