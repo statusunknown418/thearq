@@ -5,7 +5,6 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Loader } from "~/components/ui/loader";
 import { getServerAuthSession } from "~/server/auth";
-import { Connect } from "./_ui/connect";
 import { CreatePost } from "./_ui/create-post";
 import { WorkspacesList } from "./_ui/workspaces-list";
 
@@ -40,9 +39,6 @@ export default async function Home() {
       <Input className="w-max" />
 
       <CreatePost />
-
-      <Connect to="linear" />
-      <Connect to="github" />
 
       <ThemeSwitcher />
     </main>
