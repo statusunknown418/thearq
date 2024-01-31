@@ -15,9 +15,9 @@ export const AuthProvider = ({
   const set = useAuthStore((s) => s.setUser);
 
   useEffect(() => {
-    if (session?.user) {
-      set(session.user);
-    }
+    if (!session?.user) return;
+
+    set(session.user);
   }, [session, set]);
 
   return <SessionProvider session={session}>{children}</SessionProvider>;

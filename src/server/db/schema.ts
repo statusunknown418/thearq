@@ -135,6 +135,8 @@ export const accounts = mysqlTable(
   }),
 );
 
+export const accountsSchema = createInsertSchema(accounts);
+
 export const accountsRelations = relations(accounts, ({ one }) => ({
   user: one(users, { fields: [accounts.userId], references: [users.id] }),
 }));
