@@ -36,9 +36,7 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    jwt: ({ token, user, account, profile }) => {
-      console.log({ profile, account, user });
-
+    jwt: ({ token, user }) => {
       if (user) {
         token.id = user.id;
       }
