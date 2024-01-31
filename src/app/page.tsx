@@ -1,3 +1,4 @@
+import { unstable_noStore } from "next/cache";
 import { Suspense } from "react";
 import { ThemeSwitcher } from "~/components/theme-switcher";
 import { Button } from "~/components/ui/button";
@@ -9,6 +10,7 @@ import { CreatePost } from "./_ui/create-post";
 import { WorkspacesList } from "./_ui/workspaces-list";
 
 export default async function Home() {
+  unstable_noStore();
   const t1 = performance.now();
   const session = await getServerAuthSession();
   const t2 = performance.now();
