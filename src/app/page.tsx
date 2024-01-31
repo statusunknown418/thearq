@@ -1,12 +1,10 @@
 import { unstable_noStore } from "next/cache";
-import { Suspense } from "react";
 import { ThemeSwitcher } from "~/components/theme-switcher";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Loader } from "~/components/ui/loader";
 import { getServerAuthSession } from "~/server/auth";
 import { CreatePost } from "./_ui/create-post";
-import { WorkspacesList } from "./_ui/workspaces-list";
 
 export default async function Home() {
   unstable_noStore();
@@ -22,10 +20,6 @@ export default async function Home() {
       <p>{JSON.stringify(session, null, 2)}</p>
 
       <p>{date.toString()}</p>
-
-      <Suspense fallback={<Loader />}>
-        <WorkspacesList />
-      </Suspense>
 
       <Loader />
 

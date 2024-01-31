@@ -20,15 +20,11 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const t1 = performance.now();
   const session = await getServerAuthSession();
-  const t2 = performance.now();
 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <p>Root layout took {t2 - t1}ms</p>
-
         <ThemeWrapper>
           <AuthProvider session={session}>
             <TRPCReactProvider>{children}</TRPCReactProvider>

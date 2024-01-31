@@ -1,4 +1,7 @@
+import { Suspense } from "react";
 import { Connect } from "~/app/_ui/connect";
+import { WorkspacesList } from "~/app/_ui/workspaces-list";
+import { Loader } from "~/components/ui/loader";
 
 export default function DashboardPage() {
   return (
@@ -7,6 +10,10 @@ export default function DashboardPage() {
 
       <Connect to="linear" />
       <Connect to="github" />
+
+      <Suspense fallback={<Loader />}>
+        <WorkspacesList />
+      </Suspense>
     </div>
   );
 }
