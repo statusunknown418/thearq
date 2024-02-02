@@ -24,6 +24,7 @@ const config = {
     },
     extend: {
       borderRadius: {
+        xl: "calc(var(--radius) + 2px)",
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
@@ -49,9 +50,16 @@ const config = {
       {
         light: {
           ...themes.light,
-          "primary-content": "#f5f5f5",
+          "primary-content": "#f2f2f2",
           "error-content": "#fff",
           error: "#ff3030",
+        },
+        dark: {
+          ...themes.dark,
+          // primary: "#8b5cf6",
+          // "base-100": "#18181b",
+          "primary-content": "#f2f2f2",
+          "error-content": "#fff",
         },
       },
       "cupcake",
