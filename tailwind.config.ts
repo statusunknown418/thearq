@@ -2,7 +2,7 @@ import themes from "daisyui/src/theming/themes";
 import type { Config } from "tailwindcss";
 
 const config = {
-  darkMode: ["class"],
+  darkMode: ["class", "[data-theme='dark']"],
   content: [
     "./pages/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
@@ -52,7 +52,8 @@ const config = {
           ...themes.light,
           "primary-content": "#f2f2f2",
           "error-content": "#fff",
-          error: "#ff3030",
+          "base-300": "#d4d4d8",
+          error: "#dc2626",
         },
         dark: {
           ...themes.dark,
