@@ -19,3 +19,6 @@ export const APP_URL =
   env.NODE_ENV === "production"
     ? "https://mobius-smoky-nu.vercel.app"
     : "http://localhost:3000";
+
+export const createWorkspaceInviteLink = (workspaceSlug: string, id: string) =>
+  `${APP_URL}/join/${workspaceSlug}/${id}`;

@@ -9,7 +9,7 @@ export const WorkspacesList = async () => {
       <h2>Workspaces</h2>
       <ul className="rounded-lg border p-4">
         {workspaces.map((relation) => (
-          <li key={relation.workspaceId}>
+          <li key={relation.workspaceSlug}>
             <Link href={`/workspaces/${relation.workspace.slug}`}>
               {relation.workspace.name}
             </Link>

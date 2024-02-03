@@ -1,6 +1,7 @@
 import { relations, sql } from "drizzle-orm";
 import {
   bigint,
+  boolean,
   datetime,
   index,
   int,
@@ -13,6 +14,8 @@ import {
 } from "drizzle-orm/mysql-core";
 import { createInsertSchema } from "drizzle-valibot";
 import { type AdapterAccount } from "next-auth/adapters";
+import { array, email, maxLength, object, omit, string } from "valibot";
+import { memberPermissions } from "~/lib/stores/auth-store";
 
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
@@ -60,13 +63,46 @@ export const usersRelations = relations(users, ({ many }) => ({
   workspaces: many(usersOnWorkspaces),
 }));
 
+export const workspaceInvitation = mysqlTable(
+  "workspaceInvitation",
+  {
+    workspaceSlug: varchar("workspaceSlug", { length: 255 }).notNull(),
+    email: varchar("email", { length: 255 }).notNull(),
+    invitedByEmail: varchar("invitedByEmail", { length: 255 }).notNull(),
+    accepted: boolean("accepted").default(false),
+    createdAt: datetime("created_at", { fsp: 3, mode: "date" })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP(3)`),
+  },
+  (workspaceInvitation) => ({
+    compoundKey: primaryKey({
+      columns: [workspaceInvitation.workspaceSlug, workspaceInvitation.email],
+    }),
+    invitedByEmailIdx: index("invitedByEmail_idx").on(workspaceInvitation.invitedByEmail),
+  }),
+);
+
+export const sendInviteSchema = object({
+  userEmails: array(
+    object({
+      email: string([email()]),
+    }),
+    [maxLength(4)],
+  ),
+  workspaceSlug: string(),
+});
+
 export const workspaces = mysqlTable(
   "workspace",
   {
     id: serial("id").primaryKey(),
     slug: varchar("slug", { length: 255 }).notNull().unique(),
-    name: varchar("name", { length: 255 }),
+    name: varchar("name", { length: 255 }).notNull(),
+    image: varchar("image", { length: 255 }),
+    inviteLink: varchar("inviteLink", { length: 255 }).notNull(),
     createdById: varchar("createdById", { length: 255 }).notNull(),
+    seatCount: int("seatCount").notNull().default(1),
+    userLimit: int("userLimit").notNull().default(3),
     createdAt: datetime("created_at", { fsp: 3, mode: "date" })
       .notNull()
       .default(sql`CURRENT_TIMESTAMP(3)`),
@@ -80,27 +116,38 @@ export const workspaces = mysqlTable(
   }),
 );
 
-export const createWorkspaceSchema = createInsertSchema(workspaces);
+export const createWorkspaceSchema = omit(createInsertSchema(workspaces), [
+  "id",
+  "inviteLink",
+  "seatCount",
+  "userLimit",
+  "createdAt",
+  "updatedAt",
+  "createdById",
+]);
 
 export const workspacesRelations = relations(workspaces, ({ many }) => ({
   members: many(usersOnWorkspaces),
 }));
 
 export const roles = ["admin", "manager", "member"] as const;
+export type Roles = (typeof roles)[number];
 
 export const usersOnWorkspaces = mysqlTable(
   "usersOnWorkspaces",
   {
     userId: varchar("userId", { length: 255 }).notNull(),
-    workspaceId: int("workspaceId").notNull(),
+    workspaceSlug: varchar("workspaceSlug", { length: 255 }).notNull(),
     role: mysqlEnum("role", roles).default("member").notNull(),
+    permissions: text("permissions").notNull().default(JSON.stringify(memberPermissions)),
   },
   (userOnWorkspace) => ({
     compoundKey: primaryKey({
-      columns: [userOnWorkspace.userId, userOnWorkspace.workspaceId],
+      columns: [userOnWorkspace.userId, userOnWorkspace.workspaceSlug],
     }),
+    roleIdx: index("role_idx").on(userOnWorkspace.role),
     userIdIdx: index("userId_idx").on(userOnWorkspace.userId),
-    workspaceIdIdx: index("workspaceId_idx").on(userOnWorkspace.workspaceId),
+    workspaceSlugIdx: index("workspaceSlug_idx").on(userOnWorkspace.workspaceSlug),
   }),
 );
 
@@ -109,8 +156,8 @@ export const addUsersOnWorkspacesSchema = createInsertSchema(usersOnWorkspaces);
 export const usersOnWorkspacesRelations = relations(usersOnWorkspaces, ({ one }) => ({
   user: one(users, { fields: [usersOnWorkspaces.userId], references: [users.id] }),
   workspace: one(workspaces, {
-    fields: [usersOnWorkspaces.workspaceId],
-    references: [workspaces.id],
+    fields: [usersOnWorkspaces.workspaceSlug],
+    references: [workspaces.slug],
   }),
 }));
 

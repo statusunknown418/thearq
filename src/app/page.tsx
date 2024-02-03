@@ -29,6 +29,7 @@ export default async function Home() {
       <Button variant={"link"}>BTN 1</Button>
       <Button variant={"outline"}>BTN 1</Button>
       <Button variant={"secondary"}>BTN 1</Button>
+      <Button variant={"neutral"}>BTN 1</Button>
 
       <Input className="w-max" />
 

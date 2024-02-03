@@ -5,6 +5,7 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata, type Viewport } from "next";
 import { AuthProvider } from "~/components/auth-provider";
 import { ThemeWrapper } from "~/components/theme-wrapper";
+import { Toaster } from "~/components/ui/sonner";
 import { getServerAuthSession } from "~/server/auth";
 import { TRPCReactProvider } from "~/trpc/react";
 
@@ -19,6 +20,8 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerAuthSession();
 
@@ -29,6 +32,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <AuthProvider session={session}>
             <TRPCReactProvider>{children}</TRPCReactProvider>
           </AuthProvider>
+
+          <Toaster />
         </ThemeWrapper>
       </body>
     </html>
