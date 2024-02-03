@@ -4,28 +4,38 @@ import * as React from "react";
 
 import { cn } from "~/lib/utils";
 
-const buttonVariants = cva("btn rounded-full", {
-  variants: {
-    variant: {
-      default: "btn-primary",
-      destructive: "btn-error",
-      outline: "btn-outline",
-      secondary: "btn-secondary",
-      ghost: "btn-ghost",
-      link: "btn-link",
+const buttonVariants = cva(
+  "btn text-sm shadow-inner shadow-white/30 active:shadow-white/50",
+  {
+    variants: {
+      variant: {
+        default: "btn-primary",
+        destructive: "btn-error",
+        outline: "btn-outline",
+        secondary: "btn-secondary",
+        neutral: "btn-neutral",
+        ghost: "btn-ghost",
+        link: "btn-link",
+      },
+      size: {
+        xs: "btn-xs text-xs",
+        default: "btn-sm",
+        md: "btn-md",
+        icon: "btn-square btn-sm !rounded-md",
+        circle: "btn-circle btn-sm",
+      },
+      rounding: {
+        pill: "rounded-full",
+        md: "rounded-md",
+      },
     },
-    size: {
-      default: "btn-sm",
-      md: "btn-md",
-      icon: "btn-square",
-      circle: "btn-circle",
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+      rounding: "pill",
     },
   },
-  defaultVariants: {
-    variant: "default",
-    size: "default",
-  },
-});
+);
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
