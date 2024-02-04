@@ -22,3 +22,5 @@ export const APP_URL =
 
 export const createWorkspaceInviteLink = (workspaceSlug: string, id: string) =>
   `${APP_URL}/join/${workspaceSlug}/${id}`;
+
+  export const RECENT_WORKSPACE_KEY = "recent-workspace-slug";

@@ -47,7 +47,7 @@ export const NewWorkspace = () => {
     onMutate: () => toast.loading("Creating..."),
     onError: (err) => toast.error(err.message),
     onSuccess: async (data) => {
-      await utils.workspaces.get.refetch();
+      await utils.workspaces.get.invalidate();
       toast.success("Workspace created");
       router.push(routes.dashboard({ slug: data.slug }));
     },

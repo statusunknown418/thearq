@@ -17,11 +17,14 @@ export const List = ({
     initialData: workspaces,
   });
 
+  const { mutate } = api.workspaces.setRecent.useMutation();
+
   return (
     <ul className="grid grid-cols-1 gap-1 rounded-lg">
       {data.map((relation) => (
         <li key={relation.workspaceSlug}>
           <Link
+            onClick={() => mutate({ workspaceSlug: relation.workspaceSlug })}
             href={routes.dashboard({ slug: relation.workspaceSlug })}
             className="group flex items-center gap-4 rounded-lg p-3 transition-colors hover:bg-base-200"
           >
@@ -35,7 +38,7 @@ export const List = ({
 
             <div className="flex-grow transition-transform group-hover:translate-x-1">
               <h3 className="text-sm font-medium">{relation.workspace.name}</h3>
-              <p className="text-muted-foreground text-xs">
+              <p className="text-xs text-muted-foreground">
                 {baseUrl}/{relation.workspaceSlug}
               </p>
             </div>

@@ -1,9 +1,10 @@
 import { createId } from "@paralleldrive/cuid2";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
+import { cookies } from "next/headers";
 import slugify from "slugify";
 import { object, parse, string } from "valibot";
-import { createWorkspaceInviteLink } from "~/lib/constants";
+import { RECENT_WORKSPACE_KEY, createWorkspaceInviteLink } from "~/lib/constants";
 import { adminPermissions, type UserPermissions } from "~/lib/stores/auth-store";
 import {
   createWorkspaceSchema,
@@ -89,6 +90,27 @@ export const workspacesRouter = createTRPCRouter({
       return {
         ...workspace,
         viewerPermissions,
+      };
+    }),
+  setRecent: protectedProcedure
+    .input((i) =>
+      parse(
+        object({
+          workspaceSlug: string(),
+        }),
+        i,
+      ),
+    )
+    .mutation(({ input }) => {
+      const cookiesStore = cookies();
+
+      cookiesStore.set(RECENT_WORKSPACE_KEY, input.workspaceSlug, {
+        path: "/",
+        sameSite: "lax",
+      });
+
+      return {
+        success: true,
       };
     }),
   rotateInviteLink: protectedProcedure
