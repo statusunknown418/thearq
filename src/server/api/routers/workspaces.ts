@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import slugify from "slugify";
 import { object, parse, string } from "valibot";
 import { createWorkspaceInviteLink } from "~/lib/constants";
+import { adminPermissions, type UserPermissions } from "~/lib/stores/auth-store";
 import {
   createWorkspaceSchema,
   usersOnWorkspaces,
@@ -16,8 +17,9 @@ export const workspacesRouter = createTRPCRouter({
   new: protectedProcedure
     .input((i) => parse(createWorkspaceSchema, i))
     .mutation(async ({ ctx, input }) => {
-      const slug = slugify(input.name, { lower: true });
+      const slug = slugify(input.slug, { lower: true });
       const inviteId = createId();
+      const image = input.image ?? `https://api.dicebear.com/7.x/initials/svg?seed=${input.name}`;
 
       await Promise.all([
         ctx.db.insert(workspaces).values({
@@ -25,11 +27,13 @@ export const workspacesRouter = createTRPCRouter({
           createdById: ctx.session.user.id,
           inviteLink: createWorkspaceInviteLink(slug, inviteId),
           slug,
+          image,
         }),
         ctx.db.insert(usersOnWorkspaces).values({
           userId: ctx.session.user.id,
           workspaceSlug: slug,
           role: "admin",
+          permissions: JSON.stringify(adminPermissions),
         }),
       ]);
 
@@ -61,7 +65,8 @@ export const workspacesRouter = createTRPCRouter({
           where: (t, op) => op.eq(t.slug, input.slug),
         }),
         ctx.db.query.usersOnWorkspaces.findFirst({
-          where: (t, op) => op.and(op.eq(t.userId, ctx.session.user.id)),
+          where: (t, op) =>
+            op.and(op.eq(t.userId, ctx.session.user.id), op.eq(t.workspaceSlug, input.slug)),
         }),
       ]);
 
@@ -79,7 +84,7 @@ export const workspacesRouter = createTRPCRouter({
         });
       }
 
-      const viewerPermissions = JSON.parse(viewer.permissions ?? "[]") as Permissions[];
+      const viewerPermissions = JSON.parse(viewer.permissions ?? "[]") as UserPermissions[];
 
       return {
         ...workspace,
@@ -98,10 +103,7 @@ export const workspacesRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const workspace = await ctx.db.query.workspaces.findFirst({
         where: (t, op) =>
-          op.and(
-            op.eq(t.slug, input.workspaceSlug),
-            op.eq(t.createdById, ctx.session.user.id),
-          ),
+          op.and(op.eq(t.slug, input.workspaceSlug), op.eq(t.createdById, ctx.session.user.id)),
       });
 
       if (!workspace) {

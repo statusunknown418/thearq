@@ -2,6 +2,7 @@
 
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { PlusIcon } from "@radix-ui/react-icons";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -25,12 +26,14 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
+import { routes } from "~/lib/navigation";
 import { createWorkspaceSchema } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 
 export const NewWorkspace = () => {
   const [open, setOpen] = useState(false);
 
+  const router = useRouter();
   const form = useForm<Output<typeof createWorkspaceSchema>>({
     resolver: valibotResolver(createWorkspaceSchema),
     defaultValues: {
@@ -39,16 +42,21 @@ export const NewWorkspace = () => {
     },
   });
 
-  const { mutate } = api.workspaces.new.useMutation({
+  const utils = api.useUtils();
+  const { mutateAsync } = api.workspaces.new.useMutation({
+    onMutate: () => toast.loading("Creating..."),
     onError: (err) => toast.error(err.message),
-    onSuccess: () => toast.success("Workspace created"),
+    onSuccess: async (data) => {
+      await utils.workspaces.get.refetch();
+      toast.success("Workspace created");
+      router.push(routes.dashboard({ slug: data.slug }));
+    },
   });
 
-  const onSubmit = form.handleSubmit((values) => {
+  const onSubmit = form.handleSubmit(async (values) => {
     try {
-      mutate(values);
+      await mutateAsync(values);
       form.reset();
-      setOpen(false);
     } catch (err) {
       if (err instanceof Error) {
         toast.error(err.message);

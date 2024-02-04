@@ -1,20 +1,24 @@
-export default function JoinWorkspacePage({
+import { routes } from "~/lib/navigation";
+
+export default async function JoinWorkspacePage({
   params,
 }: {
   params: {
-    workspace: string[];
+    workspace: unknown;
   };
 }) {
-  const [workspace, invitation] = params.workspace;
+  const {
+    workspace: [workspace, invitation],
+  } = routes.join.$parseParams(params);
 
   return (
     <div>
+      {JSON.stringify(params, null, 2)}
       <h1>
-        hi {workspace} via {invitation}
+        Join {workspace} via {invitation}
       </h1>
-      <p>Enter the workspace ID to join</p>
+
       <form>
-        <input type="text" />
         <button type="submit">Join</button>
       </form>
     </div>

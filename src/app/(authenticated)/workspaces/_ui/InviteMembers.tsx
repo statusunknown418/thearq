@@ -10,6 +10,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
@@ -77,9 +78,7 @@ export const InviteMembers = ({
 
         <DialogContent className="max-w-sm">
           <DialogTitle>Invite by email</DialogTitle>
-          <DialogDescription>
-            Invite your team members to this workspace .
-          </DialogDescription>
+          <DialogDescription>Invite your team members to this workspace .</DialogDescription>
 
           <Form {...form}>
             <form className="grid grid-cols-1 gap-5" onSubmit={onSubmit}>
@@ -102,6 +101,7 @@ export const InviteMembers = ({
                             variant={"destructive"}
                             size={"icon"}
                             type="button"
+                            disabled={fields.length === 1}
                             onClick={() => remove(index)}
                           >
                             <TrashIcon />
@@ -118,7 +118,6 @@ export const InviteMembers = ({
                 size={"xs"}
                 variant={"neutral"}
                 rounding={"md"}
-                className="justify-self-end"
                 type="button"
                 onClick={addBlankEmail}
               >
@@ -126,9 +125,9 @@ export const InviteMembers = ({
                 Add more
               </Button>
 
-              <Button type="submit" className="w-max">
-                Send
-              </Button>
+              <DialogFooter>
+                <Button type="submit">Send</Button>
+              </DialogFooter>
             </form>
           </Form>
         </DialogContent>

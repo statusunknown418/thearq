@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { Updater } from "~/components/Updater";
 import { api } from "~/trpc/server";
 import { InviteMembers } from "../_ui/InviteMembers";
 
@@ -12,7 +13,7 @@ export default async function WorkspaceDashboardPage({
   const workspace = await api.workspaces.getBySlug.query({ slug: params.slug });
 
   return (
-    <div>
+    <main>
       <h1>Workspace Dashboard</h1>
 
       <pre>{JSON.stringify(workspace, null, 2)}</pre>
@@ -24,6 +25,8 @@ export default async function WorkspaceDashboardPage({
       <Suspense>
         <InviteMembers workspace={workspace} />
       </Suspense>
-    </div>
+
+      <Updater workspace={workspace} />
+    </main>
   );
 }

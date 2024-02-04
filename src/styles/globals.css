@@ -6,4 +6,10 @@
   :root {
     --radius: 0.8rem;
   }
+  * {
+    @apply border-base-300
+  }
+  body {
+    @apply overscroll-y-none
+  }
 }

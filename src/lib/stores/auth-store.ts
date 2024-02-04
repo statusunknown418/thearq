@@ -41,12 +41,10 @@ export const models = {
   },
 } as const;
 
-export type Permission =
+export type UserPermissions =
   (typeof models)[keyof typeof models][keyof (typeof models)[keyof typeof models]];
 
-export const adminPermissions = Object.values(models).flatMap((model) =>
-  Object.values(model),
-);
+export const adminPermissions = Object.values(models).flatMap((model) => Object.values(model));
 export const memberPermissions = [
   models.workspace.view,
   models.user.create,
@@ -56,9 +54,9 @@ export const memberPermissions = [
 
 export type AuthStore = {
   user: User | null;
-  permissions: Permission[];
+  permissions: UserPermissions[];
   setUser: (user: User) => void;
-  updatePermissions: (permissions: Permission[]) => void;
+  updatePermissions: (permissions: UserPermissions[]) => void;
 };
 
 export const useAuthStore = create(
@@ -69,7 +67,7 @@ export const useAuthStore = create(
         set({ user });
       },
       permissions: memberPermissions,
-      updatePermissions: (permissions: Permission[]) => set({ permissions }),
+      updatePermissions: (permissions: UserPermissions[]) => set({ permissions }),
     }),
     {
       name: "auth-storage",
@@ -77,7 +75,8 @@ export const useAuthStore = create(
   ),
 );
 
-export const has = (permission: Permission) => {
+export const has = (permission: UserPermissions) => {
   const { permissions } = useAuthStore.getState();
   return permissions.includes(permission);
 };
+

@@ -14,7 +14,7 @@ import {
 } from "drizzle-orm/mysql-core";
 import { createInsertSchema } from "drizzle-valibot";
 import { type AdapterAccount } from "next-auth/adapters";
-import { array, email, maxLength, object, omit, string } from "valibot";
+import { array, email, maxLength, minLength, object, omit, string, type Output } from "valibot";
 import { memberPermissions } from "~/lib/stores/auth-store";
 
 /**
@@ -34,9 +34,7 @@ export const posts = mysqlTable(
     createdAt: datetime("created_at")
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    updatedAt: datetime("updatedAt").default(
-      sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`,
-    ),
+    updatedAt: datetime("updatedAt").default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
   },
   (example) => ({
     createdByIdIdx: index("createdById_idx").on(example.createdById),
@@ -116,15 +114,18 @@ export const workspaces = mysqlTable(
   }),
 );
 
-export const createWorkspaceSchema = omit(createInsertSchema(workspaces), [
-  "id",
-  "inviteLink",
-  "seatCount",
-  "userLimit",
-  "createdAt",
-  "updatedAt",
-  "createdById",
-]);
+const workspacesSchema = createInsertSchema(workspaces);
+export type Workspace = Output<typeof workspacesSchema>;
+
+export const createWorkspaceSchema = omit(
+  createInsertSchema(workspaces, {
+    slug: string([
+      minLength(3, "Workspace identifier must be at least 3 characters long"),
+      maxLength(255),
+    ]),
+  }),
+  ["id", "inviteLink", "seatCount", "userLimit", "createdAt", "updatedAt", "createdById"],
+);
 
 export const workspacesRelations = relations(workspaces, ({ many }) => ({
   members: many(usersOnWorkspaces),

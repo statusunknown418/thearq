@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { routes } from "~/lib/navigation";
 import { api } from "~/trpc/server";
 
 export default async function GithubIntegration({
@@ -23,7 +24,7 @@ export default async function GithubIntegration({
 
         <p>{JSON.stringify(done.error, null, 2)}</p>
 
-        <Link href="/" className="btn">
+        <Link href={routes.home()} className="btn">
           Go back
         </Link>
       </div>
