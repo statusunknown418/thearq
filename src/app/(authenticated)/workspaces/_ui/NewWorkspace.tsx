@@ -11,6 +11,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
@@ -27,7 +28,7 @@ import { Input } from "~/components/ui/input";
 import { createWorkspaceSchema } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 
-export const CreateWorkspace = () => {
+export const NewWorkspace = () => {
   const [open, setOpen] = useState(false);
 
   const form = useForm<Output<typeof createWorkspaceSchema>>({
@@ -58,7 +59,7 @@ export const CreateWorkspace = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button className="w-max justify-self-end">
           <PlusIcon />
           <span>New workspace</span>
         </Button>
@@ -66,7 +67,9 @@ export const CreateWorkspace = () => {
 
       <DialogContent>
         <DialogTitle>New Workspace</DialogTitle>
-        <DialogDescription>Somewhere to host your company</DialogDescription>
+        <DialogDescription>
+          Somewhere to host your company and for everyone to track time, projects, tasks, and more
+        </DialogDescription>
 
         <Form {...form}>
           <form onSubmit={onSubmit} className="grid grid-cols-1 gap-5">
@@ -101,7 +104,9 @@ export const CreateWorkspace = () => {
               )}
             />
 
-            <Button className="w-max">Create</Button>
+            <DialogFooter>
+              <Button disabled={form.formState.isSubmitting}>Create</Button>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>
