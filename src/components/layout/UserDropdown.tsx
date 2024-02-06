@@ -22,7 +22,7 @@ export const UserDropdown = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={"ghost"} className="w-max">
+        <Button variant={"ghost"}>
           {user?.image ? (
             <Image
               src={user?.image}

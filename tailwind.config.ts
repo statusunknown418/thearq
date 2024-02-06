@@ -22,12 +22,16 @@ const config = {
       mono: ["var(--font-geist-mono)"],
     },
     extend: {
+      boxShadow: (utils) => ({
+        click: `0px 4px 0px ${utils.colors.indigo[400]}`,
+      }),
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        "secondary-background": "hsl(var(--secondary-background))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",

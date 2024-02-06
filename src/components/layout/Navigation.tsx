@@ -1,36 +1,26 @@
 "use client";
 
-import { ArrowLeftIcon } from "@radix-ui/react-icons";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { routes } from "~/lib/navigation";
-import { useWorkspaceStore } from "~/lib/stores/workspace-store";
+import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "../ui/button";
-import { UserDropdown } from "./UserDropdown";
-import { WorkspaceCombobox } from "./WorkspaceCombobox";
 
-export const PageNavigation = () => {
-  const workspace = useWorkspaceStore((s) => s.active);
+export const Navigation = () => {
+  const path = usePathname();
   const router = useRouter();
 
   return (
-    <nav className="col-span-2 grid grid-cols-1 gap-4 border-r">
-      <header className="flex h-max items-center gap-1 p-2">
-        <WorkspaceCombobox />
-        <UserDropdown />
-      </header>
+    <nav className="flex items-center gap-8">
+      <ul>
+        <Button onClick={() => router.back()} variant={"outline"} size={"icon"}>
+          <ArrowLeftIcon />
+        </Button>
 
-      <Button onClick={() => router.back()} variant={"neutral"} size={"circle"}>
-        <ArrowLeftIcon />
-      </Button>
+        <Button onClick={() => router.forward()} variant={"outline"} size={"icon"}>
+          <ArrowRightIcon />
+        </Button>
+      </ul>
 
-      <Button asChild>
-        <Link href={`/workspaces/${workspace?.slug}`}>Tracker</Link>
-      </Button>
-
-      <Button asChild>
-        <Link href={routes.insights({ slug: workspace?.slug ?? "", search: {} })}>Insights</Link>
-      </Button>
+      {path}
     </nav>
   );
 };

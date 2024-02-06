@@ -55,14 +55,16 @@ export const NewWorkspace = () => {
   });
 
   return (
-    <section className="bg-muted grid grid-cols-1 gap-2 rounded-3xl border p-7 shadow-2xl shadow-black">
-      <h2 className="text-2xl font-bold">New Workspace</h2>
-      <p className="text-muted-foreground">
-        Somewhere to host your company and for everyone to track time, projects, tasks, and more
-      </p>
+    <section className="grid grid-cols-1 gap-6 rounded-3xl border bg-muted p-7 shadow-2xl shadow-black">
+      <header className="flex flex-col gap-2">
+        <h2 className="text-2xl font-bold">New Workspace</h2>
+        <p className="text-muted-foreground">
+          Somewhere to host your company and for everyone to track time, projects, tasks, and more
+        </p>
+      </header>
 
       <Form {...form}>
-        <form onSubmit={onSubmit} className="grid grid-cols-1 gap-5">
+        <form onSubmit={onSubmit} className="grid grid-cols-1 gap-4">
           <FormField
             control={form.control}
             name="name"

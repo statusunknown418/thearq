@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { Updater } from "~/components/Updater";
+import { Main } from "~/components/layout/Main";
 import { api } from "~/trpc/server";
 import { InviteMembers } from "../_ui/InviteMembers";
 
@@ -13,20 +14,18 @@ export default async function WorkspaceDashboardPage({
   const workspace = await api.workspaces.getBySlug.query({ slug: params.slug });
 
   return (
-    <main>
-      <h1>Workspace Dashboard</h1>
+    <Main>
+      <div className="h-96 w-max rounded-xl border bg-muted p-6 text-muted-foreground">
+        This is a test to see how the background colors behave
+      </div>
 
-      <pre>{JSON.stringify(workspace, null, 2)}</pre>
-
-      <button className="group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-md border border-neutral-200 bg-transparent px-6 font-medium text-neutral-600 transition-all [box-shadow:0px_4px_1px_#a3a3a3] active:translate-y-[2px] active:shadow-none">
-        Click me
-      </button>
+      <pre className="row-span-full">{JSON.stringify(workspace, null, 2)}</pre>
 
       <Suspense>
         <InviteMembers workspace={workspace} />
       </Suspense>
 
       <Updater workspace={workspace} />
-    </main>
+    </Main>
   );
 }

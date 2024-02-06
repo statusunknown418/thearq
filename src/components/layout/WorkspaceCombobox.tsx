@@ -33,7 +33,7 @@ export const WorkspaceCombobox = () => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant={"ghost"} className="no-animation flex-grow justify-start rounded-md">
+        <Button variant={"ghost"}>
           {!!value ? (
             <Image
               src={
