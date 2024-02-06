@@ -37,7 +37,7 @@ export const List = ({
             />
 
             <div className="flex-grow transition-transform group-hover:translate-x-1">
-              <h3 className="text-sm font-medium">{relation.workspace.name}</h3>
+              <h3 className="text-xs font-medium">{relation.workspace.name}</h3>
               <p className="text-xs text-muted-foreground">
                 {baseUrl}/{relation.workspaceSlug}
               </p>

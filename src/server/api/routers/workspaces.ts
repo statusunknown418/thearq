@@ -1,11 +1,13 @@
 import { createId } from "@paralleldrive/cuid2";
+import { DatabaseError } from "@planetscale/database";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { cookies } from "next/headers";
+import { notFound } from "next/navigation";
 import slugify from "slugify";
 import { object, parse, string } from "valibot";
 import { RECENT_WORKSPACE_KEY, createWorkspaceInviteLink } from "~/lib/constants";
-import { adminPermissions, type UserPermissions } from "~/lib/stores/auth-store";
+import { adminPermissions, parsePermissions } from "~/lib/stores/auth-store";
 import {
   createWorkspaceSchema,
   usersOnWorkspaces,
@@ -20,23 +22,37 @@ export const workspacesRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const slug = slugify(input.slug, { lower: true });
       const inviteId = createId();
-      const image = input.image ?? `https://api.dicebear.com/7.x/initials/svg?seed=${input.name}`;
+      const image =
+        input.image.length > 0
+          ? input.image
+          : `https://api.dicebear.com/7.x/initials/svg?seed=${input.name}`;
 
-      await Promise.all([
-        ctx.db.insert(workspaces).values({
-          name: input.name,
-          createdById: ctx.session.user.id,
-          inviteLink: createWorkspaceInviteLink(slug, inviteId),
-          slug,
-          image,
-        }),
-        ctx.db.insert(usersOnWorkspaces).values({
-          userId: ctx.session.user.id,
-          workspaceSlug: slug,
-          role: "admin",
-          permissions: JSON.stringify(adminPermissions),
-        }),
-      ]);
+      try {
+        await Promise.all([
+          ctx.db.insert(workspaces).values({
+            name: input.name,
+            createdById: ctx.session.user.id,
+            inviteLink: createWorkspaceInviteLink(slug, inviteId),
+            slug,
+            image,
+          }),
+          ctx.db.insert(usersOnWorkspaces).values({
+            userId: ctx.session.user.id,
+            workspaceSlug: slug,
+            role: "admin",
+            permissions: JSON.stringify(adminPermissions),
+          }),
+        ]);
+      } catch (e) {
+        if (e instanceof DatabaseError && e.body.message.includes("AlreadyExists")) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Workspace with this url already exists",
+          });
+        }
+
+        throw e;
+      }
 
       return {
         success: true,
@@ -72,10 +88,7 @@ export const workspacesRouter = createTRPCRouter({
       ]);
 
       if (!workspace) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Workspace not found",
-        });
+        return notFound();
       }
 
       if (!viewer?.userId) {
@@ -85,11 +98,9 @@ export const workspacesRouter = createTRPCRouter({
         });
       }
 
-      const viewerPermissions = JSON.parse(viewer.permissions ?? "[]") as UserPermissions[];
-
       return {
         ...workspace,
-        viewerPermissions,
+        viewerPermissions: parsePermissions(viewer.permissions),
       };
     }),
   setRecent: protectedProcedure

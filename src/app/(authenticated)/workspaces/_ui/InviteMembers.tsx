@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import { Form, FormField, FormItem, FormMessage } from "~/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { sendInviteSchema } from "~/server/db/schema";
 import { api } from "~/trpc/react";
@@ -26,6 +26,10 @@ export const InviteMembers = ({
   workspace: RouterOutputs["workspaces"]["getBySlug"];
 }) => {
   const [open, setOpen] = useState(false);
+  const openChange = (open: boolean) => {
+    setOpen(open);
+    form.reset();
+  };
 
   const invite = api.emails.sendWorkspaceInvite.useMutation({
     onSuccess: () => toast.success("Invites sent!"),
@@ -71,7 +75,7 @@ export const InviteMembers = ({
 
       <kbd className="kbd">{workspace.inviteLink}</kbd>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={openChange}>
         <DialogTrigger asChild>
           <Button>Invite by email</Button>
         </DialogTrigger>
@@ -91,11 +95,13 @@ export const InviteMembers = ({
                     render={({ field }) => (
                       <FormItem>
                         <div className="flex w-full items-center gap-2">
-                          <Input
-                            {...field}
-                            placeholder="someone@example.com"
-                            className="flex-grow"
-                          />
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="someone@example.com"
+                              className="flex-grow"
+                            />
+                          </FormControl>
 
                           <Button
                             variant={"destructive"}

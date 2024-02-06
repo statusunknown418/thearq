@@ -96,7 +96,7 @@ export const workspaces = mysqlTable(
     id: serial("id").primaryKey(),
     slug: varchar("slug", { length: 255 }).notNull().unique(),
     name: varchar("name", { length: 255 }).notNull(),
-    image: varchar("image", { length: 255 }),
+    image: varchar("image", { length: 255 }).notNull(),
     inviteLink: varchar("inviteLink", { length: 255 }).notNull(),
     createdById: varchar("createdById", { length: 255 }).notNull(),
     seatCount: int("seatCount").notNull().default(1),
@@ -123,6 +123,8 @@ export const createWorkspaceSchema = omit(
       minLength(3, "Workspace identifier must be at least 3 characters long"),
       maxLength(255),
     ]),
+    name: string([minLength(1, "It needs a name don't you think?"), maxLength(255)]),
+    image: string([maxLength(255)]),
   }),
   ["id", "inviteLink", "seatCount", "userLimit", "createdAt", "updatedAt", "createdById"],
 );

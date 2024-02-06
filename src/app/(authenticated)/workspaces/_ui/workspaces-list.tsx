@@ -8,7 +8,7 @@ export const WorkspacesList = async () => {
 
   if (!workspaces.length) {
     return (
-      <div className="text-muted-foreground flex items-center gap-4 rounded-md border bg-base-200 p-4 text-sm">
+      <div className="flex items-center gap-4 rounded-md border bg-base-200 p-4 text-xs text-muted-foreground">
         <CubeIcon className="h-7 min-w-7 animate-pulse text-primary" />
         <p>You don&apos;t belong to any workspaces nor have you created one 😢</p>
       </div>

@@ -1,5 +1,4 @@
 import { unstable_noStore } from "next/cache";
-import { ThemeSwitcher } from "~/components/theme-switcher";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Loader } from "~/components/ui/loader";
@@ -29,13 +28,10 @@ export default async function Home() {
       <Button variant={"link"}>BTN 1</Button>
       <Button variant={"outline"}>BTN 1</Button>
       <Button variant={"secondary"}>BTN 1</Button>
-      <Button variant={"neutral"}>BTN 1</Button>
 
       <Input className="w-max" />
 
       <CreatePost />
-
-      <ThemeSwitcher />
     </main>
   );
 }

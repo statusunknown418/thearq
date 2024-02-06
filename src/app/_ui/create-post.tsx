@@ -43,7 +43,7 @@ export function CreatePost() {
 
       <p>From client comp</p>
 
-      <button className="group relative inline-flex h-10 max-w-max items-center justify-center overflow-hidden rounded-md bg-neutral-950 px-6 text-sm font-medium text-neutral-200 duration-500">
+      <button className="group relative inline-flex h-10 max-w-max items-center justify-center overflow-hidden rounded-md bg-neutral-950 px-6 text-xs font-medium text-neutral-200 duration-500">
         <div className="translate-x-0 opacity-100 transition group-hover:-translate-x-[150%] group-hover:opacity-0">
           Hover me
         </div>

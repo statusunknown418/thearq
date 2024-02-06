@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  colorScheme: "dark",
 };
 
 export const dynamic = "force-dynamic";
@@ -27,7 +28,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
+      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} text-sm`}>
         <ThemeWrapper>
           <AuthProvider session={session}>
             <TRPCReactProvider>{children}</TRPCReactProvider>

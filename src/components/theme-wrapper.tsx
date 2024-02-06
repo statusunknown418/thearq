@@ -5,9 +5,10 @@ import { type ReactNode } from "react";
 export const ThemeWrapper = ({ children }: { children: ReactNode }) => {
   return (
     <ThemeProvider
-      themes={["light", "cupcake", "night", "dark"]}
-      defaultTheme="system"
-      enableSystem
+      themes={["light", "dark"]}
+      defaultTheme="dark"
+      enableSystem={false}
+      attribute="class"
     >
       {children}
     </ThemeProvider>
