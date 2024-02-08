@@ -76,8 +76,8 @@ export const timeEntries = mysqlTable(
     projectId: bigint("projectId", { mode: "number", unsigned: true }).notNull(),
     workspaceId: bigint("workspaceId", { mode: "number", unsigned: true }).notNull(),
     userId: varchar("userId", { length: 255 }).notNull(),
-    startTime: datetime("startTime").notNull(),
-    endTime: datetime("endTime").notNull(),
+    startTime: datetime("startTime", { mode: "date" }).notNull(),
+    endTime: datetime("endTime", { mode: "date" }).notNull(),
     duration: int("duration").notNull(),
     createdAt: datetime("created_at")
       .default(sql`CURRENT_TIMESTAMP`)
