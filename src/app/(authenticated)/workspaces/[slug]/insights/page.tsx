@@ -1,6 +1,8 @@
 import { routes } from "~/lib/navigation";
 import { Client } from "../../_ui/Client";
 
+export const dynamic = "force-static";
+
 export default async function WorkspaceInsightsPage({
   params,
 }: {
