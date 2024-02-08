@@ -44,6 +44,51 @@ export const posts = mysqlTable(
 
 export const createPostSchema = createInsertSchema(posts);
 
+export const projects = mysqlTable(
+  "project",
+  {
+    id: serial("id").primaryKey(),
+    shareableId: varchar("shareableId", { length: 255 }).notNull().unique(),
+    name: varchar("name", { length: 256 }).notNull(),
+    workspaceSlug: varchar("workspaceSlug", { length: 255 }).notNull(),
+    createdAt: datetime("created_at")
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: datetime("updatedAt").default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
+  },
+  (project) => ({
+    workspaceSlugIdx: index("workspaceSlug_idx").on(project.workspaceSlug),
+    nameIndex: index("name_idx").on(project.name),
+  }),
+);
+
+export const projectsRelations = relations(projects, ({ one }) => ({
+  workspace: one(workspaces, {
+    fields: [projects.workspaceSlug],
+    references: [workspaces.slug],
+  }),
+}));
+
+export const timeEntries = mysqlTable(
+  "timeEntry",
+  {
+    id: serial("id").primaryKey(),
+    projectId: bigint("projectId", { mode: "number", unsigned: true }).notNull(),
+    workspaceId: bigint("workspaceId", { mode: "number", unsigned: true }).notNull(),
+    userId: varchar("userId", { length: 255 }).notNull(),
+    startTime: datetime("startTime").notNull(),
+    endTime: datetime("endTime").notNull(),
+    duration: int("duration").notNull(),
+    createdAt: datetime("created_at")
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (timeEntry) => ({
+    projectIdIdx: index("projectId_idx").on(timeEntry.projectId),
+    userIdIdx: index("userId_idx").on(timeEntry.userId),
+  }),
+);
+
 export const users = mysqlTable("user", {
   id: varchar("id", { length: 255 }).notNull().primaryKey(),
   name: varchar("name", { length: 255 }),
@@ -131,6 +176,7 @@ export const createWorkspaceSchema = omit(
 
 export const workspacesRelations = relations(workspaces, ({ many }) => ({
   members: many(usersOnWorkspaces),
+  projects: many(projects),
 }));
 
 export const roles = ["admin", "manager", "member"] as const;

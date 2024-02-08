@@ -1,5 +1,5 @@
 "use client";
-import { CheckIcon, PlusCircledIcon } from "@radix-ui/react-icons";
+import { CaretSortIcon, CheckIcon, PlusCircledIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -22,19 +22,20 @@ import { Skeleton } from "../ui/skeleton";
 export const WorkspaceCombobox = () => {
   const { data } = api.workspaces.get.useQuery();
   const [value, changeValue] = useState("");
+  const [open, change] = useState(false);
 
   const router = useRouter();
   const workspace = useWorkspaceStore((s) => s.active);
 
   if (!workspace) {
-    return <Skeleton className="h-8 w-full" />;
+    return <Skeleton className="h-9 w-full" />;
   }
 
   return (
-    <Popover>
+    <Popover onOpenChange={change} open={open}>
       <PopoverTrigger asChild>
-        <Button variant={"ghost"}>
-          {!!value ? (
+        <Button variant={"ghost"} className="w-full">
+          {!!value && (
             <Image
               src={
                 data?.find((w) => w.workspace.name.toLowerCase() === value.toLowerCase())?.workspace
@@ -45,7 +46,9 @@ export const WorkspaceCombobox = () => {
               height={24}
               className="rounded-sm"
             />
-          ) : (
+          )}
+
+          {!!workspace && (
             <Image
               src={workspace?.image ?? ""}
               alt={workspace?.name ?? ""}
@@ -58,6 +61,10 @@ export const WorkspaceCombobox = () => {
           <span className="max-w-max overflow-hidden text-ellipsis">
             {!!value ? value : workspace ? workspace.name : "Select workspace"}
           </span>
+
+          <CaretSortIcon
+            className={cn("h-5 w-5 text-muted-foreground transition-all", open && "-rotate-90")}
+          />
         </Button>
       </PopoverTrigger>
 
@@ -91,7 +98,7 @@ export const WorkspaceCombobox = () => {
                       alt={w.workspace.name}
                       width={24}
                       height={24}
-                      className="rounded"
+                      className="rounded-sm"
                     />
                   )}
                   <span>{w.workspace.name}</span>

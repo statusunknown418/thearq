@@ -1,8 +1,11 @@
 "use client";
 
 import { valibotResolver } from "@hookform/resolvers/valibot";
+import { ArrowDownIcon } from "@radix-ui/react-icons";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import slugify from "slugify";
 import { toast } from "sonner";
 import { type Output } from "valibot";
 import { Button } from "~/components/ui/button";
@@ -13,7 +16,6 @@ import {
   FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
@@ -54,6 +56,12 @@ export const NewWorkspace = () => {
     }
   });
 
+  const name = form.watch("name");
+
+  useEffect(() => {
+    form.setValue("slug", slugify(name, { lower: true }));
+  }, [form, name]);
+
   return (
     <section className="grid grid-cols-1 gap-6 rounded-3xl border bg-muted p-7 shadow-2xl shadow-black">
       <header className="flex flex-col gap-2">
@@ -70,24 +78,36 @@ export const NewWorkspace = () => {
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Name</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="ABC Studios" />
+                  <Input {...field} placeholder="Workspace name" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
+          <div className="flex w-full flex-col items-center text-muted-foreground">
+            <ArrowDownIcon className="h-4 w-4" />
+          </div>
+
           <FormField
             control={form.control}
             name="slug"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Shareable URL</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="my-company" />
-                </FormControl>
+                <div className="flex items-center">
+                  <Input
+                    disabled
+                    readOnly
+                    defaultValue={"name.com/workspaces/"}
+                    className="w-fit rounded-r-none border-r-0"
+                  />
+
+                  <FormControl>
+                    <Input {...field} placeholder="my-company" className="z-10 rounded-l-none" />
+                  </FormControl>
+                </div>
+
                 <FormDescription>
                   This is the URL that your team will use to access this workspace
                 </FormDescription>

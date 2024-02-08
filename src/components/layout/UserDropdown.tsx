@@ -3,7 +3,9 @@
 import { DoubleArrowRightIcon, ExitIcon, GearIcon } from "@radix-ui/react-icons";
 import { signOut } from "next-auth/react";
 import Image from "next/image";
+import { useState } from "react";
 import { useAuthStore } from "~/lib/stores/auth-store";
+import { cn } from "~/lib/utils";
 import { Button } from "../ui/button";
 import {
   DropdownMenu,
@@ -18,12 +20,17 @@ import { Skeleton } from "../ui/skeleton";
 export const UserDropdown = () => {
   const user = useAuthStore((s) => s.user);
   const clearAuth = useAuthStore((s) => s.clear);
+  const [open, change] = useState(false);
+
+  if (!user) {
+    return <Skeleton className="h-9 w-full" />;
+  }
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={change}>
       <DropdownMenuTrigger asChild>
-        <Button variant={"ghost"}>
-          {user?.image ? (
+        <Button variant={"ghost"} className="w-full">
+          {user?.image && (
             <Image
               src={user?.image}
               alt={user?.name ?? ""}
@@ -31,16 +38,16 @@ export const UserDropdown = () => {
               height={28}
               className="rounded-sm border"
             />
-          ) : (
-            <Skeleton className="h-8 w-8 rounded" />
           )}
           <span>{user?.name}</span>
 
-          <DoubleArrowRightIcon className="text-muted-foreground" />
+          <DoubleArrowRightIcon
+            className={cn("text-muted-foreground transition-all", open && "rotate-180")}
+          />
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent side="right" align="start">
+      <DropdownMenuContent side="right" align="end">
         <DropdownMenuLabel>
           <span>{user?.name}</span>
         </DropdownMenuLabel>

@@ -23,7 +23,7 @@ const config = {
     },
     extend: {
       boxShadow: (utils) => ({
-        click: `0px 4px 0px ${utils.colors.indigo[400]}`,
+        click: `0px 4px 0px ${utils.colors.indigo[500]}`,
       }),
       colors: {
         border: "hsl(var(--border))",

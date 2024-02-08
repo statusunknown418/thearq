@@ -103,6 +103,34 @@ export const workspacesRouter = createTRPCRouter({
         viewerPermissions: parsePermissions(viewer.permissions),
       };
     }),
+  getPermissions: protectedProcedure
+    .input((i) =>
+      parse(
+        object({
+          slug: string(),
+        }),
+        i,
+      ),
+    )
+    .query(async ({ ctx, input }) => {
+      const viewer = await ctx.db.query.usersOnWorkspaces.findFirst({
+        where: (t, op) => {
+          return op.and(op.eq(t.userId, ctx.session.user.id), op.eq(t.workspaceSlug, input.slug));
+        },
+      });
+
+      if (!viewer?.userId) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You are not a member of this workspace",
+        });
+      }
+
+      return {
+        ...viewer,
+        permissions: parsePermissions(viewer.permissions),
+      };
+    }),
   setRecent: protectedProcedure
     .input((i) =>
       parse(

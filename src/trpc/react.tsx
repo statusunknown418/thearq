@@ -1,17 +1,29 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
 import { loggerLink, unstable_httpBatchStreamLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
 import { useState } from "react";
 
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { type AppRouter } from "~/server/api/root";
+import { createIDBPersister } from "./persister";
 import { getUrl, transformer } from "./shared";
 
 export const api = createTRPCReact<AppRouter>();
+const persister = createIDBPersister();
 
 export function TRPCReactProvider(props: { children: React.ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            cacheTime: 1000 * 60 * 60 * 5,
+          },
+        },
+      }),
+  );
 
   const [trpcClient] = useState(() =>
     api.createClient({
@@ -30,10 +42,13 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
   );
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 4 }}
+    >
       <api.Provider client={trpcClient} queryClient={queryClient}>
         {props.children}
       </api.Provider>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   );
 }

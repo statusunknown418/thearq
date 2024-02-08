@@ -120,13 +120,7 @@ export const InviteMembers = ({
                 ))}
               </section>
 
-              <Button
-                size={"xs"}
-                variant={"neutral"}
-                rounding={"md"}
-                type="button"
-                onClick={addBlankEmail}
-              >
+              <Button variant={"outline"} type="button" onClick={addBlankEmail}>
                 <PlusIcon />
                 Add more
               </Button>

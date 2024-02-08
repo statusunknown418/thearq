@@ -18,9 +18,7 @@ export default async function WorkspaceDashboardPage({
       <div className="h-96 w-max rounded-xl border bg-muted p-6 text-muted-foreground">
         This is a test to see how the background colors behave
       </div>
-
       <pre className="row-span-full">{JSON.stringify(workspace, null, 2)}</pre>
-
       <Suspense>
         <InviteMembers workspace={workspace} />
       </Suspense>
