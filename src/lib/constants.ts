@@ -14,13 +14,12 @@ export const INTEGRATIONS = {
 } as const;
 
 export type Integration = (typeof INTEGRATIONS)[keyof typeof INTEGRATIONS]["name"];
+export const INTEGRATION_NAMES = Object.keys(INTEGRATIONS); 
 
 export const APP_URL =
-  env.NODE_ENV === "production"
-    ? "https://mobius-smoky-nu.vercel.app"
-    : "http://localhost:3000";
+  env.NODE_ENV === "production" ? "https://mobius-smoky-nu.vercel.app" : "http://localhost:3000";
 
 export const createWorkspaceInviteLink = (workspaceSlug: string, id: string) =>
   `${APP_URL}/join/${workspaceSlug}/${id}`;
 
-  export const RECENT_WORKSPACE_KEY = "recent-workspace-slug";
+export const RECENT_WORKSPACE_KEY = "recent-workspace-slug";

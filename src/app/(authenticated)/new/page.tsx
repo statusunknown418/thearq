@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { NewWorkspace } from "../workspaces/_ui/NewWorkspace";
 
+export const dynamic = "force-static";
+
 export default function NewWorkspacePage() {
   return (
     <main className="bg-base-200 grid h-screen grid-rows-[50px_auto]">

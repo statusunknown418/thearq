@@ -2,6 +2,7 @@ import { relations, sql } from "drizzle-orm";
 import {
   bigint,
   boolean,
+  date,
   datetime,
   index,
   int,
@@ -25,58 +26,51 @@ import { memberPermissions } from "~/lib/stores/auth-store";
  */
 export const mysqlTable = mysqlTableCreator((name) => name);
 
-export const posts = mysqlTable(
-  "post",
-  {
-    id: bigint("id", { mode: "number" }).primaryKey().autoincrement(),
-    name: varchar("name", { length: 256 }),
-    createdById: varchar("createdById", { length: 255 }).notNull(),
-    createdAt: datetime("created_at")
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: datetime("updatedAt").default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
-  },
-  (example) => ({
-    createdByIdIdx: index("createdById_idx").on(example.createdById),
-    nameIndex: index("name_idx").on(example.name),
-  }),
-);
-
-export const createPostSchema = createInsertSchema(posts);
-
 export const projects = mysqlTable(
   "project",
   {
     id: serial("id").primaryKey(),
     shareableId: varchar("shareableId", { length: 255 }).notNull().unique(),
     name: varchar("name", { length: 256 }).notNull(),
-    workspaceSlug: varchar("workspaceSlug", { length: 255 }).notNull(),
+    description: varchar("description", { length: 255 }),
+    type: mysqlEnum("type", ["fixed", "hourly", "non-billable"]).default("hourly").notNull(),
+    workspaceId: bigint("workspaceId", { mode: "number", unsigned: true }).notNull(),
     createdAt: datetime("created_at")
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     updatedAt: datetime("updatedAt").default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
   },
   (project) => ({
-    workspaceSlugIdx: index("workspaceSlug_idx").on(project.workspaceSlug),
+    workspaceIdIdx: index("workspaceId_idx").on(project.workspaceId),
     nameIndex: index("name_idx").on(project.name),
   }),
 );
 
-export const projectsRelations = relations(projects, ({ one }) => ({
+export const projectsRelations = relations(projects, ({ one, many }) => ({
   workspace: one(workspaces, {
-    fields: [projects.workspaceSlug],
+    fields: [projects.workspaceId],
     references: [workspaces.slug],
   }),
+  entries: many(timeEntries),
 }));
 
 export const timeEntries = mysqlTable(
   "timeEntry",
   {
     id: serial("id").primaryKey(),
+    title: varchar("title", { length: 255 }).notNull(),
+    /**
+     * To avoid timezone issues, the `trackedAt` field will be set within the mutation itself,
+     * that way the server will always use the current user's timezone.
+     */
+    trackedAt: date("trackedAt").notNull(),
+    integrationUrl: varchar("integrationUrl", { length: 255 }),
     projectId: bigint("projectId", { mode: "number", unsigned: true }).notNull(),
     workspaceId: bigint("workspaceId", { mode: "number", unsigned: true }).notNull(),
+    locked: boolean("locked").notNull().default(false),
     userId: varchar("userId", { length: 255 }).notNull(),
     startTime: datetime("startTime", { mode: "date" }).notNull(),
+    billable: boolean("billable").notNull().default(true),
     endTime: datetime("endTime", { mode: "date" }).notNull(),
     duration: int("duration").notNull(),
     createdAt: datetime("created_at")
@@ -86,6 +80,8 @@ export const timeEntries = mysqlTable(
   (timeEntry) => ({
     projectIdIdx: index("projectId_idx").on(timeEntry.projectId),
     userIdIdx: index("userId_idx").on(timeEntry.userId),
+    workspaceIdIdx: index("workspaceId_idx").on(timeEntry.workspaceId),
+    trackedAtIdx: index("trackedAt_idx").on(timeEntry.trackedAt),
   }),
 );
 
@@ -104,6 +100,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
   sessions: many(sessions),
   workspaces: many(usersOnWorkspaces),
+  entries: many(timeEntries),
 }));
 
 export const workspaceInvitation = mysqlTable(
@@ -186,6 +183,9 @@ export const usersOnWorkspaces = mysqlTable(
   "usersOnWorkspaces",
   {
     userId: varchar("userId", { length: 255 }).notNull(),
+    rate: int("billableRate").notNull().default(0),
+    internalCost: int("internalCost").notNull().default(0),
+    weekCapacity: int("weekCapacity").notNull().default(40),
     workspaceSlug: varchar("workspaceSlug", { length: 255 }).notNull(),
     role: mysqlEnum("role", roles).default("member").notNull(),
     permissions: text("permissions").notNull().default(JSON.stringify(memberPermissions)),
