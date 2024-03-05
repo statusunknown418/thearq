@@ -58,7 +58,7 @@ export const WorkspaceCombobox = () => {
             />
           )}
 
-          <span className="max-w-max overflow-hidden text-ellipsis">
+          <span className="max-w-[10ch] overflow-hidden text-ellipsis">
             {!!value ? value : workspace ? workspace.name : "Select workspace"}
           </span>
 

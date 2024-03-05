@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Updater } from "~/components/Updater";
 import { Main } from "~/components/layout/Main";
+import { Loader } from "~/components/ui/loader";
 import { api } from "~/trpc/server";
 import { InviteMembers } from "../_ui/InviteMembers";
 
@@ -17,6 +18,7 @@ export default async function WorkspaceDashboardPage({
     <Main>
       <div className="h-96 w-max rounded-xl border bg-muted p-6 text-muted-foreground">
         This is a test to see how the background colors behave
+        <Loader color="#c2c2c2" />
       </div>
       <pre className="row-span-full">{JSON.stringify(workspace, null, 2)}</pre>
       <Suspense>

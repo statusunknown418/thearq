@@ -19,6 +19,7 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
+import { Loader } from "~/components/ui/loader";
 import { routes } from "~/lib/navigation";
 import { createWorkspaceSchema } from "~/server/db/schema";
 import { api } from "~/trpc/react";
@@ -36,7 +37,6 @@ export const NewWorkspace = () => {
 
   const utils = api.useUtils();
   const { mutateAsync } = api.workspaces.new.useMutation({
-    onMutate: () => toast.loading("Creating..."),
     onError: (err) => {
       if (err.data?.code === "CONFLICT") form.setError("slug", { message: err.message });
     },
@@ -117,7 +117,10 @@ export const NewWorkspace = () => {
           />
 
           <DialogFooter>
-            <Button disabled={form.formState.isSubmitting}>Create</Button>
+            <Button disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting && <Loader />}
+              Create
+            </Button>
           </DialogFooter>
         </form>
       </Form>

@@ -9,7 +9,6 @@ import {
   mysqlEnum,
   mysqlTableCreator,
   primaryKey,
-  serial,
   text,
   varchar,
 } from "drizzle-orm/mysql-core";
@@ -29,7 +28,7 @@ export const mysqlTable = mysqlTableCreator((name) => name);
 export const projects = mysqlTable(
   "project",
   {
-    id: serial("id").primaryKey(),
+    id: bigint("id", { mode: "number" }).autoincrement().primaryKey(),
     shareableId: varchar("shareableId", { length: 255 }).notNull().unique(),
     name: varchar("name", { length: 256 }).notNull(),
     description: varchar("description", { length: 255 }),
@@ -57,7 +56,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
 export const timeEntries = mysqlTable(
   "timeEntry",
   {
-    id: serial("id").primaryKey(),
+    id: bigint("id", { mode: "number" }).autoincrement().primaryKey(),
     title: varchar("title", { length: 255 }).notNull(),
     /**
      * To avoid timezone issues, the `trackedAt` field will be set within the mutation itself,
@@ -135,7 +134,7 @@ export const sendInviteSchema = object({
 export const workspaces = mysqlTable(
   "workspace",
   {
-    id: serial("id").primaryKey(),
+    id: bigint("id", { mode: "number" }).autoincrement().primaryKey(),
     slug: varchar("slug", { length: 255 }).notNull().unique(),
     name: varchar("name", { length: 255 }).notNull(),
     image: varchar("image", { length: 255 }).notNull(),
@@ -195,7 +194,6 @@ export const usersOnWorkspaces = mysqlTable(
       columns: [userOnWorkspace.userId, userOnWorkspace.workspaceSlug],
     }),
     roleIdx: index("role_idx").on(userOnWorkspace.role),
-    userIdIdx: index("userId_idx").on(userOnWorkspace.userId),
     workspaceSlugIdx: index("workspaceSlug_idx").on(userOnWorkspace.workspaceSlug),
   }),
 );

@@ -4,6 +4,8 @@
  
 @layer base {
   :root {
+    --spinner-animation-speed: 4s;
+
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
     --secondary-background: 240 4% 97%;
@@ -39,12 +41,12 @@
   .dark {
     --background: 240 14% 7.5%;
     --foreground: 0 0% 95%;
-    --secondary-background: 240 13% 8.5%;
+    --secondary-background: 240 13% 9%;
  
     --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;
  
-    --popover: 240 13% 13%;
+    --popover: 240 12% 14%;
     --popover-foreground: 0 10% 90%;
  
     --primary: 0 0% 98%;
@@ -53,7 +55,7 @@
     --secondary: 240 12% 15.9%;
     --secondary-foreground: 0 0% 98%;
  
-    --muted: 240 12% 10.5%;
+    --muted: 240 12% 11%;
     --muted-foreground: 240 8% 56.9%;
  
     --accent: 240 14% 20%;
@@ -62,7 +64,7 @@
     --destructive: 0 90% 45%;
     --destructive-foreground: 0 0% 98%;
  
-    --border: 240 12% 18.5%;
+    --border: 240 12% 17.5%;
     --input: 244 12% 14.5%;
     --ring: 244 40% 40%;
   }
@@ -75,4 +77,25 @@
   body {
     @apply bg-background text-foreground overscroll-y-none;
   }
+
+  #spinner {
+    animation: spinner-rotate calc(var(--spinner-animation-speed) / 3) linear infinite;
+  }
+
+  @keyframes spinner-rotate {
+    100% { transform: rotate(360deg); }
+  }
+
+  .spinner-line {
+    animation: dash var(--spinner-animation-speed) ease-in-out infinite;
+  }
+
+  @keyframes dash {
+    75%, 100% {
+      stroke-dasharray: .5, 1;
+      stroke-dashoffset: -.8;
+    }
+  }
 }
+
+

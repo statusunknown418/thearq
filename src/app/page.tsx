@@ -3,7 +3,6 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Loader } from "~/components/ui/loader";
 import { getServerAuthSession } from "~/server/auth";
-import { CreatePost } from "./_ui/create-post";
 
 export default async function Home() {
   unstable_noStore();
@@ -30,8 +29,6 @@ export default async function Home() {
       <Button variant={"secondary"}>BTN 1</Button>
 
       <Input className="w-max" />
-
-      <CreatePost />
     </main>
   );
 }

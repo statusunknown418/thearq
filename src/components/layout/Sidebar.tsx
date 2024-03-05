@@ -12,7 +12,7 @@ export const Sidebar = () => {
   const workspace = useWorkspaceStore((s) => s.active);
 
   return (
-    <aside className="col-span-1 grid grid-cols-1 gap-4 bg-secondary-background px-2 py-4">
+    <aside className="col-span-1 grid grid-cols-1 gap-4 px-2 py-4">
       <div className="flex flex-col gap-4 self-start">
         <WorkspaceCombobox />
       </div>
