@@ -2,7 +2,7 @@
 import { CaretSortIcon, CheckIcon, PlusCircledIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { routes } from "~/lib/navigation";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 import { cn } from "~/lib/utils";
@@ -23,9 +23,30 @@ export const WorkspaceCombobox = () => {
   const { data } = api.workspaces.get.useQuery();
   const [value, changeValue] = useState("");
   const [open, change] = useState(false);
+  const deferred = useDeferredValue(value);
 
   const router = useRouter();
   const workspace = useWorkspaceStore((s) => s.active);
+  const image = useMemo(() => {
+    if (workspace?.image) {
+      return workspace.image;
+    }
+
+    if (deferred && data?.length) {
+      const src = data?.find((w) => w.workspace.name.toLowerCase() === deferred.toLowerCase())
+        ?.workspace.image;
+
+      return src ?? "/favicon.ico";
+    }
+
+    return "/favicon.ico";
+  }, [deferred, data, workspace]);
+
+  useEffect(() => {
+    if (workspace) {
+      changeValue(workspace.name);
+    }
+  }, [workspace]);
 
   if (!workspace) {
     return <Skeleton className="h-9 w-full" />;
@@ -35,32 +56,13 @@ export const WorkspaceCombobox = () => {
     <Popover onOpenChange={change} open={open}>
       <PopoverTrigger asChild>
         <Button variant={"ghost"} className="w-full">
-          {!!value && (
-            <Image
-              src={
-                data?.find((w) => w.workspace.name.toLowerCase() === value.toLowerCase())?.workspace
-                  .image ?? ""
-              }
-              alt={value}
-              width={24}
-              height={24}
-              className="rounded-sm"
-            />
+          {!!value && deferred && !!data?.length ? (
+            <Image src={image} alt={value} width={24} height={24} className="rounded-sm" />
+          ) : (
+            <Skeleton className="h-6 w-6" />
           )}
 
-          {!!workspace && (
-            <Image
-              src={workspace?.image ?? ""}
-              alt={workspace?.name ?? ""}
-              width={24}
-              height={24}
-              className="rounded-sm"
-            />
-          )}
-
-          <span className="max-w-[10ch] overflow-hidden text-ellipsis">
-            {!!value ? value : workspace ? workspace.name : "Select workspace"}
-          </span>
+          <span className="max-w-[10ch] overflow-hidden text-ellipsis">{deferred}</span>
 
           <CaretSortIcon
             className={cn("h-5 w-5 text-muted-foreground transition-all", open && "-rotate-90")}
