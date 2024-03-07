@@ -1,5 +1,5 @@
 import { GoBack } from "~/components/layout/GoBack";
-import { NewWorkspace } from "../workspaces/_ui/NewWorkspace";
+import { NewWorkspace } from "../(workspaces)/_ui/NewWorkspace";
 
 export const dynamic = "force-static";
 

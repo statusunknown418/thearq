@@ -29,17 +29,20 @@ export const UserDropdown = () => {
   return (
     <DropdownMenu open={open} onOpenChange={change}>
       <DropdownMenuTrigger asChild>
-        <Button variant={"ghost"} className="w-full">
-          {user?.image && (
-            <Image
-              src={user?.image}
-              alt={user?.name ?? ""}
-              width={28}
-              height={28}
-              className="rounded-sm border"
-            />
-          )}
-          <span>{user?.name}</span>
+        <Button variant={"ghost"} className="w-full justify-between">
+          <div className="flex items-center gap-2">
+            {user?.image && (
+              <Image
+                src={user?.image}
+                alt={user?.name ?? ""}
+                width={28}
+                height={28}
+                className="rounded-sm border"
+              />
+            )}
+
+            <span className="max-w-[10ch] overflow-hidden text-ellipsis">{user?.name}</span>
+          </div>
 
           <DoubleArrowRightIcon
             className={cn("text-muted-foreground transition-all", open && "rotate-180")}

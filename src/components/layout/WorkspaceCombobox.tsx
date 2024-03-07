@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { routes } from "~/lib/navigation";
+import { parsePermissions, useAuthStore } from "~/lib/stores/auth-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
@@ -18,13 +19,17 @@ import {
 } from "../ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Skeleton } from "../ui/skeleton";
+import { updateCookiesAction } from "./sidebar-wrapper";
 
 export const WorkspaceCombobox = () => {
-  const { data } = api.workspaces.get.useQuery();
+  const { data } = api.workspaces.get.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+  });
   const [value, changeValue] = useState("");
   const [open, change] = useState(false);
-  const deferred = useDeferredValue(value);
 
+  const updatePermissionsClient = useAuthStore((s) => s.updatePermissions);
+  const deferred = useDeferredValue(value);
   const router = useRouter();
   const workspace = useWorkspaceStore((s) => s.active);
   const image = useMemo(() => {
@@ -55,17 +60,28 @@ export const WorkspaceCombobox = () => {
   return (
     <Popover onOpenChange={change} open={open}>
       <PopoverTrigger asChild>
-        <Button variant={"ghost"} className="w-full">
-          {!!value && deferred && !!data?.length ? (
-            <Image src={image} alt={value} width={24} height={24} className="rounded-sm" />
-          ) : (
-            <Skeleton className="h-6 w-6" />
-          )}
+        <Button variant={"ghost"} className="w-full justify-between">
+          <div className="flex items-center gap-2">
+            {!!value && deferred && !!data?.length ? (
+              <Image
+                src={image}
+                alt={value}
+                width={24}
+                height={24}
+                className="h-6 w-6 flex-none rounded-sm"
+              />
+            ) : (
+              <Skeleton className="h-6 w-6" />
+            )}
 
-          <span className="max-w-[10ch] overflow-hidden text-ellipsis">{deferred}</span>
+            <span className="max-w-[20ch] overflow-hidden text-ellipsis">{deferred}</span>
+          </div>
 
           <CaretSortIcon
-            className={cn("h-5 w-5 text-muted-foreground transition-all", open && "-rotate-90")}
+            className={cn(
+              "h-5 w-5 flex-none justify-self-end text-muted-foreground transition-all",
+              open && "-rotate-90",
+            )}
           />
         </Button>
       </PopoverTrigger>
@@ -79,7 +95,14 @@ export const WorkspaceCombobox = () => {
             {data?.map((w) => (
               <CommandItem
                 key={w.workspaceSlug}
-                onSelect={() => {
+                onSelect={async () => {
+                  const data = new FormData();
+                  data.append("slug", w.workspace.slug);
+                  data.append("permissions", w.permissions);
+                  data.append("role", w.role);
+                  await updateCookiesAction(data);
+
+                  updatePermissionsClient(parsePermissions(w.permissions));
                   changeValue(w.workspace.name);
                   router.replace(routes.dashboard({ slug: w.workspace.slug }));
                 }}
