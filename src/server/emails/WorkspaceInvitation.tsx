@@ -25,7 +25,7 @@ interface VercelInviteUserEmailProps {
   userEmail?: string;
 }
 
-export const VercelInviteUserEmail = ({
+export const WorkspaceInvitationEmail = ({
   invitedByUsername,
   invitedByEmail,
   workspaceSlug,
@@ -33,7 +33,7 @@ export const VercelInviteUserEmail = ({
   inviteLink,
   userEmail,
 }: VercelInviteUserEmailProps) => {
-  const previewText = `Join the ${invitedByUsername} workspace`;
+  const previewText = `Join ${invitedByUsername}'s workspace`;
 
   return (
     <Html>
@@ -53,16 +53,13 @@ export const VercelInviteUserEmail = ({
             </Section>
 
             <Heading className="mx-0 my-[30px] p-0 text-center text-[24px] font-normal text-black">
-              Join the <strong>{workspaceSlug}</strong> workspace
+              Join <strong>{workspaceSlug}</strong>
             </Heading>
 
             <Text className="text-[14px] leading-[24px] text-black">Hey 👋,</Text>
             <Text className="text-[14px] leading-[24px] text-black">
               <strong>{invitedByUsername}</strong> (
-              <Link
-                href={`mailto:${invitedByEmail}`}
-                className="text-blue-600 no-underline"
-              >
+              <Link href={`mailto:${invitedByEmail}`} className="text-blue-600 no-underline">
                 {invitedByEmail}
               </Link>
               ) has invited you to the <strong>{workspaceSlug}</strong> workspace.
@@ -72,16 +69,9 @@ export const VercelInviteUserEmail = ({
               <Section>
                 <Row>
                   <Column align="center">
-                    <Img
-                      className="rounded-full"
-                      src={teamImage}
-                      width="64"
-                      height="64"
-                    />
+                    <Img className="rounded-full" src={teamImage} width="64" height="64" />
 
-                    <Text className="text-[16px] font-bold text-black">
-                      {workspaceSlug}
-                    </Text>
+                    <Text className="text-[16px] font-bold text-black">{workspaceSlug}</Text>
 
                     <Button
                       className="rounded-full bg-[#6366f1] px-5 py-3 text-center text-[12px] font-semibold text-white no-underline"
@@ -104,10 +94,10 @@ export const VercelInviteUserEmail = ({
             <Hr className="mx-0 my-[26px] w-full border border-solid border-[#eaeaea]" />
 
             <Text className="text-[12px] leading-[24px] text-[#666666]">
-              This invitation was intended for{" "}
-              <span className="text-black">{userEmail}</span>. If you were not expecting
-              this invitation, you can ignore this email. If you are concerned about your
-              account&apos;s safety, please reply to this email to get in touch with us.
+              This invitation was intended for <span className="text-black">{userEmail}</span>. If
+              you were not expecting this invitation, you can ignore this email. If you are
+              concerned about your account&apos;s safety, please reply to this email to get in touch
+              with us.
             </Text>
           </Container>
         </Body>
@@ -116,7 +106,7 @@ export const VercelInviteUserEmail = ({
   );
 };
 
-VercelInviteUserEmail.PreviewProps = {
+WorkspaceInvitationEmail.PreviewProps = {
   username: "status.unknown",
   userImage: `https://fastly.picsum.photos/id/635/200/200.jpg?hmac=Vm8Tavc31Qax01634w3MOPpNCCfasJG8wnBamSi87T4`,
   invitedByUsername: "Alan",
@@ -126,4 +116,4 @@ VercelInviteUserEmail.PreviewProps = {
   inviteLink: "https://vercel.com/teams/invite/foo",
 } as VercelInviteUserEmailProps;
 
-export default VercelInviteUserEmail;
+export default WorkspaceInvitationEmail;

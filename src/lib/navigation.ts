@@ -3,7 +3,7 @@ import { z } from "zod";
 
 export const { routes, useSafeParams, useSafeSearchParams } = createNavigationConfig((defineRoute) => ({
   home: defineRoute("/"),
-  allWorkspaces: defineRoute("/workspaces"),
+  allWorkspaces: defineRoute("/all"),
   join: defineRoute("/join/[workspace]", {
     params: z.object({
       workspace: z.array(z.string()),
@@ -12,13 +12,7 @@ export const { routes, useSafeParams, useSafeSearchParams } = createNavigationCo
   /**
    * Workspaces routes
    */
-  dashboard: defineRoute("/workspaces/[slug]", {
-    params: z.object({
-      slug: z.string(),
-    }),
-  }),
-  newWorkspace: defineRoute("/new"),
-  insights: defineRoute("/workspaces/[slug]/insights", {
+  dashboard: defineRoute("/[slug]", {
     params: z.object({
       slug: z.string(),
     }),
@@ -28,77 +22,88 @@ export const { routes, useSafeParams, useSafeSearchParams } = createNavigationCo
       })
       .optional(),
   }),
-  projects: defineRoute("/workspaces/[slug]/projects", {
+  analytics: defineRoute("/[slug]/analytics", {
     params: z.object({
       slug: z.string(),
     }),
   }),
-  newProject: defineRoute("/workspaces/[slug]/projects/new", {
+  tracker: defineRoute("/[slug]/tracker", {
     params: z.object({
       slug: z.string(),
     }),
   }),
-  editProject: defineRoute("/workspaces/[slug]/projects/[id]/edit", {
-    params: z.object({
-      slug: z.string(),
-      id: z.string(),
-    }),
-  }),
-  projectId: defineRoute("/workspaces/[slug]/projects/[id]", {
-    params: z.object({
-      slug: z.string(),
-      id: z.string(),
-    }),
-  }),
-  invoices: defineRoute("/workspaces/[slug]/invoices", {
+  newWorkspace: defineRoute("/new"),
+  projects: defineRoute("/[slug]/projects", {
     params: z.object({
       slug: z.string(),
     }),
   }),
-  invoiceId: defineRoute("/workspaces/[slug]/invoices/[id]", {
+  newProject: defineRoute("/[slug]/projects/new", {
+    params: z.object({
+      slug: z.string(),
+    }),
+  }),
+  editProject: defineRoute("/[slug]/projects/[id]/edit", {
     params: z.object({
       slug: z.string(),
       id: z.string(),
     }),
   }),
-  integrations: defineRoute("/workspaces/[slug]/integrations", {
-    params: z.object({
-      slug: z.string(),
-    }),
-  }),
-  people: defineRoute("/workspaces/[slug]/people", {
-    params: z.object({
-      slug: z.string(),
-    }),
-  }),
-  personId: defineRoute("/workspaces/[slug]/people/[id]", {
+  projectId: defineRoute("/[slug]/projects/[id]", {
     params: z.object({
       slug: z.string(),
       id: z.string(),
     }),
   }),
-  settings: defineRoute("/workspaces/[slug]/settings", {
+  invoices: defineRoute("/[slug]/invoices", {
     params: z.object({
       slug: z.string(),
     }),
   }),
-  quotes: defineRoute("/workspaces/[slug]/quotes", {
-    params: z.object({
-      slug: z.string(),
-    }),
-  }),
-  newQuote: defineRoute("/workspaces/[slug]/quotes/new", {
-    params: z.object({
-      slug: z.string(),
-    }),
-  }),
-  editQuote: defineRoute("/workspaces/[slug]/quotes/[id]/edit", {
+  invoiceId: defineRoute("/[slug]/invoices/[id]", {
     params: z.object({
       slug: z.string(),
       id: z.string(),
     }),
   }),
-  quoteId: defineRoute("/workspaces/[slug]/quotes/[id]", {
+  integrations: defineRoute("/[slug]/integrations", {
+    params: z.object({
+      slug: z.string(),
+    }),
+  }),
+  people: defineRoute("/[slug]/people", {
+    params: z.object({
+      slug: z.string(),
+    }),
+  }),
+  personId: defineRoute("/[slug]/people/[id]", {
+    params: z.object({
+      slug: z.string(),
+      id: z.string(),
+    }),
+  }),
+  settings: defineRoute("/[slug]/settings", {
+    params: z.object({
+      slug: z.string(),
+    }),
+  }),
+  quotes: defineRoute("/[slug]/quotes", {
+    params: z.object({
+      slug: z.string(),
+    }),
+  }),
+  newQuote: defineRoute("/[slug]/quotes/new", {
+    params: z.object({
+      slug: z.string(),
+    }),
+  }),
+  editQuote: defineRoute("/[slug]/quotes/[id]/edit", {
+    params: z.object({
+      slug: z.string(),
+      id: z.string(),
+    }),
+  }),
+  quoteId: defineRoute("/[slug]/quotes/[id]", {
     params: z.object({
       slug: z.string(),
       id: z.string(),

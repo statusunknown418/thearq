@@ -117,6 +117,11 @@ export const workspacesRouter = createTRPCRouter({
         where: (t, op) => {
           return op.and(op.eq(t.userId, ctx.session.user.id), op.eq(t.workspaceSlug, input.slug));
         },
+        columns: {
+          userId: true,
+          permissions: true,
+          role: true,
+        }
       });
 
       if (!viewer?.userId) {
@@ -140,7 +145,7 @@ export const workspacesRouter = createTRPCRouter({
         i,
       ),
     )
-    .mutation(({ input }) => {
+    .mutation(async ({ input }) => {
       const cookiesStore = cookies();
 
       cookiesStore.set(RECENT_WORKSPACE_KEY, input.workspaceSlug, {

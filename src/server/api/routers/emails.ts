@@ -1,12 +1,9 @@
 import { TRPCError } from "@trpc/server";
-import { Resend } from "resend";
 import { parse } from "valibot";
-import { env } from "~/env";
 import { sendInviteSchema, workspaceInvitation } from "~/server/db/schema";
-import WorkspaceInvitation from "~/server/emails/WorkspaceInvitation";
+import { WorkspaceInvitationEmail } from "~/server/emails/WorkspaceInvitation";
+import { resend } from "~/server/resend";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-
-export const resend = new Resend(env.RESEND_KEY);
 
 export const emailsRouter = createTRPCRouter({
   sendWorkspaceInvite: protectedProcedure
@@ -45,7 +42,7 @@ export const emailsRouter = createTRPCRouter({
             to: "alvarodevcode@outlook.com",
             from: "onboarding@resend.dev",
             subject: `You're invited to join ${workspace.name}`,
-            react: WorkspaceInvitation({
+            react: WorkspaceInvitationEmail({
               invitedByEmail: ctx.session.user.email ?? "unknown",
               inviteLink: workspace.inviteLink,
               invitedByUsername: ctx.session.user.name ?? "unknown",
