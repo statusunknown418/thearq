@@ -32,11 +32,6 @@ export const InviteMembers = ({
   };
 
   const invite = api.emails.sendWorkspaceInvite.useMutation({
-    onSuccess: () => toast.success("Invites sent!"),
-    onMutate: () => {
-      setOpen(false);
-      toast.loading("Sending invites...");
-    },
     onError: (error) => {
       toast.error(error.message);
     },
@@ -64,7 +59,11 @@ export const InviteMembers = ({
   };
 
   const onSubmit = form.handleSubmit((values) => {
-    invite.mutate(values);
+    setOpen(false);
+    toast.promise(invite.mutateAsync(values), {
+      loading: "Sending invites...",
+      success: "Invites sent!",
+    });
   });
 
   return (
@@ -99,7 +98,7 @@ export const InviteMembers = ({
                             <Input
                               {...field}
                               placeholder="someone@example.com"
-                              className="flex-grow"
+                              className="w-full"
                             />
                           </FormControl>
 

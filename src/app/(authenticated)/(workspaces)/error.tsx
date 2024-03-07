@@ -7,9 +7,9 @@ import { routes } from "~/lib/navigation";
 
 export default function WorkspacePageError({ error }: { error: Error & { digest?: string } }) {
   return (
-    <section className="grid h-screen grid-cols-1 place-items-center bg-base-300">
-      <div className="grid grid-cols-1 place-items-center gap-2 rounded-lg border bg-base-100 p-10 shadow-xl">
-        <ExclamationTriangleIcon className="h-10 w-10 text-error" />
+    <section className="bg-base-300 grid h-screen grid-cols-1 place-items-center">
+      <div className="bg-base-100 grid grid-cols-1 place-items-center gap-2 rounded-lg border p-10 shadow-xl">
+        <ExclamationTriangleIcon className="h-10 w-10 text-destructive" />
 
         <h2 className="text-2xl font-bold">There was an error</h2>
 

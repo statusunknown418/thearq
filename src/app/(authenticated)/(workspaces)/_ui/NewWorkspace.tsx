@@ -41,7 +41,7 @@ export const NewWorkspace = () => {
       if (err.data?.code === "CONFLICT") form.setError("slug", { message: err.message });
     },
     onSuccess: async (data) => {
-      await utils.workspaces.get.invalidate();
+      await utils.workspaces.get.refetch();
       toast.success("Workspace created");
       router.push(routes.dashboard({ slug: data.slug }));
     },
@@ -119,7 +119,7 @@ export const NewWorkspace = () => {
           <DialogFooter>
             <Button disabled={form.formState.isSubmitting}>
               {form.formState.isSubmitting && <Loader />}
-              Create
+              Let&apos;s do it!
             </Button>
           </DialogFooter>
         </form>

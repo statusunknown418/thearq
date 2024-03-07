@@ -2,6 +2,7 @@
 import { ArrowRightIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import Link from "next/link";
+import { updateCookiesAction } from "~/components/layout/sidebar-wrapper";
 import { routes } from "~/lib/navigation";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
@@ -17,16 +18,21 @@ export const List = ({
     initialData: workspaces,
   });
 
-  const { mutate } = api.workspaces.setRecent.useMutation();
-
   return (
     <ul className="grid grid-cols-1 gap-1 rounded-lg">
       {data.map((relation) => (
         <li key={relation.workspaceSlug}>
           <Link
-            onClick={() => mutate({ workspaceSlug: relation.workspaceSlug })}
+            onClick={async () => {
+              const data = new FormData();
+              data.append("slug", relation.workspaceSlug);
+              data.append("permissions", relation.permissions);
+              data.append("role", relation.role);
+
+              await updateCookiesAction(data);
+            }}
             href={routes.dashboard({ slug: relation.workspaceSlug })}
-            className="group flex items-center gap-4 rounded-lg p-3 transition-colors hover:bg-base-200"
+            className="hover:bg-base-200 group flex items-center gap-4 rounded-lg p-3 transition-colors"
           >
             <Image
               src={relation.workspace.image ?? "https://picsum.photos/200"}

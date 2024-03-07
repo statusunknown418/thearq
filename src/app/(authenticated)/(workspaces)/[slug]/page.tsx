@@ -20,7 +20,9 @@ export default async function WorkspaceDashboardPage({
         This is a test to see how the background colors behave
         <Loader color="#c2c2c2" />
       </div>
+
       <pre className="row-span-full">{JSON.stringify(workspace, null, 2)}</pre>
+
       <Suspense>
         <InviteMembers workspace={workspace} />
       </Suspense>
