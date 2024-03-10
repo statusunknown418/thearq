@@ -15,7 +15,6 @@
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^0.3.17",
-    "@defer/client": "^2.3.0",
     "@formkit/auto-animate": "^0.8.1",
     "@hookform/resolvers": "^3.3.4",
     "@linear/sdk": "^13.0.0",

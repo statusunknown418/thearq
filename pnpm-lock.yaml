@@ -8,9 +8,6 @@ dependencies:
   '@auth/drizzle-adapter':
     specifier: ^0.3.17
     version: 0.3.17
-  '@defer/client':
-    specifier: ^2.3.0
-    version: 2.3.0
   '@formkit/auto-animate':
     specifier: ^0.8.1
     version: 0.8.1
@@ -367,13 +364,6 @@ packages:
     engines: {node: '>=6.9.0'}
     dependencies:
       regenerator-runtime: 0.14.1
-
-  /@defer/client@2.3.0:
-    resolution: {integrity: sha512-2pCQrasR7+mR5EeOK1NgmP2sXk8Hao4IRnkRLcO2QqJpNJnUJE177m+RhEhp2SCebdIG6MXW4/NwNE5sz/uL8w==}
-    engines: {node: '>=18'}
-    dependencies:
-      parse-duration: 1.1.0
-    dev: false
 
   /@drizzle-team/studio@0.0.39:
     resolution: {integrity: sha512-c5Hkm7MmQC2n5qAsKShjQrHoqlfGslB8+qWzsGGZ+2dHMRTNG60UuzalF0h0rvBax5uzPXuGkYLGaQ+TUX3yMw==}
@@ -7371,10 +7361,6 @@ packages:
     engines: {node: '>=6'}
     dependencies:
       callsites: 3.1.0
-
-  /parse-duration@1.1.0:
-    resolution: {integrity: sha512-z6t9dvSJYaPoQq7quMzdEagSFtpGu+utzHqqxmpVWNNZRIXnvqyCvn9XsTdh7c/w0Bqmdz3RB3YnRaKtpRtEXQ==}
-    dev: false
 
   /parse-json@5.2.0:
     resolution: {integrity: sha512-ayCKvm/phCGxOkYRSCM82iDwct8/EonSEgCSxWxD7ve6jHggsFl4fZVQBPRNgQoKiuV/odhFrGzQXZwbifC8Rg==}
