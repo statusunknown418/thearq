@@ -1,9 +1,9 @@
 import { Main } from "~/components/layout/Main";
 
-export default function WorkspaceTrackerPage() {
+export default function WorkspaceQuotesPage() {
   return (
     <Main>
-      <h1>Tracker</h1>
+      <h1>Quotes</h1>
     </Main>
   );
 }

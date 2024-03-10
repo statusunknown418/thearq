@@ -1,3 +1,5 @@
+import { Main } from "~/components/layout/Main";
+
 export default function WorkspacePeoplePage() {
-  return <main>People</main>;
+  return <Main>People</Main>;
 }

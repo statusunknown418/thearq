@@ -5,7 +5,7 @@ import { useSafeParams } from "~/lib/navigation";
 import { api } from "~/trpc/react";
 
 export const Client = () => {
-  const { slug } = useSafeParams("insights");
+  const { slug } = useSafeParams("analytics");
   const { data } = api.workspaces.getPermissions.useQuery({ slug });
 
   return (

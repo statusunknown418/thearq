@@ -2,7 +2,7 @@
 import { ArrowRightIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import Link from "next/link";
-import { updateCookiesAction } from "~/components/layout/sidebar-wrapper";
+import { updateCookiesAction } from "~/lib/actions/cookies-actions";
 import { routes } from "~/lib/navigation";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
@@ -32,7 +32,7 @@ export const List = ({
               await updateCookiesAction(data);
             }}
             href={routes.dashboard({ slug: relation.workspaceSlug })}
-            className="hover:bg-base-200 group flex items-center gap-4 rounded-lg p-3 transition-colors"
+            className="hover:bg-base-200 group flex items-center gap-4 rounded-lg border border-transparent p-3 transition-colors hover:border-border hover:bg-secondary-background"
           >
             <Image
               src={relation.workspace.image ?? "https://picsum.photos/200"}
@@ -50,7 +50,7 @@ export const List = ({
             </div>
 
             <span className="hidden pr-6 transition-all group-hover:block group-hover:translate-x-2 group-hover:animate-in">
-              <ArrowRightIcon className="h-4 w-4" />
+              <ArrowRightIcon className="h-4 w-4 text-muted-foreground" />
             </span>
           </Link>
         </li>
