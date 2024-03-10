@@ -2,11 +2,11 @@ import { LinearClient } from "@linear/sdk";
 import { Octokit } from "@octokit/core";
 import { OAuthApp } from "@octokit/oauth-app";
 import { TRPCError } from "@trpc/server";
-import { Redis } from "@upstash/redis";
 import { object, optional, parse, string } from "valibot";
 import { env } from "~/env";
 import { APP_URL, INTEGRATIONS, type Integration } from "~/lib/constants";
 import { accounts } from "~/server/db/schema";
+import { redis } from "~/server/upstash";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const buildRedirect = (integration: Integration) => `${APP_URL}/integrations/${integration}`;
@@ -31,10 +31,6 @@ export const integrationsSchema = object({
   state: optional(string()),
 });
 
-const redis = new Redis({
-  url: env.UPSTASH_REDIS_REST_URL,
-  token: env.UPSTASH_REDIS_REST_TOKEN,
-});
 
 export const integrationsRouter = createTRPCRouter({
   linear: protectedProcedure
