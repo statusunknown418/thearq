@@ -32,7 +32,7 @@ export const env = createEnv({
     INTEGRATIONS_STATE: z.string(),
     GITHUB_CLIENT_ID: z.string(),
     GITHUB_CLIENT_SECRET: z.string(),
-    UPSTASH_REDIS_REST_URL: z.string().url(),
+    UPSTASH_REDIS_REST_URL: z.string(),
     UPSTASH_REDIS_REST_TOKEN: z.string(),
     RESEND_KEY: z.string(),
     DB_HOST: z.string(),
