@@ -1,10 +1,14 @@
 "use client";
 
-import { DoubleArrowRightIcon, ExitIcon, GearIcon } from "@radix-ui/react-icons";
+import { CaretSortIcon, ExitIcon } from "@radix-ui/react-icons";
 import { signOut } from "next-auth/react";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
+import { IoIosCog } from "react-icons/io";
+import { routes } from "~/lib/navigation";
 import { useAuthStore } from "~/lib/stores/auth-store";
+import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 import { cn } from "~/lib/utils";
 import { Button } from "../ui/button";
 import {
@@ -20,6 +24,7 @@ import { Skeleton } from "../ui/skeleton";
 export const UserDropdown = () => {
   const user = useAuthStore((s) => s.user);
   const clearAuth = useAuthStore((s) => s.clear);
+  const selectedWorkspace = useWorkspaceStore((s) => s.active);
   const [open, change] = useState(false);
 
   if (!user) {
@@ -29,7 +34,7 @@ export const UserDropdown = () => {
   return (
     <DropdownMenu open={open} onOpenChange={change}>
       <DropdownMenuTrigger asChild>
-        <Button variant={"ghost"} className="w-full justify-between">
+        <Button variant={"ghost"} className="w-full justify-between focus-visible:ring-0">
           <div className="flex items-center gap-2">
             {user?.image && (
               <Image
@@ -44,8 +49,8 @@ export const UserDropdown = () => {
             <span className="max-w-[10ch] overflow-hidden text-ellipsis">{user?.name}</span>
           </div>
 
-          <DoubleArrowRightIcon
-            className={cn("text-muted-foreground transition-all", open && "rotate-180")}
+          <CaretSortIcon
+            className={cn("h-5 w-5 text-muted-foreground transition-all", open && "rotate-90")}
           />
         </Button>
       </DropdownMenuTrigger>
@@ -57,9 +62,11 @@ export const UserDropdown = () => {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem>
-          <GearIcon />
-          <span>Settings</span>
+        <DropdownMenuItem asChild>
+          <Link href={routes.account({ slug: selectedWorkspace?.slug ?? "" })}>
+            <IoIosCog size={16} />
+            <span>My settings</span>
+          </Link>
         </DropdownMenuItem>
 
         <DropdownMenuItem
@@ -70,7 +77,7 @@ export const UserDropdown = () => {
             });
           }}
         >
-          <ExitIcon />
+          <ExitIcon className="text-destructive" />
           <span>Logout</span>
         </DropdownMenuItem>
       </DropdownMenuContent>

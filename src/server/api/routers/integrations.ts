@@ -9,8 +9,7 @@ import { APP_URL, INTEGRATIONS, type Integration } from "~/lib/constants";
 import { accounts } from "~/server/db/schema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
-export const buildRedirect = (integration: Integration) =>
-  `${APP_URL}/integrations/${integration}`;
+export const buildRedirect = (integration: Integration) => `${APP_URL}/integrations/${integration}`;
 
 export const buildConnectionURL = (integration: Integration) => {
   const redirect = buildRedirect(integration);

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { ClientRedirect } from "~/components/ClientRedirect";
 import { env } from "~/env";
 import { api } from "~/trpc/server";
 
@@ -16,7 +16,7 @@ export default async function LinearIntegration({
   });
 
   if (done.success) {
-    redirect("/");
+    return <ClientRedirect />;
   }
 
   if (done.error) {

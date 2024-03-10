@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { ClientRedirect } from "~/components/ClientRedirect";
 import { routes } from "~/lib/navigation";
 import { api } from "~/trpc/server";
 
@@ -14,7 +14,7 @@ export default async function GithubIntegration({
   const done = await api.integrations.github.mutate(searchParams);
 
   if (done.success) {
-    redirect("/");
+    return <ClientRedirect />;
   }
 
   if (done.error) {

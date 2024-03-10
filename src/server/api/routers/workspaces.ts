@@ -121,7 +121,7 @@ export const workspacesRouter = createTRPCRouter({
           userId: true,
           permissions: true,
           role: true,
-        }
+        },
       });
 
       if (!viewer?.userId) {

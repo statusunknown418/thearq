@@ -7,14 +7,6 @@ import {
   USER_WORKSPACE_ROLE,
 } from "~/lib/constants";
 import { type Roles } from "~/server/db/schema";
-import { Sidebar } from "./Sidebar";
-
-export const SidebarWrapperRSC = async () => {
-  const cookiesStore = cookies();
-  const role = cookiesStore.get(USER_WORKSPACE_ROLE)?.value as Roles;
-
-  return <Sidebar role={role} />;
-};
 
 /**
  * Simple action to set cookies as recent workspace and permissions
@@ -42,15 +34,29 @@ export const updateCookiesAction = async (ctx: FormData) => {
   store.set(USER_WORKSPACE_PERMISSIONS, encodeURIComponent(data.permissions), {
     httpOnly: true,
     path: "/",
-    sameSite: "strict",
+    sameSite: "lax",
   });
   store.set(USER_WORKSPACE_ROLE, data.role, {
     httpOnly: true,
     path: "/",
-    sameSite: "strict",
+    sameSite: "lax",
   });
 
   return {
     success: true,
   };
+};
+
+/**
+ * Should only be used in a server context
+ * @returns
+ */
+export const getUserRole = () => {
+  const store = cookies();
+  return store.get(USER_WORKSPACE_ROLE)?.value as Roles;
+};
+
+export const getLatestWorkspace = () => {
+  const store = cookies();
+  return store.get(RECENT_WORKSPACE_KEY)?.value;
 };

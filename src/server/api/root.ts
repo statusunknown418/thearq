@@ -1,6 +1,7 @@
 import { createTRPCRouter } from "~/server/api/trpc";
 import { emailsRouter } from "./routers/emails";
 import { integrationsRouter } from "./routers/integrations";
+import { viewerRouter } from "./routers/viewer";
 import { workspacesRouter } from "./routers/workspaces";
 
 /**
@@ -12,6 +13,7 @@ export const appRouter = createTRPCRouter({
   workspaces: workspacesRouter,
   integrations: integrationsRouter,
   emails: emailsRouter,
+  viewer: viewerRouter,
 });
 
 // export type definition of API

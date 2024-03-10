@@ -84,6 +84,18 @@ export const timeEntries = mysqlTable(
   }),
 );
 
+export const timeEntriesRelations = relations(timeEntries, ({ one }) => ({
+  project: one(projects, {
+    fields: [timeEntries.projectId],
+    references: [projects.id],
+  }),
+  user: one(users, { fields: [timeEntries.userId], references: [users.id] }),
+  workspace: one(workspaces, {
+    fields: [timeEntries.workspaceId],
+    references: [workspaces.id],
+  }),
+}));
+
 export const users = mysqlTable("user", {
   id: varchar("id", { length: 255 }).notNull().primaryKey(),
   name: varchar("name", { length: 255 }),

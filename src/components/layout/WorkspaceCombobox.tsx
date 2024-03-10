@@ -8,6 +8,7 @@ import { parsePermissions, useAuthStore } from "~/lib/stores/auth-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
+import { updateCookiesAction } from "../../lib/actions/cookies-actions";
 import { Button } from "../ui/button";
 import {
   Command,
@@ -19,7 +20,6 @@ import {
 } from "../ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Skeleton } from "../ui/skeleton";
-import { updateCookiesAction } from "./sidebar-wrapper";
 
 export const WorkspaceCombobox = () => {
   const { data } = api.workspaces.get.useQuery(undefined, {
@@ -92,44 +92,46 @@ export const WorkspaceCombobox = () => {
           <CommandEmpty>No workspace found</CommandEmpty>
 
           <CommandGroup>
-            {data?.map((w) => (
-              <CommandItem
-                key={w.workspaceSlug}
-                onSelect={async () => {
-                  const data = new FormData();
-                  data.append("slug", w.workspace.slug);
-                  data.append("permissions", w.permissions);
-                  data.append("role", w.role);
-                  await updateCookiesAction(data);
+            <div className="max-h-56 overflow-y-scroll">
+              {data?.map((w) => (
+                <CommandItem
+                  key={w.workspaceSlug}
+                  onSelect={async () => {
+                    const data = new FormData();
+                    data.append("slug", w.workspace.slug);
+                    data.append("permissions", w.permissions);
+                    data.append("role", w.role);
+                    await updateCookiesAction(data);
 
-                  updatePermissionsClient(parsePermissions(w.permissions));
-                  changeValue(w.workspace.name);
-                  router.replace(routes.dashboard({ slug: w.workspace.slug }));
-                }}
-              >
-                <CheckIcon
-                  className={cn(
-                    "opacity-0",
-                    !!value
-                      ? value === w.workspace.name && "opacity-100"
-                      : workspace.name === w.workspace.name && "opacity-100",
-                  )}
-                />
+                    updatePermissionsClient(parsePermissions(w.permissions));
+                    changeValue(w.workspace.name);
+                    router.replace(routes.dashboard({ slug: w.workspace.slug }));
+                  }}
+                >
+                  <CheckIcon
+                    className={cn(
+                      "opacity-0",
+                      !!value
+                        ? value === w.workspace.name && "opacity-100"
+                        : workspace.name === w.workspace.name && "opacity-100",
+                    )}
+                  />
 
-                <div className="flex items-center gap-2">
-                  {w.workspace.image && (
-                    <Image
-                      src={w.workspace.image}
-                      alt={w.workspace.name}
-                      width={24}
-                      height={24}
-                      className="rounded-sm"
-                    />
-                  )}
-                  <span>{w.workspace.name}</span>
-                </div>
-              </CommandItem>
-            ))}
+                  <div className="flex items-center gap-2">
+                    {w.workspace.image && (
+                      <Image
+                        src={w.workspace.image}
+                        alt={w.workspace.name}
+                        width={24}
+                        height={24}
+                        className="rounded-sm"
+                      />
+                    )}
+                    <span>{w.workspace.name}</span>
+                  </div>
+                </CommandItem>
+              ))}
+            </div>
 
             <CommandSeparator className="my-1" />
 
