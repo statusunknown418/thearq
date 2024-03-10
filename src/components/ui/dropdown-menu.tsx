@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import { CheckIcon, ChevronRightIcon, DotFilledIcon } from "@radix-ui/react-icons";
@@ -186,4 +186,3 @@ export {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 };
-

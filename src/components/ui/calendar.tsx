@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import * as React from "react";
@@ -63,4 +63,3 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
 Calendar.displayName = "Calendar";
 
 export { Calendar };
-
