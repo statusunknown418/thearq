@@ -1,9 +1,9 @@
 import { Main } from "~/components/layout/Main";
 
-export default async function WorkspaceSettingsPage() {
+export default function PersonalIntegrationsSettingsPage() {
   return (
     <Main>
-      <h1>Settings</h1>
+      <h1>Integrations</h1>
     </Main>
   );
 }

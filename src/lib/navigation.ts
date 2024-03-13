@@ -14,10 +14,18 @@ export const sidebarLinks = {
   integrations: "integrations",
 };
 
+export const settingsLinks = {
+  general: null,
+  account: "account",
+  integrations: "integrations",
+  plans: "plans",
+  defaultValues: "defaults",
+};
+
 export const { routes, useSafeParams, useSafeSearchParams } = createNavigationConfig(
   (defineRoute) => ({
     home: defineRoute("/"),
-    allWorkspaces: defineRoute("/all"),
+    allWorkspaces: defineRoute("/select"),
     join: defineRoute("/join/[workspace]", {
       params: z.object({
         workspace: z.array(z.string()),
@@ -126,7 +134,7 @@ export const { routes, useSafeParams, useSafeSearchParams } = createNavigationCo
         slug: z.string(),
       }),
     }),
-    integrations: defineRoute("/[slug]/settings/account/integrations", {
+    integrations: defineRoute("/[slug]/settings/integrations", {
       params: z.object({
         slug: z.string(),
       }),

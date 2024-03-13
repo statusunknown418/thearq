@@ -1,3 +1,4 @@
+import { Main } from "~/components/layout/Main";
 import { routes } from "~/lib/navigation";
 
 export default async function JoinWorkspacePage({
@@ -12,7 +13,7 @@ export default async function JoinWorkspacePage({
   } = routes.join.$parseParams(params);
 
   return (
-    <div>
+    <Main>
       {JSON.stringify(params, null, 2)}
       <h1>
         Join {workspace} via {invitation}
@@ -21,6 +22,6 @@ export default async function JoinWorkspacePage({
       <form>
         <button type="submit">Join</button>
       </form>
-    </div>
+    </Main>
   );
 }

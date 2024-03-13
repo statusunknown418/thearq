@@ -3,7 +3,7 @@ import { Updater } from "~/components/Updater";
 import { Main } from "~/components/layout/Main";
 import { Loader } from "~/components/ui/loader";
 import { api } from "~/trpc/server";
-import { InviteMembers } from "../_ui/InviteMembers";
+import { InviteTeam } from "../../../../components/dashboard/InviteTeam";
 
 export default async function WorkspaceDashboardPage({
   params,
@@ -24,7 +24,7 @@ export default async function WorkspaceDashboardPage({
       <pre className="row-span-full">{JSON.stringify(workspace, null, 2)}</pre>
 
       <Suspense>
-        <InviteMembers workspace={workspace} />
+        <InviteTeam workspace={workspace} />
       </Suspense>
 
       <Updater workspace={workspace} />
