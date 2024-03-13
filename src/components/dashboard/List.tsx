@@ -2,7 +2,7 @@
 import { ArrowRightIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import Link from "next/link";
-import { updateCookiesAction } from "~/lib/actions/cookies-actions";
+import { updateCookiesAction } from "~/lib/actions/cookies.actions";
 import { routes } from "~/lib/navigation";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";

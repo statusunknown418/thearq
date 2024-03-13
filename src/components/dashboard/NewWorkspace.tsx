@@ -16,6 +16,7 @@ import {
   FormDescription,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
@@ -78,8 +79,9 @@ export const NewWorkspace = () => {
             name="name"
             render={({ field }) => (
               <FormItem>
+                <FormLabel>Workspace name</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="Workspace name" />
+                  <Input {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

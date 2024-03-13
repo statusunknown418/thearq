@@ -1,15 +1,16 @@
 "use client";
 
-import { LapTimerIcon, TriangleRightIcon } from "@radix-ui/react-icons";
+import { TriangleRightIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 import { IoIosCog } from "react-icons/io";
 import {
   PiCalculatorDuotone,
-  PiChartBar,
+  PiChartBarDuotone,
   PiKanbanDuotone,
   PiPaperclip,
   PiPlanetDuotone,
+  PiTimerDuotone,
   PiUsersDuotone,
 } from "react-icons/pi";
 import { Separator } from "~/components/ui/separator";
@@ -18,6 +19,7 @@ import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 import { cn } from "~/lib/utils";
 import { type Roles } from "~/server/db/schema";
 import { Button } from "../../ui/button";
+import { CommandK } from "../CommandK";
 import { UserDropdown } from "../UserDropdown";
 import { WorkspaceCombobox } from "../WorkspaceCombobox";
 
@@ -29,6 +31,8 @@ export const Sidebar = ({ role }: { role: Roles }) => {
     <aside className="col-span-1 grid grid-cols-1 gap-4 px-2 py-4">
       <div className="flex flex-col gap-4 self-start">
         <WorkspaceCombobox />
+
+        <CommandK />
       </div>
 
       <ul className="flex h-full w-full flex-col gap-1 text-muted-foreground">
@@ -44,7 +48,7 @@ export const Sidebar = ({ role }: { role: Roles }) => {
             data-active={!selectedSegment}
           >
             <Link href={routes.dashboard({ slug: workspace?.slug ?? "" })}>
-              <PiPlanetDuotone size={16} className="group-data-[active=true]:text-purple-400" />
+              <PiPlanetDuotone size={20} className="group-data-[active=true]:text-purple-400" />
               Dashboard
             </Link>
           </Button>
@@ -61,7 +65,7 @@ export const Sidebar = ({ role }: { role: Roles }) => {
           data-active={selectedSegment === sidebarLinks.tracker}
         >
           <Link href={routes.tracker({ slug: workspace?.slug ?? "" })}>
-            <LapTimerIcon className="h-4 w-4 group-data-[active=true]:text-blue-400" />
+            <PiTimerDuotone className="h-5 w-5 group-data-[active=true]:text-blue-400" />
             Tracker
           </Link>
         </Button>
@@ -77,7 +81,7 @@ export const Sidebar = ({ role }: { role: Roles }) => {
           data-active={selectedSegment === sidebarLinks.analytics}
         >
           <Link href={routes.analytics({ slug: workspace?.slug ?? "" })}>
-            <PiChartBar size={16} className="group-data-[active=true]:text-indigo-400" />
+            <PiChartBarDuotone size={20} className="group-data-[active=true]:text-indigo-400" />
             Analytics
           </Link>
         </Button>
@@ -102,7 +106,7 @@ export const Sidebar = ({ role }: { role: Roles }) => {
             >
               <Link href={routes.projects({ slug: workspace?.slug ?? "" })}>
                 <PiKanbanDuotone
-                  size={16}
+                  size={20}
                   className="group-data-[active=true]:text-fuchsia-400"
                   data-active={selectedSegment === sidebarLinks.projects}
                 />
@@ -122,7 +126,7 @@ export const Sidebar = ({ role }: { role: Roles }) => {
             >
               <Link href={routes.invoices({ slug: workspace?.slug ?? "" })}>
                 <PiPaperclip
-                  size={16}
+                  size={20}
                   className="group-data-[active=true]:text-orange-400"
                   data-active={selectedSegment === sidebarLinks.invoices}
                 />
@@ -141,7 +145,7 @@ export const Sidebar = ({ role }: { role: Roles }) => {
               data-active={selectedSegment === sidebarLinks.quotes}
             >
               <Link href={routes.quotes({ slug: workspace?.slug ?? "" })}>
-                <PiCalculatorDuotone size={16} className="group-data-[active=true]:text-teal-400" />
+                <PiCalculatorDuotone size={20} className="group-data-[active=true]:text-teal-400" />
                 Quotes
               </Link>
             </Button>
@@ -157,7 +161,7 @@ export const Sidebar = ({ role }: { role: Roles }) => {
               data-active={selectedSegment === sidebarLinks.people}
             >
               <Link href={routes.people({ slug: workspace?.slug ?? "" })}>
-                <PiUsersDuotone size={16} className="group-data-[active=true]:text-green-400" />
+                <PiUsersDuotone size={20} className="group-data-[active=true]:text-green-400" />
                 People
               </Link>
             </Button>
@@ -173,7 +177,7 @@ export const Sidebar = ({ role }: { role: Roles }) => {
               data-active={selectedSegment === sidebarLinks.settings}
             >
               <Link href={routes.settings({ slug: workspace?.slug ?? "" })}>
-                <IoIosCog size={16} />
+                <IoIosCog size={20} />
                 Settings
               </Link>
             </Button>

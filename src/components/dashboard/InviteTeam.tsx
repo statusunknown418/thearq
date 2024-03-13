@@ -20,7 +20,7 @@ import { sendInviteSchema } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 
-export const InviteMembers = ({
+export const InviteTeam = ({
   workspace,
 }: {
   workspace: RouterOutputs["workspaces"]["getBySlug"];

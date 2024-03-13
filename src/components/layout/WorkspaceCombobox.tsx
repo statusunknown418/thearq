@@ -1,14 +1,15 @@
 "use client";
-import { CaretSortIcon, CheckIcon, PlusCircledIcon } from "@radix-ui/react-icons";
+import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { PiPlusCircle } from "react-icons/pi";
 import { routes } from "~/lib/navigation";
 import { parsePermissions, useAuthStore } from "~/lib/stores/auth-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
-import { updateCookiesAction } from "../../lib/actions/cookies-actions";
+import { updateCookiesAction } from "../../lib/actions/cookies.actions";
 import { Button } from "../ui/button";
 import {
   Command,
@@ -68,7 +69,7 @@ export const WorkspaceCombobox = () => {
                 alt={value}
                 width={24}
                 height={24}
-                className="h-6 w-6 flex-none rounded-sm"
+                className="h-6 w-6 flex-none rounded-[6px]"
               />
             ) : (
               <Skeleton className="h-6 w-6" />
@@ -105,7 +106,10 @@ export const WorkspaceCombobox = () => {
 
                     updatePermissionsClient(parsePermissions(w.permissions));
                     changeValue(w.workspace.name);
-                    router.replace(routes.dashboard({ slug: w.workspace.slug }));
+
+                    w.role === "admin"
+                      ? router.replace(routes.dashboard({ slug: w.workspace.slug }))
+                      : router.replace(routes.tracker({ slug: w.workspace.slug }));
                   }}
                 >
                   <CheckIcon
@@ -136,7 +140,7 @@ export const WorkspaceCombobox = () => {
             <CommandSeparator className="my-1" />
 
             <CommandItem onSelect={() => router.push(routes.newWorkspace())}>
-              <PlusCircledIcon className="text-primary" />
+              <PiPlusCircle size={16} className="text-primary" />
               <span className="font-medium">New workspace</span>
             </CommandItem>
           </CommandGroup>
