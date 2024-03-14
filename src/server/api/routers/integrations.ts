@@ -84,15 +84,7 @@ export const integrationsRouter = createTRPCRouter({
             scope: data.scope,
             refresh_token: data.refresh_token,
           })
-          .onConflictDoUpdate({
-            target: accounts.access_token,
-            set: {
-              access_token: data.access_token,
-              providerAccountId: viewer.id,
-              scope: data.scope,
-              refresh_token: data.refresh_token,
-            },
-          });
+          .onConflictDoNothing();
 
         try {
           const key: IntegrationCachingKey = `${ctx.session.user.id}:${INTEGRATIONS.linear.name}`;
@@ -158,14 +150,7 @@ export const integrationsRouter = createTRPCRouter({
             providerAccountId: viewer.data.login,
             scope: authentication.scopes.join(" "),
           })
-          .onConflictDoUpdate({
-            target: accounts.access_token,
-            set: {
-              provider: "github",
-              providerAccountId: viewer.data.login,
-              access_token: authentication.token,
-            },
-          });
+          .onConflictDoNothing();
 
         const key: IntegrationCachingKey = `${ctx.session.user.id}:${INTEGRATIONS.linear.name}`;
         await redis.set(key, {
