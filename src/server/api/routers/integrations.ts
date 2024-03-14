@@ -31,7 +31,6 @@ export const integrationsSchema = object({
   state: optional(string()),
 });
 
-
 export const integrationsRouter = createTRPCRouter({
   linear: protectedProcedure
     .input((i) => parse(integrationsSchema, i))
@@ -85,11 +84,12 @@ export const integrationsRouter = createTRPCRouter({
             scope: data.scope,
             refresh_token: data.refresh_token,
           })
-          .onDuplicateKeyUpdate({
+          .onConflictDoUpdate({
+            target: accounts.access_token,
             set: {
-              provider: "linear",
-              providerAccountId: viewer.id,
               access_token: data.access_token,
+              providerAccountId: viewer.id,
+              scope: data.scope,
               refresh_token: data.refresh_token,
             },
           });
@@ -158,7 +158,8 @@ export const integrationsRouter = createTRPCRouter({
             providerAccountId: viewer.data.login,
             scope: authentication.scopes.join(" "),
           })
-          .onDuplicateKeyUpdate({
+          .onConflictDoUpdate({
+            target: accounts.access_token,
             set: {
               provider: "github",
               providerAccountId: viewer.data.login,

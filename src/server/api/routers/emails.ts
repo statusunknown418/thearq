@@ -1,10 +1,14 @@
 import { TRPCError } from "@trpc/server";
 import { parse } from "valibot";
-import { sendInviteSchema, workspaceInvitation } from "~/server/db/edge-schema";
+import { sendInviteSchema, workspaceInvitations } from "~/server/db/edge-schema";
 import { WorkspaceInvitationEmail } from "~/server/emails/WorkspaceInvitation";
 import { resend } from "~/server/resend";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
+/**
+ * TODO: Update me when the Resend domain is verified
+ * @returns
+ */
 export const emailsRouter = createTRPCRouter({
   sendWorkspaceInvite: protectedProcedure
     .input((i) => parse(sendInviteSchema, i))
@@ -21,11 +25,13 @@ export const emailsRouter = createTRPCRouter({
       }
 
       try {
-        await ctx.db.insert(workspaceInvitation).values(
+        await ctx.db.insert(workspaceInvitations).values(
           input.userEmails.map((item) => ({
             email: item.email,
             workspaceSlug: input.workspaceSlug,
             invitedByEmail: ctx.session.user.email ?? "unknown",
+            workspaceId: workspace.id,
+            invitedById: ctx.session.user.id,
           })),
         );
       } catch (error) {
@@ -44,7 +50,7 @@ export const emailsRouter = createTRPCRouter({
             subject: `You're invited to join ${workspace.name}`,
             react: WorkspaceInvitationEmail({
               invitedByEmail: ctx.session.user.email ?? "unknown",
-              inviteLink: workspace.inviteLink,
+              inviteLink: workspace.inviteLink!,
               invitedByUsername: ctx.session.user.name ?? "unknown",
               workspaceSlug: input.workspaceSlug,
               teamImage: workspace?.image ?? "https://picsum.photos/200",
