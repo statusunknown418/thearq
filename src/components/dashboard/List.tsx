@@ -21,12 +21,12 @@ export const List = ({
   return (
     <ul className="grid grid-cols-1 gap-1 rounded-lg">
       {data.map((relation) => (
-        <li key={relation.workspaceSlug}>
+        <li key={relation.workspaceId}>
           <Link
             onClick={async () => {
               const data = new FormData();
               data.append("slug", relation.workspaceSlug);
-              data.append("permissions", relation.permissions);
+              data.append("permissions", JSON.stringify(relation.permissions));
               data.append("role", relation.role);
 
               await updateCookiesAction(data);

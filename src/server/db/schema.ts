@@ -17,12 +17,13 @@ import { type AdapterAccount } from "next-auth/adapters";
 import { array, email, maxLength, minLength, object, omit, string, type Output } from "valibot";
 import { memberPermissions } from "~/lib/stores/auth-store";
 
+
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
  * database instance for multiple projects.
- *
- * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
- */
+*
+* @see https://orm.drizzle.team/docs/goodies#multi-project-schema
+*/
 export const mysqlTable = mysqlTableCreator((name) => name);
 
 export const projects = mysqlTable(

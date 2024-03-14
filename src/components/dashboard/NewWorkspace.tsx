@@ -22,7 +22,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { Loader } from "~/components/ui/loader";
 import { routes } from "~/lib/navigation";
-import { createWorkspaceSchema } from "~/server/db/schema";
+import { createWorkspaceSchema } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 
 export const NewWorkspace = () => {

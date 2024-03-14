@@ -5,7 +5,7 @@ import { TRPCError } from "@trpc/server";
 import { object, optional, parse, string } from "valibot";
 import { env } from "~/env";
 import { APP_URL, INTEGRATIONS, type Integration } from "~/lib/constants";
-import { accounts } from "~/server/db/schema";
+import { accounts } from "~/server/db/edge-schema";
 import { redis } from "~/server/upstash";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 

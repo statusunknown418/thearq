@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { type ReactNode } from "react";
 import { SettingsNav } from "~/components/layout/SettingsNav";
 import { USER_WORKSPACE_ROLE } from "~/lib/constants";
-import { type Roles } from "~/server/db/schema";
+import { type Roles } from "~/server/db/edge-schema";
 
 export default function SettingsLayout({ children }: { children: ReactNode }) {
   const cookiesStore = cookies();

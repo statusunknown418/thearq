@@ -6,14 +6,19 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import slugify from "slugify";
 import { object, parse, string } from "valibot";
-import { RECENT_WORKSPACE_KEY, createWorkspaceInviteLink } from "~/lib/constants";
+import {
+  RECENT_WORKSPACE_KEY,
+  USER_WORKSPACE_PERMISSIONS,
+  USER_WORKSPACE_ROLE,
+  createWorkspaceInviteLink,
+} from "~/lib/constants";
 import { adminPermissions, parsePermissions } from "~/lib/stores/auth-store";
 import {
   createWorkspaceSchema,
   usersOnWorkspaces,
-  workspaceInvitation,
+  workspaceInvitations,
   workspaces,
-} from "~/server/db/schema";
+} from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const workspacesRouter = createTRPCRouter({
@@ -28,21 +33,27 @@ export const workspacesRouter = createTRPCRouter({
           : `https://api.dicebear.com/7.x/initials/svg?seed=${input.name}`;
 
       try {
-        await Promise.all([
-          ctx.db.insert(workspaces).values({
-            name: input.name,
-            createdById: ctx.session.user.id,
-            inviteLink: createWorkspaceInviteLink(slug, inviteId),
-            slug,
-            image,
-          }),
-          ctx.db.insert(usersOnWorkspaces).values({
-            userId: ctx.session.user.id,
+        await ctx.db.transaction(async (trx) => {
+          const w = await trx
+            .insert(workspaces)
+            .values({
+              name: input.name,
+              createdById: ctx.session.user.id,
+              inviteLink: createWorkspaceInviteLink(slug, inviteId),
+              slug,
+              image,
+            })
+            .returning({ id: workspaces.id })
+            .execute();
+
+          await trx.insert(usersOnWorkspaces).values({
             workspaceSlug: slug,
+            workspaceId: w[0]?.id ?? 0,
+            userId: ctx.session.user.id,
             role: "admin",
             permissions: JSON.stringify(adminPermissions),
-          }),
-        ]);
+          });
+        });
       } catch (e) {
         if (e instanceof DatabaseError && e.body.message.includes("AlreadyExists")) {
           throw new TRPCError({
@@ -53,6 +64,20 @@ export const workspacesRouter = createTRPCRouter({
 
         throw e;
       }
+
+      const cookiesStore = cookies();
+      cookiesStore.set(RECENT_WORKSPACE_KEY, slug, {
+        path: "/",
+        sameSite: "lax",
+      });
+      cookiesStore.set(USER_WORKSPACE_ROLE, "admin", {
+        path: "/",
+        sameSite: "lax",
+      });
+      cookiesStore.set(USER_WORKSPACE_PERMISSIONS, JSON.stringify(adminPermissions), {
+        path: "/",
+        sameSite: "lax",
+      });
 
       return {
         success: true,
@@ -202,16 +227,9 @@ export const workspacesRouter = createTRPCRouter({
       ),
     )
     .mutation(async ({ ctx, input }) => {
-      const [workspace, join] = await Promise.all([
-        ctx.db.query.workspaces.findFirst({
-          where: (t, op) => op.eq(t.slug, input.workspaceSlug),
-        }),
-        ctx.db.insert(usersOnWorkspaces).values({
-          role: "member",
-          userId: input.userEmail,
-          workspaceSlug: input.workspaceSlug,
-        }),
-      ]);
+      const workspace = await ctx.db.query.workspaces.findFirst({
+        where: (t, op) => op.eq(t.slug, input.workspaceSlug),
+      });
 
       if (!workspace) {
         throw new TRPCError({
@@ -220,7 +238,19 @@ export const workspacesRouter = createTRPCRouter({
         });
       }
 
-      if (!join.insertId) {
+      const [newMember] = await ctx.db
+        .insert(usersOnWorkspaces)
+        .values({
+          role: "member",
+          userId: ctx.session.user.id,
+          workspaceSlug: input.workspaceSlug,
+          workspaceId: workspace.id,
+        })
+        .returning({
+          newMember: usersOnWorkspaces.userId,
+        });
+
+      if (!newMember) {
         throw new TRPCError({
           code: "CONFLICT",
           message: "Failed to join workspace",
@@ -232,11 +262,11 @@ export const workspacesRouter = createTRPCRouter({
           seatCount: workspace.seatCount + 1,
         }),
         ctx.db
-          .delete(workspaceInvitation)
+          .delete(workspaceInvitations)
           .where(
             and(
-              eq(workspaceInvitation.workspaceSlug, input.workspaceSlug),
-              eq(workspaceInvitation.email, input.userEmail),
+              eq(workspaceInvitations.workspaceSlug, input.workspaceSlug),
+              eq(workspaceInvitations.email, input.userEmail),
             ),
           ),
       ]);

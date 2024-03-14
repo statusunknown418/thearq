@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { parse } from "valibot";
-import { sendInviteSchema, workspaceInvitation } from "~/server/db/schema";
+import { sendInviteSchema, workspaceInvitation } from "~/server/db/edge-schema";
 import { WorkspaceInvitationEmail } from "~/server/emails/WorkspaceInvitation";
 import { resend } from "~/server/resend";
 import { createTRPCRouter, protectedProcedure } from "../trpc";

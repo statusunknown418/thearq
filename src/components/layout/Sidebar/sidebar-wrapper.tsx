@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { USER_WORKSPACE_ROLE } from "~/lib/constants";
-import { type Roles } from "~/server/db/schema";
+import { type Roles } from "~/server/db/edge-schema";
 import { Sidebar } from "./Sidebar";
 
 export const SidebarWrapperRSC = async () => {

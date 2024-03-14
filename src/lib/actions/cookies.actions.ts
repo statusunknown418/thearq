@@ -6,7 +6,7 @@ import {
   USER_WORKSPACE_PERMISSIONS,
   USER_WORKSPACE_ROLE,
 } from "~/lib/constants";
-import { type Roles } from "~/server/db/schema";
+import { type Roles } from "~/server/db/edge-schema";
 
 /**
  * Simple action to set cookies as recent workspace and permissions

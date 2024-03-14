@@ -2,12 +2,12 @@ import { unstable_noStore } from "next/cache";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Loader } from "~/components/ui/loader";
-import { getServerAuthSession } from "~/server/auth";
+import { auth } from "~/server/auth";
 
 export default async function Home() {
   unstable_noStore();
   const t1 = performance.now();
-  const session = await getServerAuthSession();
+  const session = await auth();
   const t2 = performance.now();
   const date = Date.now();
 

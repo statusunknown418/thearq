@@ -17,7 +17,7 @@ import { Separator } from "~/components/ui/separator";
 import { routes, sidebarLinks } from "~/lib/navigation";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 import { cn } from "~/lib/utils";
-import { type Roles } from "~/server/db/schema";
+import { type Roles } from "~/server/db/edge-schema";
 import { Button } from "../../ui/button";
 import { CommandK } from "../CommandK";
 import { UserDropdown } from "../UserDropdown";

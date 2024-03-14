@@ -6,7 +6,7 @@ import { PiBuildingsDuotone, PiUserCircleDuotone } from "react-icons/pi";
 import { routes, settingsLinks } from "~/lib/navigation";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 import { cn } from "~/lib/utils";
-import { type Roles } from "~/server/db/schema";
+import { type Roles } from "~/server/db/edge-schema";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
 
