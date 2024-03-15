@@ -7,7 +7,7 @@ export const sidebarLinks = {
   tracker: "tracker",
   projects: "projects",
   invoices: "invoices",
-  people: "people",
+  team: "team",
   settings: "settings",
   quotes: "quotes",
   analytics: "analytics",
@@ -88,12 +88,12 @@ export const { routes, useSafeParams, useSafeSearchParams } = createNavigationCo
         id: z.string(),
       }),
     }),
-    people: defineRoute("/[slug]/people", {
+    people: defineRoute("/[slug]/team", {
       params: z.object({
         slug: z.string(),
       }),
     }),
-    personId: defineRoute("/[slug]/people/[id]", {
+    personId: defineRoute("/[slug]/team/[id]", {
       params: z.object({
         slug: z.string(),
         id: z.string(),

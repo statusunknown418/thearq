@@ -83,14 +83,22 @@ export const workspaceInvitations = sqliteTable(
     invitedById: text("invitedById")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    acceptedAt: integer("acceptedAt", { mode: "timestamp" }),
-    invitedAt: integer("invitedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+    link: text("inviteLink").notNull(),
   },
   (t) => ({
     emailIdx: index("email_idx").on(t.email),
     invitedByIdIdx: index("invitedById_idx").on(t.invitedById),
+    linkIdx: index("inviteLink_idx").on(t.link),
   }),
 );
+
+export const workspaceInvitationRelations = relations(workspaceInvitations, ({ one }) => ({
+  workspace: one(workspaces, {
+    fields: [workspaceInvitations.workspaceId],
+    references: [workspaces.id],
+  }),
+  invitedBy: one(users, { fields: [workspaceInvitations.invitedById], references: [users.id] }),
+}));
 
 export const sendInviteSchema = object({
   userEmails: array(
@@ -109,7 +117,7 @@ export const workspaces = sqliteTable(
     slug: text("slug").notNull().unique(),
     name: text("name").notNull(),
     image: text("image").notNull(),
-    inviteLink: text("inviteLink"),
+    inviteLink: text("link").notNull().unique(),
     createdById: text("createdById")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -127,6 +135,11 @@ export const workspaces = sqliteTable(
     nameIdx: index("name_idx").on(t.name),
   }),
 );
+
+export const workspacesRelations = relations(workspaces, ({ many }) => ({
+  users: many(usersOnWorkspaces),
+  invitations: many(workspaceInvitations),
+}));
 
 export const workspacesSchema = createInsertSchema(workspaces);
 export type Workspace = Output<typeof workspacesSchema>;
@@ -156,6 +169,7 @@ export const usersOnWorkspaces = sqliteTable(
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
     workspaceSlug: text("workspaceSlug").notNull(),
+    owner: integer("owner", { mode: "boolean" }).default(false),
     role: text("role", { enum: roles }).notNull().default("member"),
     billableRate: int("billableRate").notNull().default(0),
     internalCost: int("internalCost").notNull().default(0),

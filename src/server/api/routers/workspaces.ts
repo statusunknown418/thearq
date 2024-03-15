@@ -19,7 +19,7 @@ import {
   workspaceInvitations,
   workspaces,
 } from "~/server/db/edge-schema";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const workspacesRouter = createTRPCRouter({
   new: protectedProcedure
@@ -52,6 +52,11 @@ export const workspacesRouter = createTRPCRouter({
             userId: ctx.session.user.id,
             role: "admin",
             permissions: JSON.stringify(adminPermissions),
+            /**
+             * @description Only valid when the user is the one creating a workspace
+             * member invitations rely on permissions/role and will NOT be owners
+             */
+            owner: true,
           });
         });
       } catch (e) {
@@ -198,10 +203,14 @@ export const workspacesRouter = createTRPCRouter({
       });
 
       if (!workspace) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Workspace not found or not yours 🤔",
-        });
+        return {
+          error: {
+            success: false,
+            inviteLink: null,
+            code: "NOT_FOUND",
+            message: "Workspace not found or not yours 🤔",
+          },
+        };
       }
 
       const inviteId = createId();
@@ -232,10 +241,13 @@ export const workspacesRouter = createTRPCRouter({
       });
 
       if (!workspace) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Workspace not found",
-        });
+        return {
+          success: false,
+          error: {
+            code: "NOT_FOUND",
+            message: "Workspace not found",
+          },
+        };
       }
 
       const [newMember] = await ctx.db
@@ -251,28 +263,81 @@ export const workspacesRouter = createTRPCRouter({
         });
 
       if (!newMember) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "Failed to join workspace",
-        });
+        return {
+          success: false,
+          error: {
+            code: "CONFLICT",
+            message: "Failed to join workspace",
+          },
+        };
       }
 
-      await Promise.all([
-        ctx.db.update(workspaces).set({
+      await ctx.db.transaction(async (trx) => {
+        await trx.update(workspaces).set({
           seatCount: workspace.seatCount + 1,
-        }),
-        ctx.db
+        });
+
+        await trx
           .delete(workspaceInvitations)
           .where(
             and(
               eq(workspaceInvitations.workspaceSlug, input.workspaceSlug),
               eq(workspaceInvitations.email, input.userEmail),
             ),
-          ),
-      ]);
+          );
+      });
 
       return {
         success: true,
+      };
+    }),
+  getTeamByWorkspaceSlug: protectedProcedure
+    .input((i) =>
+      parse(
+        object({
+          workspaceSlug: string(),
+        }),
+        i,
+      ),
+    )
+    .query(async ({ ctx, input }) => {
+      return ctx.db.query.usersOnWorkspaces.findMany({
+        where: (t, op) => op.eq(t.workspaceSlug, input.workspaceSlug),
+        with: {
+          user: true,
+        },
+      });
+    }),
+  getInvitationDetails: publicProcedure
+    .input((i) =>
+      parse(
+        object({
+          link: string(),
+        }),
+        i,
+      ),
+    )
+    .query(async ({ ctx, input }) => {
+      const invite = await ctx.db.query.workspaces.findFirst({
+        where: (t, op) => op.and(op.eq(t.inviteLink, input.link)),
+        columns: {
+          id: true,
+          image: true,
+          name: true,
+          seatCount: true,
+        },
+      });
+
+      if (!invite) {
+        return {
+          data: null,
+          error: `Invitation not found, please contact your administrator 
+          or the person who invited you.`,
+        };
+      }
+
+      return {
+        data: invite,
       };
     }),
 });

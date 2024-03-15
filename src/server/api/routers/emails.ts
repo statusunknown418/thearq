@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { parse } from "valibot";
 import { sendInviteSchema, workspaceInvitations } from "~/server/db/edge-schema";
-import { WorkspaceInvitationEmail } from "~/server/emails/WorkspaceInvitation";
+import WorkspaceInvitationEmail from "~/server/emails/WorkspaceInvitation";
 import { resend } from "~/server/resend";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
@@ -10,6 +10,10 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
  * @returns
  */
 export const emailsRouter = createTRPCRouter({
+  /**
+   * @description This will fail to send when on development if Turbo is used (--turbo)
+   * may work fine in prod and without it
+   */
   sendWorkspaceInvite: protectedProcedure
     .input((i) => parse(sendInviteSchema, i))
     .mutation(async ({ ctx, input }) => {
@@ -32,6 +36,7 @@ export const emailsRouter = createTRPCRouter({
             invitedByEmail: ctx.session.user.email ?? "unknown",
             workspaceId: workspace.id,
             invitedById: ctx.session.user.id,
+            link: workspace.inviteLink,
           })),
         );
       } catch (error) {
@@ -48,9 +53,10 @@ export const emailsRouter = createTRPCRouter({
             to: "alvarodevcode@outlook.com",
             from: "onboarding@resend.dev",
             subject: `You're invited to join ${workspace.name}`,
+            text: `You're invited to join ${workspace.name}. Click here to join: ${workspace.inviteLink}`,
             react: WorkspaceInvitationEmail({
               invitedByEmail: ctx.session.user.email ?? "unknown",
-              inviteLink: workspace.inviteLink!,
+              inviteLink: workspace.inviteLink,
               invitedByUsername: ctx.session.user.name ?? "unknown",
               workspaceSlug: input.workspaceSlug,
               teamImage: workspace?.image ?? "https://picsum.photos/200",
