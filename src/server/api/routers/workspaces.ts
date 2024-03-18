@@ -16,8 +16,10 @@ import { adminPermissions, parsePermissions } from "~/lib/stores/auth-store";
 import {
   createWorkspaceSchema,
   usersOnWorkspaces,
+  usersOnWorkspacesSchema,
   workspaceInvitations,
   workspaces,
+  type Roles,
 } from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
@@ -339,5 +341,35 @@ export const workspacesRouter = createTRPCRouter({
       return {
         data: invite,
       };
+    }),
+  getViewerIntegrations: protectedProcedure
+    .input((i) => parse(object({ workspace: string() }), i))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.query.integrations.findMany({
+        where: (t, op) =>
+          and(op.eq(t.userId, ctx.session.user.id), op.eq(t.workspaceSlug, input.workspace)),
+      });
+    }),
+  updateMemberDetails: protectedProcedure
+    .input((i) => parse(usersOnWorkspacesSchema, i))
+    .mutation(({ ctx, input }) => {
+      const allowed = cookies().get(USER_WORKSPACE_ROLE)?.value as Roles;
+
+      if (!allowed || allowed !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You are not allowed to perform this action",
+        });
+      }
+
+      return ctx.db
+        .update(usersOnWorkspaces)
+        .set(input)
+        .where(
+          and(
+            eq(usersOnWorkspaces.userId, input.userId),
+            eq(usersOnWorkspaces.workspaceSlug, input.workspaceSlug),
+          ),
+        );
     }),
 });

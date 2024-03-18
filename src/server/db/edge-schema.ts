@@ -3,8 +3,20 @@ import { relations } from "drizzle-orm";
 import { index, int, integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-valibot";
 import { type AdapterAccount } from "next-auth/adapters";
-import { array, email, maxLength, minLength, object, omit, string, type Output } from "valibot";
+import {
+  array,
+  coerce,
+  email,
+  maxLength,
+  minLength,
+  number,
+  object,
+  omit,
+  string,
+  type Output,
+} from "valibot";
 import { env } from "~/env";
+import { type Integration } from "~/lib/constants";
 import { memberPermissions } from "~/lib/stores/auth-store";
 
 export const users = sqliteTable("user", {
@@ -70,6 +82,30 @@ export const verificationTokens = sqliteTable(
 /**
  * ******************************* ACTUAL TABLES *********************************
  */
+
+export const integrations = sqliteTable(
+  "integrations",
+  {
+    userId: text("userId").notNull(),
+    workspaceSlug: text("workspaceSlug").notNull(),
+    provider: text("provider").$type<Integration>().notNull(),
+    access_token: text("access_token").notNull(),
+    providerAccountId: text("providerAccountId").notNull(),
+    scope: text("scope"),
+    enabled: int("enabled", { mode: "boolean" }).notNull().default(true),
+  },
+  (t) => ({
+    compoundKey: primaryKey({ columns: [t.userId, t.providerAccountId] }),
+    workspaceSlugIdx: index("integrations_workspaceSlug_idx").on(t.workspaceSlug),
+  }),
+);
+
+export const integrationsRelations = relations(integrations, ({ one }) => ({
+  userAndWorkspace: one(usersOnWorkspaces, {
+    fields: [integrations.userId, integrations.workspaceSlug],
+    references: [usersOnWorkspaces.userId, usersOnWorkspaces.workspaceSlug],
+  }),
+}));
 
 export const workspaceInvitations = sqliteTable(
   "workspaceInvitation",
@@ -177,19 +213,30 @@ export const usersOnWorkspaces = sqliteTable(
     permissions: text("permissions", { mode: "text" })
       .notNull()
       .$default(() => JSON.stringify(memberPermissions)),
+    allowedToSeeDetails: integer("allowedToSeeDetails", { mode: "boolean" }).default(true),
   },
   (t) => ({
     compoundKey: primaryKey({ columns: [t.userId, t.workspaceId] }),
-    workspaceSlugIdx: index("workspaceId_idx").on(t.workspaceSlug),
+    workspaceSlugIdx: index("usersOnWorkspaces_workspaceSlug_idx").on(t.workspaceSlug),
   }),
 );
 
-export const usersOnWorkspacesRelations = relations(usersOnWorkspaces, ({ one }) => ({
+export type UsersOnWorkspacesSchema = Output<typeof usersOnWorkspacesSchema>;
+export const usersOnWorkspacesSchema = omit(
+  createInsertSchema(usersOnWorkspaces, {
+    billableRate: coerce(number("Rate must be a number"), (v) => Number(v)),
+    internalCost: coerce(number("Cost must be a number"), (v) => Number(v)),
+  }),
+  ["owner"],
+);
+
+export const usersOnWorkspacesRelations = relations(usersOnWorkspaces, ({ one, many }) => ({
   user: one(users, { fields: [usersOnWorkspaces.userId], references: [users.id] }),
   workspace: one(workspaces, {
     fields: [usersOnWorkspaces.workspaceId],
     references: [workspaces.id],
   }),
+  integrations: many(integrations),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -254,6 +301,6 @@ export const projects = sqliteTable(
     createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
   },
   (t) => ({
-    workspaceSlugIdx: index("workspaceSlug_idx").on(t.workspaceSlug),
+    workspaceSlugIdx: index("projects_workspaceSlug_idx").on(t.workspaceSlug),
   }),
 );

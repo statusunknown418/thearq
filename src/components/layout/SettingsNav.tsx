@@ -29,8 +29,8 @@ export const SettingsNav = ({ role }: { role: Roles }) => {
                 asChild
                 variant={"ghost"}
                 className={cn(
-                  "justify-start text-muted-foreground",
-                  segments.length === 0 && "border bg-popover text-foreground",
+                  "justify-start border-transparent text-muted-foreground",
+                  segments.length === 0 && "border-border bg-popover text-foreground",
                 )}
               >
                 <Link href={routes.settings({ slug: workspace?.slug ?? "" })}>General</Link>
@@ -39,8 +39,9 @@ export const SettingsNav = ({ role }: { role: Roles }) => {
               <Button
                 variant={"ghost"}
                 className={cn(
-                  "justify-start text-muted-foreground",
-                  segments.includes(settingsLinks.plans) && "border bg-popover text-foreground",
+                  "justify-start border-transparent text-muted-foreground",
+                  segments.includes(settingsLinks.plans) &&
+                    "border-border bg-popover text-foreground",
                 )}
               >
                 Plans
@@ -49,9 +50,9 @@ export const SettingsNav = ({ role }: { role: Roles }) => {
               <Button
                 variant={"ghost"}
                 className={cn(
-                  "justify-start text-muted-foreground",
+                  "justify-start border-transparent text-muted-foreground",
                   segments.includes(settingsLinks.defaultValues) &&
-                    "border bg-popover text-foreground",
+                    "border-border bg-popover text-foreground",
                 )}
               >
                 Default values
@@ -72,8 +73,9 @@ export const SettingsNav = ({ role }: { role: Roles }) => {
             asChild
             variant={"ghost"}
             className={cn(
-              "justify-start text-muted-foreground",
-              segments.includes(settingsLinks.account) && "border bg-popover text-foreground",
+              "justify-start border-transparent text-muted-foreground",
+              segments.includes(settingsLinks.account) &&
+                "border-border bg-popover text-foreground",
             )}
           >
             <Link href={routes.account({ slug: workspace?.slug ?? "" })}>Profile</Link>
@@ -83,8 +85,9 @@ export const SettingsNav = ({ role }: { role: Roles }) => {
             asChild
             variant={"ghost"}
             className={cn(
-              "justify-start text-muted-foreground",
-              segments.includes(settingsLinks.integrations) && "border bg-popover text-foreground",
+              "justify-start border-transparent text-muted-foreground",
+              segments.includes(settingsLinks.integrations) &&
+                "border-border bg-popover text-foreground",
             )}
           >
             <Link href={routes.integrations({ slug: workspace?.slug ?? "" })}>Integrations</Link>

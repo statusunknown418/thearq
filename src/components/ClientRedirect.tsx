@@ -11,7 +11,7 @@ export const ClientRedirect = () => {
 
   useEffect(() => {
     if (workspace?.slug) {
-      router.replace(routes.dashboard({ slug: workspace.slug }));
+      router.replace(routes.integrations({ slug: workspace.slug }));
     }
   }, [router, workspace?.slug]);
 

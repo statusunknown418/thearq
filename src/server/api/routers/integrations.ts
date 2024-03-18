@@ -2,10 +2,11 @@ import { LinearClient } from "@linear/sdk";
 import { Octokit } from "@octokit/core";
 import { OAuthApp } from "@octokit/oauth-app";
 import { TRPCError } from "@trpc/server";
+import { and, eq } from "drizzle-orm";
 import { object, optional, parse, string } from "valibot";
 import { env } from "~/env";
 import { APP_URL, INTEGRATIONS, type Integration } from "~/lib/constants";
-import { accounts } from "~/server/db/edge-schema";
+import { integrations } from "~/server/db/edge-schema";
 import { redis } from "~/server/upstash";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
@@ -29,6 +30,7 @@ export type IntegrationCachingKey = `${string}:${Integration}`;
 export const integrationsSchema = object({
   code: string(),
   state: optional(string()),
+  workspace: string(),
 });
 
 export const integrationsRouter = createTRPCRouter({
@@ -74,15 +76,14 @@ export const integrationsRouter = createTRPCRouter({
         const viewer = await linear.viewer;
 
         await ctx.db
-          .insert(accounts)
+          .insert(integrations)
           .values({
-            userId: ctx.session.user.id,
-            provider: "linear",
-            type: "oauth",
             access_token: data.access_token,
             providerAccountId: viewer.id,
+            provider: "linear",
+            userId: ctx.session.user.id,
+            workspaceSlug: input.workspace,
             scope: data.scope,
-            refresh_token: data.refresh_token,
           })
           .onConflictDoNothing();
 
@@ -141,13 +142,13 @@ export const integrationsRouter = createTRPCRouter({
         const viewer = await octokit.request("GET /user");
 
         await ctx.db
-          .insert(accounts)
+          .insert(integrations)
           .values({
-            userId: ctx.session.user.id,
-            provider: "github",
-            type: "oauth",
             access_token: authentication.token,
             providerAccountId: viewer.data.login,
+            provider: "github",
+            userId: ctx.session.user.id,
+            workspaceSlug: input.workspace,
             scope: authentication.scopes.join(" "),
           })
           .onConflictDoNothing();
@@ -172,5 +173,62 @@ export const integrationsRouter = createTRPCRouter({
 
         return { success: false, error: trpcError };
       }
+    }),
+
+  disconnect: protectedProcedure
+    .input((i) =>
+      parse(
+        object({
+          provider: string(),
+          workspace: string(),
+        }),
+        i,
+      ),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const key = `${ctx.session.user.id}:${input.provider}`;
+
+      await redis.del(key);
+
+      await ctx.db
+        .update(integrations)
+        .set({
+          enabled: false,
+        })
+        .where(
+          and(
+            eq(integrations.userId, ctx.session.user.id),
+            eq(integrations.workspaceSlug, input.workspace),
+            eq(integrations.provider, input.provider as Integration),
+          ),
+        );
+
+      return { success: true };
+    }),
+  reconnect: protectedProcedure
+    .input((i) =>
+      parse(
+        object({
+          provider: string(),
+          workspace: string(),
+        }),
+        i,
+      ),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(integrations)
+        .set({
+          enabled: true,
+        })
+        .where(
+          and(
+            eq(integrations.userId, ctx.session.user.id),
+            eq(integrations.workspaceSlug, input.workspace),
+            eq(integrations.provider, input.provider as Integration),
+          ),
+        );
+
+      return { success: true };
     }),
 });
