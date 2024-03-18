@@ -8,6 +8,7 @@ import slugify from "slugify";
 import { object, parse, string } from "valibot";
 import {
   RECENT_WORKSPACE_KEY,
+  RECENT_W_ID_KEY,
   USER_WORKSPACE_PERMISSIONS,
   USER_WORKSPACE_ROLE,
   createWorkspaceInviteLink,
@@ -34,9 +35,11 @@ export const workspacesRouter = createTRPCRouter({
           ? input.image
           : `https://api.dicebear.com/7.x/initials/svg?seed=${input.name}`;
 
+      const cookiesStore = cookies();
+
       try {
-        await ctx.db.transaction(async (trx) => {
-          const w = await trx
+        const newId = await ctx.db.transaction(async (trx) => {
+          const [w] = await trx
             .insert(workspaces)
             .values({
               name: input.name,
@@ -48,9 +51,13 @@ export const workspacesRouter = createTRPCRouter({
             .returning({ id: workspaces.id })
             .execute();
 
+          if (!w?.id) {
+            trx.rollback();
+            return;
+          }
+
           await trx.insert(usersOnWorkspaces).values({
-            workspaceSlug: slug,
-            workspaceId: w[0]?.id ?? 0,
+            workspaceId: w.id,
             userId: ctx.session.user.id,
             role: "admin",
             permissions: JSON.stringify(adminPermissions),
@@ -60,6 +67,15 @@ export const workspacesRouter = createTRPCRouter({
              */
             owner: true,
           });
+
+          return {
+            id: w.id,
+          };
+        });
+
+        cookiesStore.set(RECENT_W_ID_KEY, String(newId), {
+          path: "/",
+          sameSite: "lax",
         });
       } catch (e) {
         if (e instanceof DatabaseError && e.body.message.includes("AlreadyExists")) {
@@ -72,7 +88,6 @@ export const workspacesRouter = createTRPCRouter({
         throw e;
       }
 
-      const cookiesStore = cookies();
       cookiesStore.set(RECENT_WORKSPACE_KEY, slug, {
         path: "/",
         sameSite: "lax",
@@ -109,13 +124,19 @@ export const workspacesRouter = createTRPCRouter({
       ),
     )
     .query(async ({ ctx, input }) => {
+      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+      if (!workspaceId) {
+        return notFound();
+      }
+
       const [workspace, viewer] = await Promise.all([
         ctx.db.query.workspaces.findFirst({
           where: (t, op) => op.eq(t.slug, input.slug),
         }),
         ctx.db.query.usersOnWorkspaces.findFirst({
           where: (t, op) =>
-            op.and(op.eq(t.userId, ctx.session.user.id), op.eq(t.workspaceSlug, input.slug)),
+            op.and(op.eq(t.userId, ctx.session.user.id), op.eq(t.workspaceId, Number(workspaceId))),
         }),
       ]);
 
@@ -144,10 +165,19 @@ export const workspacesRouter = createTRPCRouter({
         i,
       ),
     )
-    .query(async ({ ctx, input }) => {
+    .query(async ({ ctx }) => {
+      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+      if (!workspaceId) {
+        return notFound();
+      }
+
       const viewer = await ctx.db.query.usersOnWorkspaces.findFirst({
         where: (t, op) => {
-          return op.and(op.eq(t.userId, ctx.session.user.id), op.eq(t.workspaceSlug, input.slug));
+          return op.and(
+            op.eq(t.userId, ctx.session.user.id),
+            op.eq(t.workspaceId, Number(workspaceId)),
+          );
         },
         columns: {
           userId: true,
@@ -257,7 +287,6 @@ export const workspacesRouter = createTRPCRouter({
         .values({
           role: "member",
           userId: ctx.session.user.id,
-          workspaceSlug: input.workspaceSlug,
           workspaceId: workspace.id,
         })
         .returning({
@@ -283,7 +312,7 @@ export const workspacesRouter = createTRPCRouter({
           .delete(workspaceInvitations)
           .where(
             and(
-              eq(workspaceInvitations.workspaceSlug, input.workspaceSlug),
+              eq(workspaceInvitations.workspaceId, workspace.id),
               eq(workspaceInvitations.email, input.userEmail),
             ),
           );
@@ -293,23 +322,20 @@ export const workspacesRouter = createTRPCRouter({
         success: true,
       };
     }),
-  getTeamByWorkspaceSlug: protectedProcedure
-    .input((i) =>
-      parse(
-        object({
-          workspaceSlug: string(),
-        }),
-        i,
-      ),
-    )
-    .query(async ({ ctx, input }) => {
-      return ctx.db.query.usersOnWorkspaces.findMany({
-        where: (t, op) => op.eq(t.workspaceSlug, input.workspaceSlug),
-        with: {
-          user: true,
-        },
-      });
-    }),
+  getTeamByWorkspace: protectedProcedure.query(async ({ ctx }) => {
+    const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+    if (!workspaceId) {
+      return notFound();
+    }
+
+    return ctx.db.query.usersOnWorkspaces.findMany({
+      where: (t, op) => op.eq(t.workspaceId, Number(workspaceId)),
+      with: {
+        user: true,
+      },
+    });
+  }),
   getInvitationDetails: publicProcedure
     .input((i) =>
       parse(
@@ -342,20 +368,25 @@ export const workspacesRouter = createTRPCRouter({
         data: invite,
       };
     }),
-  getViewerIntegrations: protectedProcedure
-    .input((i) => parse(object({ workspace: string() }), i))
-    .query(async ({ ctx, input }) => {
-      return ctx.db.query.integrations.findMany({
-        where: (t, op) =>
-          and(op.eq(t.userId, ctx.session.user.id), op.eq(t.workspaceSlug, input.workspace)),
-      });
-    }),
+  getViewerIntegrations: protectedProcedure.query(async ({ ctx }) => {
+    const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+    if (!workspaceId) {
+      return notFound();
+    }
+
+    return ctx.db.query.integrations.findMany({
+      where: (t, op) =>
+        and(op.eq(t.userId, ctx.session.user.id), op.eq(t.workspaceId, Number(workspaceId))),
+    });
+  }),
   updateMemberDetails: protectedProcedure
     .input((i) => parse(usersOnWorkspacesSchema, i))
     .mutation(({ ctx, input }) => {
       const allowed = cookies().get(USER_WORKSPACE_ROLE)?.value as Roles;
+      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
 
-      if (!allowed || allowed !== "admin") {
+      if (!allowed || allowed !== "admin" || !workspaceId) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "You are not allowed to perform this action",
@@ -368,7 +399,7 @@ export const workspacesRouter = createTRPCRouter({
         .where(
           and(
             eq(usersOnWorkspaces.userId, input.userId),
-            eq(usersOnWorkspaces.workspaceSlug, input.workspaceSlug),
+            eq(usersOnWorkspaces.workspaceId, input.workspaceId),
           ),
         );
     }),

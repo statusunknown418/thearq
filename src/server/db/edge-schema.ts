@@ -87,7 +87,7 @@ export const integrations = sqliteTable(
   "integrations",
   {
     userId: text("userId").notNull(),
-    workspaceSlug: text("workspaceSlug").notNull(),
+    workspaceId: int("workspaceId", { mode: "number" }).notNull(),
     provider: text("provider").$type<Integration>().notNull(),
     access_token: text("access_token").notNull(),
     providerAccountId: text("providerAccountId").notNull(),
@@ -96,14 +96,14 @@ export const integrations = sqliteTable(
   },
   (t) => ({
     compoundKey: primaryKey({ columns: [t.userId, t.providerAccountId] }),
-    workspaceSlugIdx: index("integrations_workspaceSlug_idx").on(t.workspaceSlug),
+    workspaceIdIdx: index("integrations_workspaceId_idx").on(t.workspaceId),
   }),
 );
 
 export const integrationsRelations = relations(integrations, ({ one }) => ({
   userAndWorkspace: one(usersOnWorkspaces, {
-    fields: [integrations.userId, integrations.workspaceSlug],
-    references: [usersOnWorkspaces.userId, usersOnWorkspaces.workspaceSlug],
+    fields: [integrations.userId, integrations.workspaceId],
+    references: [usersOnWorkspaces.userId, usersOnWorkspaces.workspaceId],
   }),
 }));
 
@@ -115,7 +115,6 @@ export const workspaceInvitations = sqliteTable(
     workspaceId: int("workspaceId", { mode: "number" })
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
-    workspaceSlug: text("workspaceSlug").notNull(),
     invitedById: text("invitedById")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -204,12 +203,12 @@ export const usersOnWorkspaces = sqliteTable(
     workspaceId: int("workspaceId", { mode: "number" })
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
-    workspaceSlug: text("workspaceSlug").notNull(),
     owner: integer("owner", { mode: "boolean" }).default(false),
     role: text("role", { enum: roles }).notNull().default("member"),
-    billableRate: int("billableRate").notNull().default(0),
+    active: integer("active", { mode: "boolean" }).default(true),
+    defaultBillableRate: int("defaultBillableRate").notNull().default(0),
     internalCost: int("internalCost").notNull().default(0),
-    weekCapacity: int("weekCapacity").notNull().default(40),
+    defaultWeekCapacity: int("defaultWeekCapacity").notNull().default(40),
     permissions: text("permissions", { mode: "text" })
       .notNull()
       .$default(() => JSON.stringify(memberPermissions)),
@@ -217,14 +216,14 @@ export const usersOnWorkspaces = sqliteTable(
   },
   (t) => ({
     compoundKey: primaryKey({ columns: [t.userId, t.workspaceId] }),
-    workspaceSlugIdx: index("usersOnWorkspaces_workspaceSlug_idx").on(t.workspaceSlug),
+    workspaceIdIdx: index("usersOnWorkspaces_workspaceId_idx").on(t.workspaceId),
   }),
 );
 
 export type UsersOnWorkspacesSchema = Output<typeof usersOnWorkspacesSchema>;
 export const usersOnWorkspacesSchema = omit(
   createInsertSchema(usersOnWorkspaces, {
-    billableRate: coerce(number("Rate must be a number"), (v) => Number(v)),
+    defaultBillableRate: coerce(number("Rate must be a number"), (v) => Number(v)),
     internalCost: coerce(number("Cost must be a number"), (v) => Number(v)),
   }),
   ["owner"],
@@ -256,6 +255,7 @@ export const timeEntries = sqliteTable(
     workspaceId: text("workspaceId")
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
+    projectId: text("projectId"),
     start: integer("start", { mode: "timestamp" })
       .notNull()
       .$defaultFn(() => new Date()),
@@ -267,40 +267,96 @@ export const timeEntries = sqliteTable(
     billable: integer("billable", { mode: "boolean" }).default(true),
   },
   (t) => ({
-    userIdIdx: index("userId_idx").on(t.userId),
+    userIdIdx: index("timeEntries_userId_idx").on(t.userId),
+    workspaceIdIdx: index("timeEntries_workspaceId_idx").on(t.workspaceId),
   }),
 );
 
 export const timeEntriesRelations = relations(timeEntries, ({ one }) => ({
-  user: one(users, { fields: [timeEntries.userId], references: [users.id] }),
+  user: one(users, {
+    fields: [timeEntries.userId],
+    references: [users.id],
+  }),
   workspace: one(workspaces, {
     fields: [timeEntries.workspaceId],
     references: [workspaces.id],
   }),
+  project: one(projects, {
+    fields: [timeEntries.projectId, timeEntries.workspaceId],
+    references: [projects.id, projects.workspaceId],
+  }),
 }));
 
-export const projectTypes = ["fixed", "hourly", "non-billable"] as const;
+export const projectTypes = ["fixed", "project-hourly", "hourly", "non-billable"] as const;
 export type ProjectTypes = (typeof projectTypes)[number];
 
 export const projects = sqliteTable(
   "project",
   {
-    id: integer("id", { mode: "number" }).notNull().primaryKey({ autoIncrement: true }),
+    id: text("id").notNull().primaryKey().$defaultFn(createId),
     workspaceId: text("workspaceId")
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
-    workspaceSlug: text("workspaceSlug").notNull(),
-    shareableId: text("shareableId")
+    shareableUrl: text("shareableUrl")
       .notNull()
       .unique()
       .$defaultFn(() => `${env.NEXT_PUBLIC_APP_URL}/portal/projects/${createId()}`),
     name: text("name").notNull(),
     description: text("description"),
     color: text("color").notNull().default("#000000"),
+    identifier: text("identifier").notNull(),
     type: text("type", { enum: projectTypes }).notNull().default("hourly"),
+    budget: int("budget").default(0),
+    projectHourlyRate: int("projectHourlyRate").default(0),
+    startsAt: integer("startsAt", { mode: "timestamp" }),
+    endsAt: integer("endsAt", { mode: "timestamp" }),
     createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
   },
   (t) => ({
-    workspaceSlugIdx: index("projects_workspaceSlug_idx").on(t.workspaceSlug),
+    workspaceIdIdx: index("projects_workspaceId_idx").on(t.workspaceId),
+    shareableUrlIdx: index("projects_shareableUrl_idx").on(t.shareableUrl),
   }),
 );
+
+export const projectRelations = relations(projects, ({ one, many }) => ({
+  workspace: one(workspaces, {
+    fields: [projects.workspaceId],
+    references: [workspaces.id],
+  }),
+  timeEntries: many(timeEntries),
+  users: many(usersOnProjects),
+}));
+
+export const usersOnProjects = sqliteTable(
+  "usersOnProjects",
+  {
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    projectId: int("projectId", { mode: "number" })
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    workspaceId: text("workspaceId")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    role: text("role", { enum: roles }).notNull().default("member"),
+    billableRate: int("billableRate").notNull().default(0),
+    permissions: text("permissions", { mode: "text" })
+      .notNull()
+      .$default(() => JSON.stringify(memberPermissions)),
+  },
+  (t) => ({
+    compoundKey: primaryKey({ columns: [t.userId, t.projectId] }),
+    projectIdIdx: index("usersOnProjects_projectId_idx").on(t.projectId),
+    userIdIdx: index("usersOnProjects_userId_idx").on(t.userId),
+    workspaceIdIdx: index("usersOnProjects_workspaceId_idx").on(t.workspaceId),
+  }),
+);
+
+export const usersOnProjectsRelations = relations(usersOnProjects, ({ one }) => ({
+  user: one(users, { fields: [usersOnProjects.userId], references: [users.id] }),
+  project: one(projects, {
+    fields: [usersOnProjects.projectId, usersOnProjects.workspaceId],
+    references: [projects.id, projects.workspaceId],
+  }),
+}));
