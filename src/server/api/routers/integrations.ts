@@ -3,9 +3,10 @@ import { Octokit } from "@octokit/core";
 import { OAuthApp } from "@octokit/oauth-app";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
+import { cookies } from "next/headers";
 import { object, optional, parse, string } from "valibot";
 import { env } from "~/env";
-import { APP_URL, INTEGRATIONS, type Integration } from "~/lib/constants";
+import { APP_URL, INTEGRATIONS, RECENT_W_ID_KEY, type Integration } from "~/lib/constants";
 import { integrations } from "~/server/db/edge-schema";
 import { redis } from "~/server/upstash";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
@@ -45,6 +46,15 @@ export const integrationsRouter = createTRPCRouter({
       }
 
       try {
+        const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+        if (!workspaceId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "No workspace found",
+          });
+        }
+
         const redirect = buildRedirect("linear");
         const body = new URLSearchParams({
           code: input.code,
@@ -82,7 +92,7 @@ export const integrationsRouter = createTRPCRouter({
             providerAccountId: viewer.id,
             provider: "linear",
             userId: ctx.session.user.id,
-            workspaceSlug: input.workspace,
+            workspaceId: Number(workspaceId),
             scope: data.scope,
           })
           .onConflictDoNothing();
@@ -123,6 +133,14 @@ export const integrationsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       try {
         const redirect = buildRedirect("github");
+        const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+        if (!workspaceId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "No workspace found",
+          });
+        }
 
         const app = new OAuthApp({
           clientId: env.GITHUB_CLIENT_ID,
@@ -148,8 +166,8 @@ export const integrationsRouter = createTRPCRouter({
             providerAccountId: viewer.data.login,
             provider: "github",
             userId: ctx.session.user.id,
-            workspaceSlug: input.workspace,
             scope: authentication.scopes.join(" "),
+            workspaceId: Number(workspaceId),
           })
           .onConflictDoNothing();
 
@@ -180,13 +198,20 @@ export const integrationsRouter = createTRPCRouter({
       parse(
         object({
           provider: string(),
-          workspace: string(),
         }),
         i,
       ),
     )
     .mutation(async ({ ctx, input }) => {
       const key = `${ctx.session.user.id}:${input.provider}`;
+      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+      if (!workspaceId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No workspace found",
+        });
+      }
 
       await redis.del(key);
 
@@ -198,7 +223,7 @@ export const integrationsRouter = createTRPCRouter({
         .where(
           and(
             eq(integrations.userId, ctx.session.user.id),
-            eq(integrations.workspaceSlug, input.workspace),
+            eq(integrations.workspaceId, Number(workspaceId)),
             eq(integrations.provider, input.provider as Integration),
           ),
         );
@@ -210,12 +235,20 @@ export const integrationsRouter = createTRPCRouter({
       parse(
         object({
           provider: string(),
-          workspace: string(),
         }),
         i,
       ),
     )
     .mutation(async ({ ctx, input }) => {
+      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+      if (!workspaceId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No workspace found",
+        });
+      }
+
       await ctx.db
         .update(integrations)
         .set({
@@ -224,7 +257,7 @@ export const integrationsRouter = createTRPCRouter({
         .where(
           and(
             eq(integrations.userId, ctx.session.user.id),
-            eq(integrations.workspaceSlug, input.workspace),
+            eq(integrations.workspaceId, Number(workspaceId)),
             eq(integrations.provider, input.provider as Integration),
           ),
         );

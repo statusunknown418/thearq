@@ -1,9 +1,8 @@
 import { Suspense } from "react";
 import { Updater } from "~/components/Updater";
 import { Main } from "~/components/layout/Main";
-import { Loader } from "~/components/ui/loader";
 import { api } from "~/trpc/server";
-import { InviteTeam } from "../../../../components/dashboard/InviteTeam";
+import { InviteTeam } from "../../../../components/dashboard/team/InviteTeam";
 
 export default async function WorkspaceDashboardPage({
   params,
@@ -16,12 +15,11 @@ export default async function WorkspaceDashboardPage({
 
   return (
     <Main>
-      <div className="h-96 w-max rounded-xl border bg-muted p-6 text-muted-foreground">
-        This is a test to see how the background colors behave
-        <Loader color="#c2c2c2" />
-      </div>
+      <nav></nav>
 
-      <pre className="row-span-full">{JSON.stringify(workspace, null, 2)}</pre>
+      <div className="h-96 w-max rounded-2xl border bg-muted p-6 text-muted-foreground">
+        This is a test to see how the background colors behave
+      </div>
 
       <Suspense>
         <InviteTeam workspace={workspace} />

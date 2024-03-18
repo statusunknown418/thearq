@@ -1,11 +1,12 @@
 import { GoBack } from "~/components/layout/GoBack";
+import { Main } from "~/components/layout/Main";
 import { NewWorkspace } from "../../../components/dashboard/NewWorkspace";
 
 export const dynamic = "force-static";
 
 export default function NewWorkspacePage() {
   return (
-    <main className="bg-base-200 grid h-screen grid-rows-[50px_auto]">
+    <Main className="grid h-screen grid-rows-[50px_auto] p-0">
       <div className="grid h-full w-full grid-cols-5 place-items-center border-b bg-muted px-10 text-muted-foreground">
         <GoBack />
 
@@ -15,6 +16,6 @@ export default function NewWorkspacePage() {
       <div className="max-w-xl place-self-center px-2">
         <NewWorkspace />
       </div>
-    </main>
+    </Main>
   );
 }
