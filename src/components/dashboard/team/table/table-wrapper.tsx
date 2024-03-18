@@ -1,8 +1,8 @@
 import { api } from "~/trpc/server";
 import { TeamTable } from "./TeamTable";
 
-export const TeamTableWrapperRSC = async ({ slug }: { slug: string }) => {
-  const team = await api.workspaces.getTeamByWorkspaceSlug.query({ workspaceSlug: slug });
+export const TeamTableWrapperRSC = async () => {
+  const team = await api.workspaces.getTeamByWorkspace.query();
 
-  return <TeamTable data={team} slug={slug} />;
+  return <TeamTable data={team} />;
 };

@@ -9,36 +9,32 @@ import { Switch } from "../ui/switch";
 
 export const IntegrationsList = ({
   initialData,
-  slug,
 }: {
   initialData: RouterOutputs["workspaces"]["getViewerIntegrations"];
   slug: string;
 }) => {
   const utils = api.useUtils();
 
-  const { data } = api.workspaces.getViewerIntegrations.useQuery(
-    { workspace: slug },
-    {
-      initialData,
-    },
-  );
+  const { data } = api.workspaces.getViewerIntegrations.useQuery(undefined, {
+    initialData,
+  });
 
   const disconnect = api.integrations.disconnect.useMutation({
     onSuccess: async () => {
       toast.success("Integration disconnected");
-      return utils.workspaces.getViewerIntegrations.invalidate({ workspace: slug });
+      return utils.workspaces.getViewerIntegrations.invalidate();
     },
   });
 
   const reconnect = api.integrations.reconnect.useMutation({
     onSuccess: async () => {
       toast.success("Integration reconnected");
-      return utils.workspaces.getViewerIntegrations.invalidate({ workspace: slug });
+      return utils.workspaces.getViewerIntegrations.invalidate();
     },
   });
 
   const handleReconnect = async (provider: string) => {
-    toast.promise(reconnect.mutateAsync({ provider, workspace: slug }), {
+    toast.promise(reconnect.mutateAsync({ provider }), {
       loading: "Reconnecting",
       success: "Integration reconnected",
       error: "Failed to reconnect",
@@ -46,7 +42,7 @@ export const IntegrationsList = ({
   };
 
   const handleDisconnect = async (provider: string) => {
-    toast.promise(disconnect.mutateAsync({ provider, workspace: slug }), {
+    toast.promise(disconnect.mutateAsync({ provider }), {
       loading: "Disconnecting",
       success: "Integration disconnected",
       error: "Failed to disconnect",

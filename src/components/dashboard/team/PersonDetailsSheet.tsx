@@ -34,7 +34,7 @@ import { useDetailsSheetStore } from "~/lib/stores/sheets-store";
 import { usersOnWorkspacesSchema, type UsersOnWorkspacesSchema } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 
-export const PersonDetailsSheet = ({ slug }: { slug: string }) => {
+export const PersonDetailsSheet = () => {
   const open = useDetailsSheetStore((s) => s.open);
   const change = useDetailsSheetStore((s) => s.openChange);
   const details = useDetailsSheetStore((s) => s.details);
@@ -48,7 +48,7 @@ export const PersonDetailsSheet = ({ slug }: { slug: string }) => {
   });
 
   const onSubmit = form.handleSubmit((input) => {
-    toast.promise(update.mutateAsync({ ...input, workspaceSlug: slug }), {
+    toast.promise(update.mutateAsync(input), {
       loading: "Saving...",
       success: "Saved!",
       error: "Failed to save",
@@ -77,7 +77,7 @@ export const PersonDetailsSheet = ({ slug }: { slug: string }) => {
         </SheetHeader>
 
         <Form {...form}>
-          <form className="mt-6 flex flex-col gap-4" onSubmit={onSubmit}>
+          <form className="mt-5 flex h-full flex-col gap-5" onSubmit={onSubmit}>
             <FormField
               control={form.control}
               name="role"
@@ -113,14 +113,19 @@ export const PersonDetailsSheet = ({ slug }: { slug: string }) => {
 
             <FormField
               control={form.control}
-              name="billableRate"
+              name="defaultBillableRate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Billable rate</FormLabel>
+                  <FormLabel>Default billable rate</FormLabel>
 
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
+
+                  <FormDescription>
+                    This is the default billable rate for this person. However it is customizable
+                    per project.
+                  </FormDescription>
 
                   <FormMessage />
                 </FormItem>
@@ -138,6 +143,11 @@ export const PersonDetailsSheet = ({ slug }: { slug: string }) => {
                     <Input {...field} />
                   </FormControl>
 
+                  <FormDescription>
+                    This is the costs of this person to the company. It is used to calculate the
+                    profitability of the projects.
+                  </FormDescription>
+
                   <FormMessage />
                 </FormItem>
               )}
@@ -145,7 +155,7 @@ export const PersonDetailsSheet = ({ slug }: { slug: string }) => {
 
             <FormField
               control={form.control}
-              name="weekCapacity"
+              name="defaultWeekCapacity"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Week capacity</FormLabel>
@@ -154,21 +164,23 @@ export const PersonDetailsSheet = ({ slug }: { slug: string }) => {
                     <Input {...field} />
                   </FormControl>
 
+                  <FormDescription>
+                    You can limit the number of hours this person can work in a week. This is used
+                    to calculate the workload of the projects.
+                  </FormDescription>
+
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <Button className="max-w-max">
-              <PiFloppyDisk size={16} />
-              Save
-            </Button>
+            <div className="self-end">
+              <Button className="max-w-max">
+                <PiFloppyDisk size={16} />
+                Save
+              </Button>
+            </div>
           </form>
-
-          <SheetDescription className="mt-6">
-            These details are viewable to each member by default but you can change it so that only
-            admins can view them.
-          </SheetDescription>
         </Form>
       </SheetContent>
     </Sheet>

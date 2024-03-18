@@ -21,9 +21,9 @@ import { type Roles } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 
-export type TeamTableData = RouterOutputs["workspaces"]["getTeamByWorkspaceSlug"];
+export type TeamTableData = RouterOutputs["workspaces"]["getTeamByWorkspace"];
 
-export type TeamTableColumn = RouterOutputs["workspaces"]["getTeamByWorkspaceSlug"][number];
+export type TeamTableColumn = RouterOutputs["workspaces"]["getTeamByWorkspace"][number];
 export const columns: ColumnDef<TeamTableColumn>[] = [
   {
     id: "name",
@@ -77,16 +77,13 @@ export const columns: ColumnDef<TeamTableColumn>[] = [
   },
 ];
 
-export const TeamTable = ({ data, slug }: { data: TeamTableData; slug: string }) => {
+export const TeamTable = ({ data }: { data: TeamTableData }) => {
   const updateDetails = useDetailsSheetStore((s) => s.setDetails);
 
-  const { data: tableData } = api.workspaces.getTeamByWorkspaceSlug.useQuery(
-    { workspaceSlug: slug },
-    {
-      initialData: data,
-      suspense: true,
-    },
-  );
+  const { data: tableData } = api.workspaces.getTeamByWorkspace.useQuery(undefined, {
+    initialData: data,
+    suspense: true,
+  });
 
   const table = useReactTable({
     data: tableData,

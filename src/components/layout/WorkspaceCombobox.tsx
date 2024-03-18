@@ -96,12 +96,13 @@ export const WorkspaceCombobox = () => {
             <div className="max-h-56 overflow-y-scroll">
               {data?.map((w) => (
                 <CommandItem
-                  key={w.workspaceSlug}
+                  key={w.workspaceId}
                   onSelect={async () => {
                     const data = new FormData();
                     data.append("slug", w.workspace.slug);
                     data.append("permissions", w.permissions);
                     data.append("role", w.role);
+                    data.append("id", String(w.workspaceId));
                     await updateCookiesAction(data);
 
                     updatePermissionsClient(parsePermissions(w.permissions));

@@ -25,13 +25,14 @@ export const List = ({
           <Link
             onClick={async () => {
               const data = new FormData();
-              data.append("slug", relation.workspaceSlug);
+              data.append("id", String(relation.workspaceId));
+              data.append("slug", relation.workspace.slug);
               data.append("permissions", JSON.stringify(relation.permissions));
               data.append("role", relation.role);
 
               await updateCookiesAction(data);
             }}
-            href={routes.dashboard({ slug: relation.workspaceSlug })}
+            href={routes.dashboard({ slug: relation.workspace.slug })}
             className="hover:bg-base-200 group flex items-center gap-4 rounded-lg border border-transparent p-3 transition-colors hover:border-border hover:bg-secondary-background"
           >
             <Image
@@ -45,7 +46,7 @@ export const List = ({
             <div className="flex-grow transition-transform group-hover:translate-x-1">
               <h3 className="text-xs font-medium">{relation.workspace.name}</h3>
               <p className="text-xs text-muted-foreground">
-                {baseUrl}/{relation.workspaceSlug}
+                {baseUrl}/{relation.workspace.slug}
               </p>
             </div>
 

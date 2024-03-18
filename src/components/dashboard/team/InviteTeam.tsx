@@ -3,7 +3,7 @@ import { valibotResolver } from "@hookform/resolvers/valibot";
 import { PlusIcon, TrashIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { PiArrowsClockwise, PiCopyDuotone, PiLinkDuotone } from "react-icons/pi";
+import { PiArrowsClockwise, PiCopyDuotone, PiLinkDuotone, PiPaperPlaneTilt } from "react-icons/pi";
 import { toast } from "sonner";
 import { type Output } from "valibot";
 import { Button } from "~/components/ui/button";
@@ -207,7 +207,10 @@ export const InviteTeam = ({
                 </Button>
 
                 <DialogFooter>
-                  <Button type="submit">Send</Button>
+                  <Button type="submit">
+                    <PiPaperPlaneTilt />
+                    Send
+                  </Button>
                 </DialogFooter>
               </form>
             </Form>
