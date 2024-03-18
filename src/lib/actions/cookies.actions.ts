@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import {
   RECENT_WORKSPACE_KEY,
+  RECENT_W_ID_KEY,
   USER_WORKSPACE_PERMISSIONS,
   USER_WORKSPACE_ROLE,
 } from "~/lib/constants";
@@ -19,6 +20,7 @@ export const updateCookiesAction = async (ctx: FormData) => {
     slug: string;
     permissions: string;
     role: Roles;
+    id: string;
   };
 
   const store = cookies();
@@ -37,6 +39,11 @@ export const updateCookiesAction = async (ctx: FormData) => {
     sameSite: "lax",
   });
   store.set(USER_WORKSPACE_ROLE, data.role, {
+    httpOnly: true,
+    path: "/",
+    sameSite: "lax",
+  });
+  store.set(RECENT_W_ID_KEY, data.id, {
     httpOnly: true,
     path: "/",
     sameSite: "lax",
