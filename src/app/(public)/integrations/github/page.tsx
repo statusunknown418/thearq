@@ -1,5 +1,8 @@
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { ClientRedirect } from "~/components/ClientRedirect";
+import { Button } from "~/components/ui/button";
+import { RECENT_WORKSPACE_KEY } from "~/lib/constants";
 import { routes } from "~/lib/navigation";
 import { api } from "~/trpc/server";
 
@@ -11,7 +14,25 @@ export default async function GithubIntegration({
     state: string;
   };
 }) {
-  const done = await api.integrations.github.mutate(searchParams);
+  const workspace = cookies().get(RECENT_WORKSPACE_KEY)?.value;
+
+  if (!workspace) {
+    return (
+      <div>
+        <p>You haven&apos;t selected a workspace</p>
+
+        <Button asChild>
+          <Link href={routes.home()}>Go back</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  const done = await api.integrations.github.mutate({
+    code: searchParams.code,
+    state: searchParams.state,
+    workspace,
+  });
 
   if (done.success) {
     return <ClientRedirect />;

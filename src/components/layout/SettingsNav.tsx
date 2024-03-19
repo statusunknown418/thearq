@@ -1,17 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useSelectedLayoutSegment } from "next/navigation";
+import { useSelectedLayoutSegments } from "next/navigation";
 import { PiBuildingsDuotone, PiUserCircleDuotone } from "react-icons/pi";
 import { routes, settingsLinks } from "~/lib/navigation";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 import { cn } from "~/lib/utils";
-import { type Roles } from "~/server/db/schema";
+import { type Roles } from "~/server/db/edge-schema";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
 
 export const SettingsNav = ({ role }: { role: Roles }) => {
-  const segment = useSelectedLayoutSegment();
+  const segments = useSelectedLayoutSegments();
   const workspace = useWorkspaceStore((s) => s.active);
 
   return (
@@ -29,18 +29,19 @@ export const SettingsNav = ({ role }: { role: Roles }) => {
                 asChild
                 variant={"ghost"}
                 className={cn(
-                  "justify-start text-muted-foreground",
-                  !segment && "border bg-popover text-foreground",
+                  "justify-start border-transparent text-muted-foreground",
+                  segments.length === 0 && "border-border bg-popover text-foreground",
                 )}
               >
-                <Link href={`./`}>General</Link>
+                <Link href={routes.settings({ slug: workspace?.slug ?? "" })}>General</Link>
               </Button>
 
               <Button
                 variant={"ghost"}
                 className={cn(
-                  "justify-start text-muted-foreground",
-                  segment === settingsLinks.plans && "border bg-popover text-foreground",
+                  "justify-start border-transparent text-muted-foreground",
+                  segments.includes(settingsLinks.plans) &&
+                    "border-border bg-popover text-foreground",
                 )}
               >
                 Plans
@@ -49,8 +50,9 @@ export const SettingsNav = ({ role }: { role: Roles }) => {
               <Button
                 variant={"ghost"}
                 className={cn(
-                  "justify-start text-muted-foreground",
-                  segment === settingsLinks.defaultValues && "border bg-popover text-foreground",
+                  "justify-start border-transparent text-muted-foreground",
+                  segments.includes(settingsLinks.defaultValues) &&
+                    "border-border bg-popover text-foreground",
                 )}
               >
                 Default values
@@ -71,8 +73,9 @@ export const SettingsNav = ({ role }: { role: Roles }) => {
             asChild
             variant={"ghost"}
             className={cn(
-              "justify-start text-muted-foreground",
-              segment === settingsLinks.account && "border bg-popover text-foreground",
+              "justify-start border-transparent text-muted-foreground",
+              segments.includes(settingsLinks.account) &&
+                "border-border bg-popover text-foreground",
             )}
           >
             <Link href={routes.account({ slug: workspace?.slug ?? "" })}>Profile</Link>
@@ -82,8 +85,9 @@ export const SettingsNav = ({ role }: { role: Roles }) => {
             asChild
             variant={"ghost"}
             className={cn(
-              "justify-start text-muted-foreground",
-              segment === settingsLinks.integrations && "border bg-popover text-foreground",
+              "justify-start border-transparent text-muted-foreground",
+              segments.includes(settingsLinks.integrations) &&
+                "border-border bg-popover text-foreground",
             )}
           >
             <Link href={routes.integrations({ slug: workspace?.slug ?? "" })}>Integrations</Link>

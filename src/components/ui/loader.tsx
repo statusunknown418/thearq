@@ -9,7 +9,7 @@ export const Loader = ({
   sm = true,
   md,
   lg,
-  color = "currentColor",
+  color = "white",
 }: {
   sm?: boolean;
   md?: boolean;

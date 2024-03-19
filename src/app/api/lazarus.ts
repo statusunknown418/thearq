@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "~/server/db";
-import { sessions } from "~/server/db/schema";
+import { sessions } from "~/server/db/edge-schema";
 import { redis } from "~/server/upstash";
 
 export async function GET() {

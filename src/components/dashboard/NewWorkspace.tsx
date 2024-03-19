@@ -21,8 +21,9 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { Loader } from "~/components/ui/loader";
+import { updateCookiesAction } from "~/lib/actions/cookies.actions";
 import { routes } from "~/lib/navigation";
-import { createWorkspaceSchema } from "~/server/db/schema";
+import { createWorkspaceSchema } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 
 export const NewWorkspace = () => {
@@ -42,9 +43,16 @@ export const NewWorkspace = () => {
       if (err.data?.code === "CONFLICT") form.setError("slug", { message: err.message });
     },
     onSuccess: async (data) => {
-      await utils.workspaces.get.refetch();
+      const action = new FormData();
+      action.append("id", String(data.workspace.id));
+      action.append("slug", data.workspace.slug);
+      action.append("permissions", JSON.stringify(data.permissions));
+      action.append("role", data.role);
+
+      await Promise.all([updateCookiesAction(action), utils.workspaces.get.invalidate()]);
+
       toast.success("Workspace created");
-      router.push(routes.dashboard({ slug: data.slug }));
+      router.push(routes.dashboard({ slug: data.workspace.slug }));
     },
   });
 
@@ -64,7 +72,7 @@ export const NewWorkspace = () => {
   }, [form, name]);
 
   return (
-    <section className="grid grid-cols-1 gap-6 rounded-3xl border bg-muted p-7 shadow-2xl shadow-black">
+    <section className="grid grid-cols-1 gap-6 rounded-3xl border p-8 shadow-2xl shadow-black">
       <header className="flex flex-col gap-2">
         <h2 className="text-2xl font-bold">New Workspace</h2>
         <p className="text-muted-foreground">
@@ -101,8 +109,8 @@ export const NewWorkspace = () => {
                   <Input
                     disabled
                     readOnly
-                    defaultValue={"name.com/workspaces/"}
-                    className="w-fit rounded-r-none border-r-0"
+                    defaultValue={"name.com/"}
+                    className="max-w-fit rounded-r-none border-r-0"
                   />
 
                   <FormControl>

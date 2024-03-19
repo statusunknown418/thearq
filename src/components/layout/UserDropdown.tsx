@@ -28,7 +28,7 @@ export const UserDropdown = () => {
   const [open, change] = useState(false);
 
   if (!user) {
-    return <Skeleton className="h-9 w-full" />;
+    return <Skeleton className="h-8 w-full" />;
   }
 
   return (

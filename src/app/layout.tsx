@@ -6,7 +6,7 @@ import { type Metadata, type Viewport } from "next";
 import { AuthProvider } from "~/components/auth-provider";
 import { ThemeWrapper } from "~/components/theme-wrapper";
 import { Toaster } from "~/components/ui/sonner";
-import { getServerAuthSession } from "~/server/auth";
+import { auth } from "~/server/auth";
 import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata: Metadata = {
@@ -24,7 +24,7 @@ export const viewport: Viewport = {
 export const dynamic = "force-dynamic";
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const session = await getServerAuthSession();
+  const session = await auth();
 
   return (
     <html lang="en" suppressHydrationWarning>

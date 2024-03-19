@@ -2,10 +2,12 @@ import { LinearClient } from "@linear/sdk";
 import { Octokit } from "@octokit/core";
 import { OAuthApp } from "@octokit/oauth-app";
 import { TRPCError } from "@trpc/server";
+import { and, eq } from "drizzle-orm";
+import { cookies } from "next/headers";
 import { object, optional, parse, string } from "valibot";
 import { env } from "~/env";
-import { APP_URL, INTEGRATIONS, type Integration } from "~/lib/constants";
-import { accounts } from "~/server/db/schema";
+import { APP_URL, INTEGRATIONS, RECENT_W_ID_KEY, type Integration } from "~/lib/constants";
+import { integrations } from "~/server/db/edge-schema";
 import { redis } from "~/server/upstash";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
@@ -29,8 +31,8 @@ export type IntegrationCachingKey = `${string}:${Integration}`;
 export const integrationsSchema = object({
   code: string(),
   state: optional(string()),
+  workspace: string(),
 });
-
 
 export const integrationsRouter = createTRPCRouter({
   linear: protectedProcedure
@@ -44,6 +46,15 @@ export const integrationsRouter = createTRPCRouter({
       }
 
       try {
+        const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+        if (!workspaceId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "No workspace found",
+          });
+        }
+
         const redirect = buildRedirect("linear");
         const body = new URLSearchParams({
           code: input.code,
@@ -75,24 +86,16 @@ export const integrationsRouter = createTRPCRouter({
         const viewer = await linear.viewer;
 
         await ctx.db
-          .insert(accounts)
+          .insert(integrations)
           .values({
-            userId: ctx.session.user.id,
-            provider: "linear",
-            type: "oauth",
             access_token: data.access_token,
             providerAccountId: viewer.id,
+            provider: "linear",
+            userId: ctx.session.user.id,
+            workspaceId: Number(workspaceId),
             scope: data.scope,
-            refresh_token: data.refresh_token,
           })
-          .onDuplicateKeyUpdate({
-            set: {
-              provider: "linear",
-              providerAccountId: viewer.id,
-              access_token: data.access_token,
-              refresh_token: data.refresh_token,
-            },
-          });
+          .onConflictDoNothing();
 
         try {
           const key: IntegrationCachingKey = `${ctx.session.user.id}:${INTEGRATIONS.linear.name}`;
@@ -130,6 +133,14 @@ export const integrationsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       try {
         const redirect = buildRedirect("github");
+        const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+        if (!workspaceId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "No workspace found",
+          });
+        }
 
         const app = new OAuthApp({
           clientId: env.GITHUB_CLIENT_ID,
@@ -149,22 +160,16 @@ export const integrationsRouter = createTRPCRouter({
         const viewer = await octokit.request("GET /user");
 
         await ctx.db
-          .insert(accounts)
+          .insert(integrations)
           .values({
-            userId: ctx.session.user.id,
-            provider: "github",
-            type: "oauth",
             access_token: authentication.token,
             providerAccountId: viewer.data.login,
+            provider: "github",
+            userId: ctx.session.user.id,
             scope: authentication.scopes.join(" "),
+            workspaceId: Number(workspaceId),
           })
-          .onDuplicateKeyUpdate({
-            set: {
-              provider: "github",
-              providerAccountId: viewer.data.login,
-              access_token: authentication.token,
-            },
-          });
+          .onConflictDoNothing();
 
         const key: IntegrationCachingKey = `${ctx.session.user.id}:${INTEGRATIONS.linear.name}`;
         await redis.set(key, {
@@ -186,5 +191,77 @@ export const integrationsRouter = createTRPCRouter({
 
         return { success: false, error: trpcError };
       }
+    }),
+
+  disconnect: protectedProcedure
+    .input((i) =>
+      parse(
+        object({
+          provider: string(),
+        }),
+        i,
+      ),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const key = `${ctx.session.user.id}:${input.provider}`;
+      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+      if (!workspaceId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No workspace found",
+        });
+      }
+
+      await redis.del(key);
+
+      await ctx.db
+        .update(integrations)
+        .set({
+          enabled: false,
+        })
+        .where(
+          and(
+            eq(integrations.userId, ctx.session.user.id),
+            eq(integrations.workspaceId, Number(workspaceId)),
+            eq(integrations.provider, input.provider as Integration),
+          ),
+        );
+
+      return { success: true };
+    }),
+  reconnect: protectedProcedure
+    .input((i) =>
+      parse(
+        object({
+          provider: string(),
+        }),
+        i,
+      ),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+      if (!workspaceId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No workspace found",
+        });
+      }
+
+      await ctx.db
+        .update(integrations)
+        .set({
+          enabled: true,
+        })
+        .where(
+          and(
+            eq(integrations.userId, ctx.session.user.id),
+            eq(integrations.workspaceId, Number(workspaceId)),
+            eq(integrations.provider, input.provider as Integration),
+          ),
+        );
+
+      return { success: true };
     }),
 });

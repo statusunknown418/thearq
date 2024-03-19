@@ -1,11 +1,19 @@
 import { TRPCError } from "@trpc/server";
 import { parse } from "valibot";
-import { sendInviteSchema, workspaceInvitation } from "~/server/db/schema";
-import { WorkspaceInvitationEmail } from "~/server/emails/WorkspaceInvitation";
+import { sendInviteSchema, workspaceInvitations } from "~/server/db/edge-schema";
+import WorkspaceInvitationEmail from "~/server/emails/WorkspaceInvitation";
 import { resend } from "~/server/resend";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
+/**
+ * TODO: Update me when the Resend domain is verified
+ * @returns
+ */
 export const emailsRouter = createTRPCRouter({
+  /**
+   * @description This will fail to send when on development if Turbo is used (--turbo)
+   * may work fine in prod and without it
+   */
   sendWorkspaceInvite: protectedProcedure
     .input((i) => parse(sendInviteSchema, i))
     .mutation(async ({ ctx, input }) => {
@@ -21,11 +29,14 @@ export const emailsRouter = createTRPCRouter({
       }
 
       try {
-        await ctx.db.insert(workspaceInvitation).values(
+        await ctx.db.insert(workspaceInvitations).values(
           input.userEmails.map((item) => ({
             email: item.email,
             workspaceSlug: input.workspaceSlug,
             invitedByEmail: ctx.session.user.email ?? "unknown",
+            workspaceId: workspace.id,
+            invitedById: ctx.session.user.id,
+            link: workspace.inviteLink,
           })),
         );
       } catch (error) {
@@ -42,6 +53,7 @@ export const emailsRouter = createTRPCRouter({
             to: "alvarodevcode@outlook.com",
             from: "onboarding@resend.dev",
             subject: `You're invited to join ${workspace.name}`,
+            text: `You're invited to join ${workspace.name}. Click here to join: ${workspace.inviteLink}`,
             react: WorkspaceInvitationEmail({
               invitedByEmail: ctx.session.user.email ?? "unknown",
               inviteLink: workspace.inviteLink,

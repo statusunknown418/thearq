@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { type Workspace } from "~/server/db/schema";
+import { type Workspace } from "~/server/db/edge-schema";
 
 export type WorkspaceStore = {
   active: Workspace | null;
