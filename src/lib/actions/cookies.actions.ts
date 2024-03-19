@@ -12,7 +12,7 @@ import { type Roles } from "~/server/db/edge-schema";
 /**
  * Simple action to set cookies as recent workspace and permissions
  * make sure to decodeURIComponent and parsePermissions when using the permissions
- * @param ctx FormaData
+ * @param ctx slug, permissions, role, id
  * @returns
  */
 export const updateCookiesAction = async (ctx: FormData) => {

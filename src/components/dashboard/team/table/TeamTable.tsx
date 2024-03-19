@@ -1,7 +1,8 @@
 "use client";
 
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table";
-import { PiArrowSquareOutDuotone } from "react-icons/pi";
+import Image from "next/image";
+import { PiArrowSquareOutDuotone, PiInfinity } from "react-icons/pi";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { FormItem } from "~/components/ui/form";
@@ -16,7 +17,6 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { useDetailsSheetStore } from "~/lib/stores/sheets-store";
-import { cn } from "~/lib/utils";
 import { type Roles } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
@@ -25,6 +25,20 @@ export type TeamTableData = RouterOutputs["workspaces"]["getTeamByWorkspace"];
 
 export type TeamTableColumn = RouterOutputs["workspaces"]["getTeamByWorkspace"][number];
 export const columns: ColumnDef<TeamTableColumn>[] = [
+  {
+    id: "avatar",
+    header: undefined,
+    accessorFn: (row) => row.user.image,
+    cell: ({ row }) => (
+      <Image
+        src={row.getValue("avatar")}
+        alt={row.getValue("name")}
+        className="h-8 w-8 self-center rounded-full"
+        width={32}
+        height={32}
+      />
+    ),
+  },
   {
     id: "name",
     accessorFn: (row) => row.user.name,
@@ -49,28 +63,42 @@ export const columns: ColumnDef<TeamTableColumn>[] = [
   {
     id: "email",
     accessorFn: (row) => row.user.email,
-    header: "Email",
-    cell: ({ row }) => <span>{row.getValue("email")}</span>,
+    header: () => <span className="text-left">Email</span>,
+    cell: ({ row }) => <span className="text-left">{row.getValue("email")}</span>,
+    maxSize: 250,
   },
   {
-    accessorKey: "weekCapacity",
+    accessorKey: "defaultWeekCapacity",
     header: "Week Capacity",
-    cell: ({ row }) => <span className="tabular-nums">{row.getValue("weekCapacity")}h</span>,
+    cell: ({ row }) => (
+      <Badge className="font-mono tabular-nums">
+        {row.getValue("defaultWeekCapacity") === null ? (
+          <PiInfinity size={16} />
+        ) : (
+          row.getValue("defaultWeekCapacity")
+        )}{" "}
+        hours
+      </Badge>
+    ),
   },
   {
-    accessorKey: "billableRate",
+    accessorKey: "defaultBillableRate",
     header: "Billable Rate",
+    size: 200,
+    minSize: 180,
     cell: ({ row }) => (
-      <Badge variant={"secondary"} className="min-w-[5ch] font-mono text-sm tabular-nums">
-        $ {row.getValue("billableRate")}
+      <Badge variant={"secondary"} className="font-mono text-sm tabular-nums">
+        $ {row.getValue("defaultBillableRate")}
       </Badge>
     ),
   },
   {
     accessorKey: "internalCost",
     header: "Internal Cost",
+    size: 200,
+    minSize: 180,
     cell: ({ row }) => (
-      <Badge variant={"secondary"} className="min-w-[5ch] font-mono text-sm tabular-nums">
+      <Badge variant={"secondary"} className="font-mono text-sm tabular-nums">
         $ {row.getValue("internalCost")}
       </Badge>
     ),
@@ -95,7 +123,7 @@ export const TeamTable = ({ data }: { data: TeamTableData }) => {
     <div className="grid grid-cols-1 gap-4 rounded-xl border bg-secondary-background p-5">
       <FormItem>
         <Label>Search</Label>
-        <Input placeholder="Find by email" />
+        <Input placeholder="Find by email" className="max-w-lg" />
       </FormItem>
 
       <p className="text-xs">
@@ -108,10 +136,7 @@ export const TeamTable = ({ data }: { data: TeamTableData }) => {
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className={cn(header.id === "name" ? "text-left" : "")}
-                  >
+                  <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
                       : flexRender(header.column.columnDef.header, header.getContext())}
@@ -130,10 +155,7 @@ export const TeamTable = ({ data }: { data: TeamTableData }) => {
                   onClick={() => updateDetails(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      className={cn(cell.column.id === "name" ? "text-left" : "")}
-                    >
+                    <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}

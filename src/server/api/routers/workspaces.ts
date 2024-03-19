@@ -9,7 +9,6 @@ import { object, parse, string } from "valibot";
 import {
   RECENT_WORKSPACE_KEY,
   RECENT_W_ID_KEY,
-  USER_WORKSPACE_PERMISSIONS,
   USER_WORKSPACE_ROLE,
   createWorkspaceInviteLink,
 } from "~/lib/constants";
@@ -28,17 +27,15 @@ export const workspacesRouter = createTRPCRouter({
   new: protectedProcedure
     .input((i) => parse(createWorkspaceSchema, i))
     .mutation(async ({ ctx, input }) => {
-      const slug = slugify(input.slug, { lower: true });
-      const inviteId = createId();
-      const image =
-        input.image.length > 0
-          ? input.image
-          : `https://api.dicebear.com/7.x/initials/svg?seed=${input.name}`;
-
-      const cookiesStore = cookies();
-
       try {
-        const newId = await ctx.db.transaction(async (trx) => {
+        const slug = slugify(input.slug, { lower: true });
+        const inviteId = createId();
+        const image =
+          input.image.length > 0
+            ? input.image
+            : `https://api.dicebear.com/7.x/initials/svg?seed=${input.name}`;
+
+        const workspace = await ctx.db.transaction(async (trx) => {
           const [w] = await trx
             .insert(workspaces)
             .values({
@@ -48,7 +45,7 @@ export const workspacesRouter = createTRPCRouter({
               slug,
               image,
             })
-            .returning({ id: workspaces.id })
+            .returning()
             .execute();
 
           if (!w?.id) {
@@ -68,15 +65,22 @@ export const workspacesRouter = createTRPCRouter({
             owner: true,
           });
 
-          return {
-            id: w.id,
-          };
+          return w;
         });
 
-        cookiesStore.set(RECENT_W_ID_KEY, String(newId), {
-          path: "/",
-          sameSite: "lax",
-        });
+        if (!workspace) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to create workspace",
+          });
+        }
+
+        return {
+          success: true,
+          workspace,
+          role: "admin",
+          permissions: adminPermissions,
+        };
       } catch (e) {
         if (e instanceof DatabaseError && e.body.message.includes("AlreadyExists")) {
           throw new TRPCError({
@@ -87,24 +91,6 @@ export const workspacesRouter = createTRPCRouter({
 
         throw e;
       }
-
-      cookiesStore.set(RECENT_WORKSPACE_KEY, slug, {
-        path: "/",
-        sameSite: "lax",
-      });
-      cookiesStore.set(USER_WORKSPACE_ROLE, "admin", {
-        path: "/",
-        sameSite: "lax",
-      });
-      cookiesStore.set(USER_WORKSPACE_PERMISSIONS, JSON.stringify(adminPermissions), {
-        path: "/",
-        sameSite: "lax",
-      });
-
-      return {
-        success: true,
-        slug,
-      };
     }),
   get: protectedProcedure.query(({ ctx }) => {
     return ctx.db.query.usersOnWorkspaces.findMany({
@@ -125,10 +111,6 @@ export const workspacesRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
-
-      if (!workspaceId) {
-        return notFound();
-      }
 
       const [workspace, viewer] = await Promise.all([
         ctx.db.query.workspaces.findFirst({

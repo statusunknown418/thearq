@@ -208,7 +208,7 @@ export const usersOnWorkspaces = sqliteTable(
     active: integer("active", { mode: "boolean" }).default(true),
     defaultBillableRate: int("defaultBillableRate").notNull().default(0),
     internalCost: int("internalCost").notNull().default(0),
-    defaultWeekCapacity: int("defaultWeekCapacity").notNull().default(40),
+    defaultWeekCapacity: int("defaultWeekCapacity").default(40),
     permissions: text("permissions", { mode: "text" })
       .notNull()
       .$default(() => JSON.stringify(memberPermissions)),
@@ -225,6 +225,7 @@ export const usersOnWorkspacesSchema = omit(
   createInsertSchema(usersOnWorkspaces, {
     defaultBillableRate: coerce(number("Rate must be a number"), (v) => Number(v)),
     internalCost: coerce(number("Cost must be a number"), (v) => Number(v)),
+    defaultWeekCapacity: coerce(number("Week capacity must be a number"), (v) => Number(v)),
   }),
   ["owner"],
 );

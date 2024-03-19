@@ -11,7 +11,10 @@ export default async function WorkspaceDashboardPage({
     slug: string;
   };
 }) {
-  const workspace = await api.workspaces.getBySlug.query({ slug: params.slug });
+
+  const workspace = await api.workspaces.getBySlug.query({
+    slug: params.slug,
+  });
 
   return (
     <Main>

@@ -19,7 +19,7 @@ export const List = ({
   });
 
   return (
-    <ul className="grid grid-cols-1 gap-1 rounded-lg">
+    <ul className="grid max-h-80 grid-cols-1 gap-1 overflow-y-auto rounded-lg">
       {data.map((relation) => (
         <li key={relation.workspaceId}>
           <Link

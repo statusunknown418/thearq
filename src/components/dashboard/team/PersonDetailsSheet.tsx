@@ -30,6 +30,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "~/components/ui/sheet";
+import { Switch } from "~/components/ui/switch";
 import { useDetailsSheetStore } from "~/lib/stores/sheets-store";
 import { usersOnWorkspacesSchema, type UsersOnWorkspacesSchema } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
@@ -38,8 +39,14 @@ export const PersonDetailsSheet = () => {
   const open = useDetailsSheetStore((s) => s.open);
   const change = useDetailsSheetStore((s) => s.openChange);
   const details = useDetailsSheetStore((s) => s.details);
+  const utils = api.useUtils();
 
-  const update = api.workspaces.updateMemberDetails.useMutation();
+  const update = api.workspaces.updateMemberDetails.useMutation({
+    onSuccess: async () => {
+      change(false);
+      return await utils.workspaces.getTeamByWorkspace.invalidate();
+    },
+  });
   const form = useForm<UsersOnWorkspacesSchema>({
     resolver: valibotResolver(usersOnWorkspacesSchema),
     defaultValues: {
@@ -48,11 +55,18 @@ export const PersonDetailsSheet = () => {
   });
 
   const onSubmit = form.handleSubmit((input) => {
-    toast.promise(update.mutateAsync(input), {
-      loading: "Saving...",
-      success: "Saved!",
-      error: "Failed to save",
-    });
+    toast.promise(
+      update.mutateAsync({
+        ...input,
+        defaultWeekCapacity:
+          input.defaultWeekCapacity === Infinity ? null : input.defaultWeekCapacity,
+      }),
+      {
+        loading: "Saving...",
+        success: "Saved!",
+        error: "Failed to save",
+      },
+    );
   });
 
   useEffect(() => {
@@ -67,7 +81,7 @@ export const PersonDetailsSheet = () => {
         change(sw);
       }}
     >
-      <SheetContent className="sm:max-w-lg">
+      <SheetContent className="sm:max-w-md">
         <SheetHeader>
           <SheetTitle>{details?.user.name}&apos;s profile</SheetTitle>
 
@@ -158,15 +172,25 @@ export const PersonDetailsSheet = () => {
               name="defaultWeekCapacity"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Week capacity</FormLabel>
+                  <div className="flex items-center gap-2">
+                    <FormLabel>Week capacity</FormLabel>
+                    <Switch
+                      defaultChecked={!!details?.defaultWeekCapacity}
+                      onCheckedChange={(e) => field.onChange(e ? 40 : Infinity)}
+                    />
+                  </div>
 
                   <FormControl>
-                    <Input {...field} />
+                    <Input
+                      {...field}
+                      value={field.value === null ? Infinity : field.value}
+                      disabled={field.value === Infinity || field.value === null}
+                    />
                   </FormControl>
 
                   <FormDescription>
-                    You can limit the number of hours this person can work in a week. This is used
-                    to calculate the workload of the projects.
+                    You can limit the number of hours this person can work in a week. If left blank
+                    it will be considered as unlimited hours.
                   </FormDescription>
 
                   <FormMessage />

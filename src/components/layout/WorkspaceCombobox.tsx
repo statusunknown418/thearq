@@ -55,7 +55,7 @@ export const WorkspaceCombobox = () => {
   }, [workspace]);
 
   if (!workspace) {
-    return <Skeleton className="h-9 w-full" />;
+    return <Skeleton className="h-8 w-full" />;
   }
 
   return (
