@@ -28,13 +28,13 @@ export const UserDropdown = () => {
   const [open, change] = useState(false);
 
   if (!user) {
-    return <Skeleton className="h-8 w-full" />;
+    return <Skeleton className="h-10 w-full" />;
   }
 
   return (
     <DropdownMenu open={open} onOpenChange={change}>
       <DropdownMenuTrigger asChild>
-        <Button variant={"ghost"} className="w-full justify-between focus-visible:ring-0">
+        <Button variant={"ghost"} className="h-10 w-full justify-between focus-visible:ring-0">
           <div className="flex items-center gap-2">
             {user?.image && (
               <Image

@@ -55,13 +55,13 @@ export const WorkspaceCombobox = () => {
   }, [workspace]);
 
   if (!workspace) {
-    return <Skeleton className="h-8 w-full" />;
+    return <Skeleton className="h-10 w-full" />;
   }
 
   return (
     <Popover onOpenChange={change} open={open}>
       <PopoverTrigger asChild>
-        <Button variant={"ghost"} className="w-full justify-between">
+        <Button variant={"ghost"} className="h-10 w-full justify-between">
           <div className="flex items-center gap-2">
             {!!value && deferred && !!data?.length ? (
               <Image

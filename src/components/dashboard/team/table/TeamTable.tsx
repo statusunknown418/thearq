@@ -1,6 +1,12 @@
 "use client";
 
-import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table";
+import {
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  useReactTable,
+  type ColumnDef,
+} from "@tanstack/react-table";
 import Image from "next/image";
 import { PiArrowSquareOutDuotone, PiInfinity } from "react-icons/pi";
 import { Badge } from "~/components/ui/badge";
@@ -45,7 +51,7 @@ export const columns: ColumnDef<TeamTableColumn>[] = [
     header: "Name",
     cell: ({ row }) => {
       return (
-        <Button variant={"link"} className="justify-start px-0">
+        <Button variant={"link"} className="justify-start px-0 text-sm">
           {row.getValue("name")} <PiArrowSquareOutDuotone size={16} />
         </Button>
       );
@@ -64,7 +70,9 @@ export const columns: ColumnDef<TeamTableColumn>[] = [
     id: "email",
     accessorFn: (row) => row.user.email,
     header: () => <span className="text-left">Email</span>,
-    cell: ({ row }) => <span className="text-left">{row.getValue("email")}</span>,
+    cell: ({ row }) => (
+      <span className="text-left text-muted-foreground">{row.getValue("email")}</span>
+    ),
     maxSize: 250,
   },
   {
@@ -87,9 +95,11 @@ export const columns: ColumnDef<TeamTableColumn>[] = [
     size: 200,
     minSize: 180,
     cell: ({ row }) => (
-      <Badge variant={"secondary"} className="font-mono text-sm tabular-nums">
-        $ {row.getValue("defaultBillableRate")}
-      </Badge>
+      <span className="font-mono tabular-nums">
+        <Badge variant={"secondary"} className="text-sm">
+          $ {row.getValue("defaultBillableRate")}
+        </Badge>
+      </span>
     ),
   },
   {
@@ -98,9 +108,11 @@ export const columns: ColumnDef<TeamTableColumn>[] = [
     size: 200,
     minSize: 180,
     cell: ({ row }) => (
-      <Badge variant={"secondary"} className="font-mono text-sm tabular-nums">
-        $ {row.getValue("internalCost")}
-      </Badge>
+      <span className="font-mono  tabular-nums">
+        <Badge variant={"secondary"} className="text-sm">
+          $ {row.getValue("internalCost")}
+        </Badge>
+      </span>
     ),
   },
 ];
@@ -117,18 +129,24 @@ export const TeamTable = ({ data }: { data: TeamTableData }) => {
     data: tableData,
     columns,
     getCoreRowModel: getCoreRowModel<TeamTableColumn>(),
+    getFilteredRowModel: getFilteredRowModel(),
+    /**
+     * TODO: Add sorting per column
+     */
+    state: {},
   });
 
   return (
     <div className="grid grid-cols-1 gap-4 rounded-xl border bg-secondary-background p-5">
       <FormItem>
         <Label>Search</Label>
-        <Input placeholder="Find by email" className="max-w-lg" />
+        <Input
+          placeholder="Find by email"
+          value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+          onChange={(event) => table.getColumn("email")?.setFilterValue(event.target.value)}
+          className="max-w-sm"
+        />
       </FormItem>
-
-      <p className="text-xs">
-        {data.length} teammate{data.length === 1 ? "" : "s"} in this workspace
-      </p>
 
       <div className="rounded-lg border bg-background p-1">
         <Table>
@@ -149,13 +167,14 @@ export const TeamTable = ({ data }: { data: TeamTableData }) => {
           <TableBody className="text-sm">
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  onClick={() => updateDetails(row.original)}
-                >
+                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell
+                      key={cell.id}
+                      onClick={() => {
+                        cell.column.id === "name" && updateDetails(row.original);
+                      }}
+                    >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
@@ -170,6 +189,10 @@ export const TeamTable = ({ data }: { data: TeamTableData }) => {
             )}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="flex-1 text-sm text-muted-foreground">
+        {data.length} teammate{data.length === 1 ? "" : "s"} in this workspace
       </div>
     </div>
   );

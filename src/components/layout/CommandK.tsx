@@ -6,8 +6,10 @@ import {
   PersonIcon,
   RocketIcon,
 } from "@radix-ui/react-icons";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { PiCommandDuotone, PiMagnifyingGlassDuotone } from "react-icons/pi";
+import { useCommandsStore } from "~/lib/stores/commands-store";
+import { TrackerCommand } from "../dashboard/tracker/TrackerCommand";
 import { Button } from "../ui/button";
 import {
   CommandDialog,
@@ -21,23 +23,41 @@ import {
 } from "../ui/command";
 
 export const CommandK = () => {
-  const [open, setOpen] = useState(false);
+  const search = useCommandsStore((s) => s.search);
+  const setSearch = useCommandsStore((s) => s.setSearch);
+
+  const track = useCommandsStore((s) => s.track);
+  const setTrack = useCommandsStore((s) => s.setTrack);
 
   useEffect(() => {
-    const down = (e: KeyboardEvent) => {
+    const commandPalette = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((open) => !open);
+        setSearch(!search);
       }
     };
 
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
+    const trackCommand = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+      if (e.key === "t" || e.key === "T") {
+        e.preventDefault();
+        setTrack(!track);
+      }
+    };
+
+    document.addEventListener("keydown", commandPalette);
+    document.addEventListener("keydown", trackCommand);
+
+    return () => {
+      document.removeEventListener("keydown", commandPalette);
+      document.removeEventListener("keydown", trackCommand);
+    };
   }, []);
 
   return (
     <>
-      <Button variant={"secondary"} onClick={() => setOpen(true)}>
+      <Button variant={"secondary"} onClick={() => setSearch(true)}>
         <PiMagnifyingGlassDuotone size={16} />
         Search
         <kbd className="flex items-center text-muted-foreground">
@@ -46,7 +66,7 @@ export const CommandK = () => {
         </kbd>
       </Button>
 
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandDialog open={search} onOpenChange={setSearch}>
         <CommandInput placeholder="Type a command or search..." />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
@@ -86,6 +106,8 @@ export const CommandK = () => {
           </CommandGroup>
         </CommandList>
       </CommandDialog>
+
+      <TrackerCommand />
     </>
   );
 };

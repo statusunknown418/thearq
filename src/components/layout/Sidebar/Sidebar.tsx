@@ -35,7 +35,7 @@ export const Sidebar = ({ role }: { role: Roles }) => {
         <CommandK />
       </div>
 
-      <ul className="flex h-full w-full flex-col gap-1 overflow-y-scroll text-muted-foreground">
+      <ul className="flex h-full w-full flex-col gap-1 overflow-y-scroll py-1 text-muted-foreground">
         {role === "admin" && (
           <Button
             asChild

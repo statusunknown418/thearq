@@ -24,8 +24,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/comp
 import { sendInviteSchema } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
-import { Alert, AlertDescription, AlertTitle } from "../../ui/alert";
-import { KBD } from "../../ui/kbd";
+import { Alert, AlertDescription, AlertTitle } from "../../../ui/alert";
+import { TextKBD } from "../../../ui/kbd";
 
 export const InviteTeam = ({
   workspace,
@@ -109,7 +109,7 @@ export const InviteTeam = ({
           Share this link with your team members to invite them to this workspace.
         </p>
         <div className="flex gap-2">
-          <KBD size="lg">{data.inviteLink}</KBD>
+          <TextKBD size="lg">{data.inviteLink}</TextKBD>
 
           <Button variant={"secondary"} size={"icon"} onClick={copyLinkToClipboard}>
             <PiCopyDuotone size={15} />

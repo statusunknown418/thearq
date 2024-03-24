@@ -81,7 +81,7 @@ export const PersonDetailsSheet = () => {
         change(sw);
       }}
     >
-      <SheetContent className="sm:max-w-md">
+      <SheetContent className="sm:max-w-sm">
         <SheetHeader>
           <SheetTitle>{details?.user.name}&apos;s profile</SheetTitle>
 
