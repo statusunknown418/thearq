@@ -116,4 +116,3 @@ WorkspaceInvitationEmail.PreviewProps = {
   inviteLink: "https://vercel.com/teams/invite/foo",
 } as VercelInviteUserEmailProps;
 
-export default WorkspaceInvitationEmail;

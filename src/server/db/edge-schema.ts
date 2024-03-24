@@ -171,9 +171,13 @@ export const workspaces = sqliteTable(
   }),
 );
 
-export const workspacesRelations = relations(workspaces, ({ many }) => ({
+export const workspacesRelations = relations(workspaces, ({ many, one }) => ({
   users: many(usersOnWorkspaces),
   invitations: many(workspaceInvitations),
+  plan: one(workspacePlans, {
+    fields: [workspaces.id],
+    references: [workspacePlans.workspaceId],
+  }),
 }));
 
 export const workspacesSchema = createInsertSchema(workspaces);
@@ -253,7 +257,7 @@ export const timeEntries = sqliteTable(
     userId: text("userId")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    workspaceId: text("workspaceId")
+    workspaceId: int("workspaceId")
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
     projectId: text("projectId"),
@@ -270,8 +274,16 @@ export const timeEntries = sqliteTable(
   (t) => ({
     userIdIdx: index("timeEntries_userId_idx").on(t.userId),
     workspaceIdIdx: index("timeEntries_workspaceId_idx").on(t.workspaceId),
+    startIdx: index("timeEntries_start_idx").on(t.start),
+    durationIdx: index("timeEntries_duration_idx").on(t.duration),
   }),
 );
+
+export const timeEntrySchema = omit(createInsertSchema(timeEntries, {}), [
+  "locked",
+  "userId",
+  "id",
+]);
 
 export const timeEntriesRelations = relations(timeEntries, ({ one }) => ({
   user: one(users, {
@@ -294,8 +306,8 @@ export type ProjectTypes = (typeof projectTypes)[number];
 export const projects = sqliteTable(
   "project",
   {
-    id: text("id").notNull().primaryKey().$defaultFn(createId),
-    workspaceId: text("workspaceId")
+    id: integer("id", { mode: "number" }).notNull().primaryKey({ autoIncrement: true }),
+    workspaceId: int("workspaceId")
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
     shareableUrl: text("shareableUrl")
@@ -305,7 +317,7 @@ export const projects = sqliteTable(
     name: text("name").notNull(),
     description: text("description"),
     color: text("color").notNull().default("#000000"),
-    identifier: text("identifier").notNull(),
+    identifier: text("identifier"),
     type: text("type", { enum: projectTypes }).notNull().default("hourly"),
     budget: int("budget").default(0),
     projectHourlyRate: int("projectHourlyRate").default(0),
@@ -316,6 +328,7 @@ export const projects = sqliteTable(
   (t) => ({
     workspaceIdIdx: index("projects_workspaceId_idx").on(t.workspaceId),
     shareableUrlIdx: index("projects_shareableUrl_idx").on(t.shareableUrl),
+    identifierIdx: index("projects_identifier_idx").on(t.identifier),
   }),
 );
 
@@ -337,7 +350,7 @@ export const usersOnProjects = sqliteTable(
     projectId: int("projectId", { mode: "number" })
       .notNull()
       .references(() => projects.id, { onDelete: "cascade" }),
-    workspaceId: text("workspaceId")
+    workspaceId: int("workspaceId")
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
     role: text("role", { enum: roles }).notNull().default("member"),
@@ -359,5 +372,29 @@ export const usersOnProjectsRelations = relations(usersOnProjects, ({ one }) => 
   project: one(projects, {
     fields: [usersOnProjects.projectId, usersOnProjects.workspaceId],
     references: [projects.id, projects.workspaceId],
+  }),
+}));
+
+export const workspacePlans = sqliteTable(
+  "workspacePlans",
+  {
+    planId: text("planId").notNull().primaryKey(),
+    workspaceId: int("workspaceId")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    active: integer("active", { mode: "boolean" }).default(true),
+    startsAt: integer("startsAt", { mode: "timestamp" }),
+    endsAt: integer("endsAt", { mode: "timestamp" }),
+    createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  },
+  (t) => ({
+    workspaceIdIdx: index("workspacePlans_workspaceId_idx").on(t.workspaceId),
+  }),
+);
+
+export const workspacePlansRelations = relations(workspacePlans, ({ one }) => ({
+  workspace: one(workspaces, {
+    fields: [workspacePlans.workspaceId],
+    references: [workspaces.id],
   }),
 }));

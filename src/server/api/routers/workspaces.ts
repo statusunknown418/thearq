@@ -136,6 +136,7 @@ export const workspacesRouter = createTRPCRouter({
       return {
         ...workspace,
         viewerPermissions: parsePermissions(viewer.permissions),
+
       };
     }),
   getPermissions: protectedProcedure
