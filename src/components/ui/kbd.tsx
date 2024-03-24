@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { cn } from "~/lib/utils";
 
-export const KBD = ({
+export const TextKBD = ({
   children,
   className,
   size = "sm",
@@ -11,13 +11,21 @@ export const KBD = ({
   size?: "sm" | "md" | "lg";
 }) => {
   return (
-    <kbd
+    <p
       className={cn(
         "inline-flex w-max items-center overflow-hidden text-ellipsis whitespace-nowrap rounded-sm border bg-background text-xs text-muted-foreground",
         size === "sm" ? "h-7 px-2 py-1" : size === "md" ? "h-8 p-2" : "h-9 p-3",
         className,
       )}
     >
+      {children}
+    </p>
+  );
+};
+
+export const KBD = ({ children }: { children: ReactNode }) => {
+  return (
+    <kbd className="flex h-5 items-center rounded-[4px] border border-neutral-700 bg-accent p-1 text-xs uppercase text-muted-foreground">
       {children}
     </kbd>
   );
