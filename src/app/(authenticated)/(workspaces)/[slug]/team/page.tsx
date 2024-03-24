@@ -4,7 +4,7 @@ import { PersonDetailsSheet } from "~/components/dashboard/team/PersonDetailsShe
 import {
   InvitationWrapperRSC,
   WrapperLoader,
-} from "~/components/dashboard/team/invitation-wrapper";
+} from "~/components/dashboard/team/invite/invitation-wrapper";
 import { TeamTableWrapperRSC } from "~/components/dashboard/team/table/table-wrapper";
 import { Main } from "~/components/layout/Main";
 import { Loader } from "~/components/ui/loader";

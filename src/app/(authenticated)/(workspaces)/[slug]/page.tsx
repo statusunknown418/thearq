@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { Updater } from "~/components/Updater";
 import { Main } from "~/components/layout/Main";
 import { api } from "~/trpc/server";
-import { InviteTeam } from "../../../../components/dashboard/team/InviteTeam";
+import { InviteTeam } from "../../../../components/dashboard/team/invite/InviteTeam";
 
 export default async function WorkspaceDashboardPage({
   params,
