@@ -20,6 +20,7 @@ import { cn } from "~/lib/utils";
 import { type Roles } from "~/server/db/edge-schema";
 import { Button } from "../../ui/button";
 import { CommandK } from "../CommandK";
+import { Hotkeys } from "../Hotkeys";
 import { UserDropdown } from "../UserDropdown";
 import { WorkspaceCombobox } from "../WorkspaceCombobox";
 
@@ -29,6 +30,8 @@ export const Sidebar = ({ role }: { role: Roles }) => {
 
   return (
     <aside className="col-span-1 flex h-full flex-col gap-8 py-4 *:px-2">
+      <Hotkeys />
+
       <div className="flex w-full flex-col gap-4 self-start">
         <WorkspaceCombobox />
 
@@ -48,7 +51,10 @@ export const Sidebar = ({ role }: { role: Roles }) => {
             data-active={!selectedSegment}
           >
             <Link href={routes.dashboard({ slug: workspace?.slug ?? "" })}>
-              <PiPlanetDuotone size={20} className="group-data-[active=true]:text-purple-400" />
+              <PiPlanetDuotone
+                size={20}
+                className="group-data-[active=true]:text-purple-500 dark:group-data-[active=true]:text-purple-400"
+              />
               Dashboard
             </Link>
           </Button>
@@ -65,7 +71,7 @@ export const Sidebar = ({ role }: { role: Roles }) => {
           data-active={selectedSegment === sidebarLinks.tracker}
         >
           <Link href={routes.tracker({ slug: workspace?.slug ?? "" })}>
-            <PiTimerDuotone className="h-5 w-5 group-data-[active=true]:text-blue-400" />
+            <PiTimerDuotone className="h-5 w-5 group-data-[active=true]:text-blue-500 dark:group-data-[active=true]:text-blue-400" />
             Tracker
           </Link>
         </Button>
@@ -81,7 +87,10 @@ export const Sidebar = ({ role }: { role: Roles }) => {
           data-active={selectedSegment === sidebarLinks.analytics}
         >
           <Link href={routes.analytics({ slug: workspace?.slug ?? "" })}>
-            <PiChartBarDuotone size={20} className="group-data-[active=true]:text-indigo-400" />
+            <PiChartBarDuotone
+              size={20}
+              className="group-data-[active=true]:text-indigo-500 dark:group-data-[active=true]:text-indigo-400"
+            />
             Analytics
           </Link>
         </Button>
@@ -107,7 +116,7 @@ export const Sidebar = ({ role }: { role: Roles }) => {
               <Link href={routes.projects({ slug: workspace?.slug ?? "" })}>
                 <PiKanbanDuotone
                   size={20}
-                  className="group-data-[active=true]:text-fuchsia-400"
+                  className="group-data-[active=true]:text-fuchsia-500 dark:group-data-[active=true]:text-fuchsia-400"
                   data-active={selectedSegment === sidebarLinks.projects}
                 />
                 Projects
@@ -127,7 +136,7 @@ export const Sidebar = ({ role }: { role: Roles }) => {
               <Link href={routes.invoices({ slug: workspace?.slug ?? "" })}>
                 <PiPaperclip
                   size={20}
-                  className="group-data-[active=true]:text-orange-400"
+                  className="group-data-[active=true]:text-orange-500 dark:group-data-[active=true]:text-orange-400"
                   data-active={selectedSegment === sidebarLinks.invoices}
                 />
                 Invoices
@@ -145,7 +154,10 @@ export const Sidebar = ({ role }: { role: Roles }) => {
               data-active={selectedSegment === sidebarLinks.quotes}
             >
               <Link href={routes.quotes({ slug: workspace?.slug ?? "" })}>
-                <PiCalculatorDuotone size={20} className="group-data-[active=true]:text-teal-400" />
+                <PiCalculatorDuotone
+                  size={20}
+                  className="group-data-[active=true]:text-teal-500 dark:group-data-[active=true]:text-teal-400"
+                />
                 Quotes
               </Link>
             </Button>
@@ -161,7 +173,10 @@ export const Sidebar = ({ role }: { role: Roles }) => {
               data-active={selectedSegment === sidebarLinks.team}
             >
               <Link href={routes.people({ slug: workspace?.slug ?? "" })}>
-                <PiUsersDuotone size={20} className="group-data-[active=true]:text-green-400" />
+                <PiUsersDuotone
+                  size={20}
+                  className="group-data-[active=true]:text-green-500 dark:group-data-[active=true]:text-green-400"
+                />
                 Team
               </Link>
             </Button>

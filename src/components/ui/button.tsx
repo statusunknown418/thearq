@@ -10,15 +10,15 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "text-foreground bg-indigo-600 active:shadow-none hover:bg-indigo-600/90 active:bg-indigo-700 active:ring-2 active:ring-offset-1 border border-indigo-700 hover:border-indigo-500 active:ring-offset-indigo-500 active:ring-indigo-300",
+          "dark:text-foreground text-white bg-indigo-600 active:shadow-none hover:bg-indigo-600/90 active:bg-indigo-700 active:ring-2 active:ring-offset-1 border border-indigo-700 dark:hover:border-indigo-500 hover:border-indigo-400 active:ring-offset-indigo-500 active:ring-indigo-300",
         destructive:
           "bg-destructive text-destructive-foreground shadow-sm border border-red-700 hover:bg-destructive/85 active:bg-destructive/70 hover:border-destructive/85 active:ring-2 active:ring-red-400",
         outline:
           "border bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground active:bg-accent/85",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 border border-border/80 active:border-border active:bg-secondary",
+          "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 border border-border/80 hover:border-primary/50 active:border-border active:bg-secondary",
         ghost:
-          "hover:bg-accent/60 transition-colors border border-transparent active:border-border hover:text-accent-foreground",
+          "hover:bg-accent/70 hover:border-primary/60 transition-colors border border-transparent active:border-border hover:text-accent-foreground",
         link: "text-indigo-400 hover:text-indigo-300",
       },
       size: {

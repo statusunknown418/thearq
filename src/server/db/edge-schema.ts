@@ -260,11 +260,12 @@ export const timeEntries = sqliteTable(
     workspaceId: int("workspaceId")
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
-    projectId: text("projectId"),
+    projectId: int("projectId"),
     start: integer("start", { mode: "timestamp" })
       .notNull()
       .$defaultFn(() => new Date()),
     end: integer("end", { mode: "timestamp" }).notNull(),
+    weekNumber: int("weekNumber").notNull(),
     integrationUrl: text("integrationUrl"),
     duration: integer("duration").notNull(),
     description: text("description"),
@@ -276,6 +277,7 @@ export const timeEntries = sqliteTable(
     workspaceIdIdx: index("timeEntries_workspaceId_idx").on(t.workspaceId),
     startIdx: index("timeEntries_start_idx").on(t.start),
     durationIdx: index("timeEntries_duration_idx").on(t.duration),
+    weekNumberIdx: index("timeEntries_weekNumber_idx").on(t.weekNumber),
   }),
 );
 

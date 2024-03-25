@@ -6,7 +6,6 @@ import {
   PersonIcon,
   RocketIcon,
 } from "@radix-ui/react-icons";
-import { useEffect } from "react";
 import { PiCommandDuotone, PiMagnifyingGlassDuotone } from "react-icons/pi";
 import { useCommandsStore } from "~/lib/stores/commands-store";
 import { TrackerCommand } from "../dashboard/tracker/TrackerCommand";
@@ -25,35 +24,6 @@ import {
 export const CommandK = () => {
   const search = useCommandsStore((s) => s.search);
   const setSearch = useCommandsStore((s) => s.setSearch);
-
-  const track = useCommandsStore((s) => s.track);
-  const setTrack = useCommandsStore((s) => s.setTrack);
-
-  useEffect(() => {
-    const commandPalette = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setSearch(!search);
-      }
-    };
-
-    const trackCommand = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-
-      if (e.key === "t" || e.key === "T") {
-        e.preventDefault();
-        setTrack(!track);
-      }
-    };
-
-    document.addEventListener("keydown", commandPalette);
-    document.addEventListener("keydown", trackCommand);
-
-    return () => {
-      document.removeEventListener("keydown", commandPalette);
-      document.removeEventListener("keydown", trackCommand);
-    };
-  }, []);
 
   return (
     <>

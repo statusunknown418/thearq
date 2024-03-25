@@ -15,7 +15,7 @@ export const SettingsNav = ({ role }: { role: Roles }) => {
   const workspace = useWorkspaceStore((s) => s.active);
 
   return (
-    <aside className="min-w-[200px] border-r bg-muted text-xs">
+    <aside className="min-w-[200px] border-r bg-secondary-background text-xs">
       <ul className="grid grid-cols-1 gap-4 p-4">
         {role === "admin" && (
           <>

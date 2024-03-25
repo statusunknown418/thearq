@@ -67,7 +67,7 @@ export const TrackerCommand = () => {
                     <FormControl>
                       <Textarea
                         {...field}
-                        className="max-w-full resize-none rounded-none border-none bg-transparent p-0 text-sm focus-visible:ring-0"
+                        className="max-w-full resize-none rounded-none border-none bg-transparent p-0 text-sm shadow-none focus-visible:ring-0"
                         placeholder="Added new features ..."
                       />
                     </FormControl>
@@ -87,9 +87,9 @@ export const TrackerCommand = () => {
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
-                              variant={"outline"}
+                              variant={"secondary"}
                               className={cn(
-                                "h-9 min-w-64 max-w-max text-left text-sm font-normal",
+                                "h-8 min-w-64 max-w-max text-left text-sm font-normal",
                                 !field.value && "text-muted-foreground",
                               )}
                             >
@@ -114,7 +114,7 @@ export const TrackerCommand = () => {
                                 <Button
                                   type="button"
                                   asChild
-                                  variant={"outline"}
+                                  variant={"secondary"}
                                   className="bg-muted"
                                   onClick={() => {
                                     field.onChange(subDays(new Date(), 1));
@@ -129,7 +129,7 @@ export const TrackerCommand = () => {
                                 <Button
                                   type="button"
                                   asChild
-                                  variant={"outline"}
+                                  variant={"secondary"}
                                   className="bg-muted"
                                   onClick={() => {
                                     field.onChange(subDays(new Date(), 2));
@@ -144,7 +144,7 @@ export const TrackerCommand = () => {
                                 <Button
                                   type="button"
                                   asChild
-                                  variant={"outline"}
+                                  variant={"secondary"}
                                   className="bg-muted"
                                   onClick={() => {
                                     field.onChange(
@@ -161,7 +161,7 @@ export const TrackerCommand = () => {
                                 <Button
                                   type="button"
                                   asChild
-                                  variant={"outline"}
+                                  variant={"secondary"}
                                   className="bg-muted"
                                   onClick={() => {
                                     field.onChange(setDate(startOfMonth(new Date()), 1));
@@ -197,9 +197,9 @@ export const TrackerCommand = () => {
               <FormField
                 name="duration"
                 render={({ field }) => (
-                  <FormItem className="flex-row items-center rounded-md border pl-1 pr-3">
+                  <FormItem className="flex-row items-center rounded-md border pr-3">
                     <TimePickerInput
-                      className="w-8 border-none bg-transparent p-0"
+                      className="h-8 w-8 rounded-r border-transparent p-0"
                       picker="hours"
                       date={undefined}
                       setDate={(d) => console.log(d)}
@@ -208,7 +208,7 @@ export const TrackerCommand = () => {
                     <p className="text-xs text-muted-foreground">hours</p>
 
                     <TimePickerInput
-                      className="w-8 border-none bg-transparent p-0"
+                      className="h-8 w-8 rounded-none rounded-r border-transparent p-0"
                       picker="minutes"
                       date={undefined}
                       setDate={(d) => console.log(d)}

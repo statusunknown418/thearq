@@ -38,11 +38,6 @@ export const { routes, useSafeParams, useSafeSearchParams } = createNavigationCo
       params: z.object({
         slug: z.string(),
       }),
-      search: z
-        .object({
-          from: z.coerce.date().optional(),
-        })
-        .optional(),
     }),
     analytics: defineRoute("/[slug]/analytics", {
       params: z.object({
