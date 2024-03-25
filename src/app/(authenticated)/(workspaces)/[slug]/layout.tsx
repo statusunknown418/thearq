@@ -5,7 +5,7 @@ import { Skeleton } from "~/components/ui/skeleton";
 
 export default function SlugWorkspaceLayout({ children }: { children: ReactNode }) {
   return (
-    <section className="relative grid max-h-screen min-h-screen grid-cols-[240px_auto] bg-secondary-background">
+    <section className="relative grid max-h-screen min-h-screen grid-cols-[220px_auto] bg-secondary-background">
       <Suspense
         fallback={
           <div className="flex flex-col justify-between gap-3 px-2 py-4">

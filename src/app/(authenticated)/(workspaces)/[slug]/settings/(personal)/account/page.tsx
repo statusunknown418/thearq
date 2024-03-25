@@ -1,4 +1,4 @@
-import { Connect } from "~/components/connect";
+import { Connect } from "~/components/integrations/connect";
 import { Main } from "~/components/layout/Main";
 
 export default function AccountSettingsPage() {

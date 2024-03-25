@@ -1,6 +1,9 @@
+import { Suspense } from "react";
 import { PiTimerDuotone } from "react-icons/pi";
 import { Tracker } from "~/components/dashboard/tracker/TrackerTrigger";
+import { CalendarWrapperRSC } from "~/components/dashboard/tracker/entries-wrapper";
 import { Main } from "~/components/layout/Main";
+import { Loader } from "~/components/ui/loader";
 
 export default function WorkspaceTrackerPage() {
   return (
@@ -17,6 +20,10 @@ export default function WorkspaceTrackerPage() {
           Track everything, benefit from the enabled integrations and be more productive.
         </p>
       </header>
+
+      <Suspense fallback={<Loader />}>
+        <CalendarWrapperRSC />
+      </Suspense>
     </Main>
   );
 }
