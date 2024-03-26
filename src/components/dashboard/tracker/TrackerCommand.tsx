@@ -23,11 +23,14 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "~/components/ui/form";
-import { Input } from "~/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import { Separator } from "~/components/ui/separator";
 import { Textarea } from "~/components/ui/textarea";
-import { TimePickerInput } from "~/components/ui/time-picker/time-picker-input";
+import {
+  TimePicker,
+  TimePickerSegment,
+  TimePickerSeparator,
+} from "~/components/ui/time-picker/time-field";
 import { Toggle } from "~/components/ui/toggle";
 import { useCommandsStore } from "~/lib/stores/commands-store";
 import { cn } from "~/lib/utils";
@@ -94,7 +97,7 @@ export const TrackerCommand = () => {
                               )}
                             >
                               {field.value ? (
-                                format(field.value, "PPPP")
+                                format(field.value, "eeee, do MMMM 'at' p")
                               ) : (
                                 <span>Today, now at {format(new Date(), "p")}</span>
                               )}
@@ -106,8 +109,13 @@ export const TrackerCommand = () => {
                         <PopoverContent className="w-auto p-0" align="start">
                           <section className="flex">
                             <div className="flex min-w-40 flex-col gap-3 p-3 text-xs">
-                              <div className="flex flex-col gap-1 border-b pb-3">
-                                <Input type="time" autoFocus={false} />
+                              <div className="flex items-center justify-center gap-2">
+                                <p>At</p>
+                                <TimePicker onChange={console.log} options={{ hour12: true }}>
+                                  <TimePickerSegment segment={"hours"} />
+                                  <TimePickerSeparator>:</TimePickerSeparator>
+                                  <TimePickerSegment segment={"minutes"} />
+                                </TimePicker>
                               </div>
 
                               <ul className="flex flex-col gap-2">
@@ -197,24 +205,15 @@ export const TrackerCommand = () => {
               <FormField
                 name="duration"
                 render={({ field }) => (
-                  <FormItem className="flex-row items-center rounded-md border pr-3">
-                    <TimePickerInput
-                      className="h-8 w-8 rounded-r border-transparent p-0"
-                      picker="hours"
-                      date={undefined}
-                      setDate={(d) => console.log(d)}
-                    />
-
-                    <p className="text-xs text-muted-foreground">hours</p>
-
-                    <TimePickerInput
-                      className="h-8 w-8 rounded-none rounded-r border-transparent p-0"
-                      picker="minutes"
-                      date={undefined}
-                      setDate={(d) => console.log(d)}
-                    />
-
-                    <p className="text-xs text-muted-foreground">minutes</p>
+                  <FormItem>
+                    <FormControl>
+                      <TimePicker onChange={field.onChange} value={field.value as Date}>
+                        <TimePickerSegment segment={"hours"} />
+                        <TimePickerSeparator>hours</TimePickerSeparator>
+                        <TimePickerSegment segment={"minutes"} />
+                        <TimePickerSeparator>minutes</TimePickerSeparator>
+                      </TimePicker>
+                    </FormControl>
                   </FormItem>
                 )}
               />
@@ -249,9 +248,11 @@ export const TrackerCommand = () => {
                 name="project"
                 render={({ field }) => (
                   <FormItem>
-                    <Toggle size={"sm"} variant={"outline"} type="button">
-                      $ Billable
-                    </Toggle>
+                    <FormControl>
+                      <Toggle size={"sm"} variant={"outline"} type="button" {...field}>
+                        $ Billable
+                      </Toggle>
+                    </FormControl>
                   </FormItem>
                 )}
               />

@@ -48,7 +48,16 @@ export const { routes, useSafeParams, useSafeSearchParams } = createNavigationCo
       params: z.object({
         slug: z.string(),
       }),
+      search: z.object({
+        date: z.string().optional(),
+      }),
     }),
+    // trackerDynamicDay: defineRoute("/[slug]/tracker/[...date]", {
+    //   params: z.object({
+    //     slug: z.string(),
+    //     "...date": z.array(z.string()),
+    //   }),
+    // }),
     newWorkspace: defineRoute("/new"),
     projects: defineRoute("/[slug]/projects", {
       params: z.object({

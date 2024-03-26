@@ -90,6 +90,7 @@
     "superjson": "^2.2.1",
     "tailwind-merge": "^2.2.2",
     "tailwindcss-animate": "^1.0.7",
+    "timescape": "^0.4.1",
     "valibot": "^0.26.0",
     "vaul": "^0.8.9",
     "zod": "^3.22.4",
