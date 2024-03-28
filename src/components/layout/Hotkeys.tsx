@@ -27,7 +27,7 @@ export const Hotkeys = () => {
       "shift + T",
       () => {
         if (!workspace?.slug) return;
-        router.push(routes.tracker({ slug: workspace.slug }));
+        router.push(routes.tracker({ slug: workspace.slug, search: {} }));
       },
     ],
     [

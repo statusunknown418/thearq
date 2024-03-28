@@ -110,7 +110,7 @@ export const WorkspaceCombobox = () => {
 
                     w.role === "admin"
                       ? router.replace(routes.dashboard({ slug: w.workspace.slug }))
-                      : router.replace(routes.tracker({ slug: w.workspace.slug }));
+                      : router.replace(routes.tracker({ slug: w.workspace.slug, search: {} }));
                   }}
                 >
                   <CheckIcon

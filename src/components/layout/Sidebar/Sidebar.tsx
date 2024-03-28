@@ -70,7 +70,7 @@ export const Sidebar = ({ role }: { role: Roles }) => {
           )}
           data-active={selectedSegment === sidebarLinks.tracker}
         >
-          <Link href={routes.tracker({ slug: workspace?.slug ?? "" })}>
+          <Link href={routes.tracker({ slug: workspace?.slug ?? "", search: {} })}>
             <PiTimerDuotone className="h-5 w-5 group-data-[active=true]:text-blue-500 dark:group-data-[active=true]:text-blue-400" />
             Tracker
           </Link>
