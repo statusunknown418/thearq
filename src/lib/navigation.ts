@@ -52,12 +52,12 @@ export const { routes, useSafeParams, useSafeSearchParams } = createNavigationCo
         date: z.string().optional(),
       }),
     }),
-    // trackerDynamicDay: defineRoute("/[slug]/tracker/[...date]", {
-    //   params: z.object({
-    //     slug: z.string(),
-    //     "...date": z.array(z.string()),
-    //   }),
-    // }),
+    trackerDate: defineRoute("/[slug]/tracker/[...date]", {
+      params: z.object({
+        slug: z.string(),
+        "...date": z.array(z.string()),
+      }),
+    }),
     newWorkspace: defineRoute("/new"),
     projects: defineRoute("/[slug]/projects", {
       params: z.object({
