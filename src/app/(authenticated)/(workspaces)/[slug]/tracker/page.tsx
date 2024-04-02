@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import { PiTimerDuotone } from "react-icons/pi";
 import { Tracker } from "~/components/dashboard/tracker/TrackerTrigger";
-import { CalendarWrapperRSC } from "~/components/dashboard/tracker/entries-wrapper";
+import { DateViewWrapperRSC } from "~/components/dashboard/tracker/date-view/date-view-wrapper";
+import { CalendarWrapperRSC } from "~/components/dashboard/tracker/entries-view/entries-wrapper";
 import { Main } from "~/components/layout/Main";
 import { Loader } from "~/components/ui/loader";
 
@@ -21,9 +22,15 @@ export default function WorkspaceTrackerPage() {
         </p>
       </header>
 
-      <Suspense fallback={<Loader />}>
-        <CalendarWrapperRSC />
-      </Suspense>
+      <div className="flex gap-4">
+        <Suspense fallback={<Loader />}>
+          <DateViewWrapperRSC />
+        </Suspense>
+
+        <Suspense fallback={<Loader />}>
+          <CalendarWrapperRSC />
+        </Suspense>
+      </div>
     </Main>
   );
 }

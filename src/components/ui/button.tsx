@@ -20,12 +20,14 @@ const buttonVariants = cva(
         ghost:
           "hover:bg-accent/70 hover:border-primary/60 transition-colors border border-transparent active:border-border hover:text-accent-foreground",
         link: "text-indigo-400 hover:text-indigo-300",
+        primary:
+          "bg-primary text-primary-foreground shadow-sm hover:bg-primary/85 active:bg-primary/70",
       },
       size: {
         default: "h-8 rounded-sm px-3 py-2",
         sm: "h-7 rounded-sm px-3 text-xs",
         lg: "h-9 rounded-md px-4",
-        icon: "h-9 w-9 flex-none rounded-md",
+        icon: "h-8 w-8 flex-none rounded-sm",
       },
       subSize: {
         iconSm: "h-6 w-6 rounded",

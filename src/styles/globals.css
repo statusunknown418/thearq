@@ -16,10 +16,10 @@
     --popover: 0 0% 98.3%;
     --popover-foreground: 240 10% 3.9%;
 
-    --primary: 240 5.9% 10%;
+    --primary: 240 5.9% 20%;
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 240 4.8% 95.9%;
+    --secondary: 240 4.8% 94.9%;
     --secondary-foreground: 240 5.9% 10%;
 
     --muted: 240 4.8% 95.9%;
@@ -99,4 +99,36 @@
       stroke-dashoffset: -0.8;
     }
   }
+}
+
+.rbc-time-header {
+  display: none !important;
+}
+
+.rbc-time-content > * + * > * {
+  @apply !border-l-0
+}
+
+.rbc-time-slot {
+  @apply !text-muted-foreground
+}
+
+.rbc-time-view {
+  @apply !border-border rounded-lg overflow-hidden
+}
+
+.rbc-time-view > * {
+  @apply !border-border
+}
+
+.rbc-today {
+  @apply !bg-indigo-100/50
+}
+
+.rbc-event {
+  @apply !rounded-lg
+}
+
+.rbc-current-time-indicator {
+  @apply !bg-indigo-500 !h-0.5 !rounded-lg
 }

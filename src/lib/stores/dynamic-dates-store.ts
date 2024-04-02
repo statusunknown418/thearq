@@ -1,4 +1,4 @@
-import { format, getDaysInMonth } from "date-fns";
+import { addDays, format, getDaysInMonth } from "date-fns";
 import { createParser, useQueryState } from "nuqs";
 import { create } from "zustand";
 
@@ -13,7 +13,7 @@ export const useDynamicDatesStore = create<DynamicDatesStore>((set) => ({
 }));
 
 export const useQueryDateState = () => {
-  return useQueryState("date", { history: "push" });
+  return useQueryState("date");
 };
 
 export const computeMonthDays = (base: string | Date) => {
@@ -42,27 +42,26 @@ export const parseAsFormattedMonth = createParser({
 });
 
 export const getMonthFromBase = (base: string) => {
-  const [year, month] = base.split("-");
+  const [year, month, day] = base.split("/");
 
-  /** The +1 is because the second arg is the INDEX of the month not its position */
-  return new Date(Number(year), Number(month));
+  return new Date(Number(year), Number(month) - 1, Number(day));
 };
 
-export const toNextMonth = (base: string) => {
-  const date = getMonthFromBase(base);
-  const next = new Date(date.getFullYear(), date.getMonth() + 1);
+export const toNextDay = (base: string | null) => {
+  const date = !!base ? getMonthFromBase(base) : new Date();
+  const next = addDays(date, 1);
 
-  return format(next, "yyyy-MM");
+  return format(next, "yyyy/MM/dd");
 };
 
-export const toPrevMonth = (base: string) => {
-  const date = getMonthFromBase(base);
-  const prev = new Date(date.getFullYear(), date.getMonth() - 1);
+export const toPrevDay = (base: string | null) => {
+  const date = !!base ? getMonthFromBase(base) : new Date();
+  const prev = addDays(date, -1);
 
-  return format(prev, "yyyy-MM");
+  return format(prev, "yyyy/MM/dd");
 };
 
-export const toNow = () => format(new Date(), "yyyy-MM");
+export const toNow = () => format(new Date(), "yyyy/MM/dd");
 
 export const toNextMonthDate = (base: Date) => {
   const next = new Date(base.getFullYear(), base.getMonth() + 1);
