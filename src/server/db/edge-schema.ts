@@ -1,4 +1,5 @@
 import { createId } from "@paralleldrive/cuid2";
+import { formatDate } from "date-fns";
 import { relations } from "drizzle-orm";
 import { index, int, integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-valibot";
@@ -271,13 +272,16 @@ export const timeEntries = sqliteTable(
     description: text("description"),
     locked: integer("locked", { mode: "boolean" }).default(false),
     billable: integer("billable", { mode: "boolean" }).default(true),
+    trackedAt: text("trackedAt")
+      .notNull()
+      .$defaultFn(() => formatDate(new Date(), "yyyy/MM/dd")),
   },
   (t) => ({
     userIdIdx: index("timeEntries_userId_idx").on(t.userId),
     workspaceIdIdx: index("timeEntries_workspaceId_idx").on(t.workspaceId),
-    startIdx: index("timeEntries_start_idx").on(t.start),
     durationIdx: index("timeEntries_duration_idx").on(t.duration),
     weekNumberIdx: index("timeEntries_weekNumber_idx").on(t.weekNumber),
+    trackedAtIdx: index("timeEntries_trackedAt_idx").on(t.trackedAt),
   }),
 );
 
@@ -286,6 +290,8 @@ export const timeEntrySchema = omit(createInsertSchema(timeEntries, {}), [
   "userId",
   "id",
 ]);
+export const timeEntrySelect = createInsertSchema(timeEntries);
+export type TimeEntry = Output<typeof timeEntrySelect>;
 
 export const timeEntriesRelations = relations(timeEntries, ({ one }) => ({
   user: one(users, {

@@ -7,20 +7,22 @@ export const logsHistorySchema = object({
   date: date(),
   workspaceId: number(),
   projectId: optional(number()),
-  weekNumber: optional(number()),
+  weekNumberStart: optional(number()),
+  weekNumberEnd: optional(number()),
+  day: optional(number()),
 });
 
 export const logsHistoryRouter = createTRPCRouter({
   get: protectedProcedure
     .input((i) => parse(logsHistorySchema, i))
-    .query(({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
       const now = input.date;
       const week = getWeek(input.date ?? now);
 
       /**
        * TODO: Make this a prepared statement
        */
-      return ctx.db.query.timeEntries.findMany({
+      const weekEntries = await ctx.db.query.timeEntries.findMany({
         where: (t, op) =>
           and(
             op.eq(t.userId, ctx.session.user.id),
@@ -29,5 +31,8 @@ export const logsHistoryRouter = createTRPCRouter({
             input.projectId ? op.eq(t.projectId, input.projectId) : undefined,
           ),
       });
+
+      /** I want to think this is safe because we're only dealing with one single user entries */
+      return weekEntries.sort((a, b) => a.start.getTime() - b.start.getTime());
     }),
 });

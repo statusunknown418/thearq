@@ -114,7 +114,7 @@ export const TrackerCommand = () => {
                                 <TimePicker onChange={console.log} options={{ hour12: true }}>
                                   <TimePickerSegment segment={"hours"} />
                                   <TimePickerSeparator>:</TimePickerSeparator>
-                                  <TimePickerSegment segment={"minutes"} />
+                                  <TimePickerSegment segment={"minutes"} className="rounded-r-md" />
                                 </TimePicker>
                               </div>
 
