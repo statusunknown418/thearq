@@ -267,9 +267,12 @@ export const timeEntries = sqliteTable(
       .$defaultFn(() => new Date()),
     end: integer("end", { mode: "timestamp" }).notNull(),
     weekNumber: int("weekNumber").notNull(),
+    monthDate: text("monthDate")
+      .notNull()
+      .$defaultFn(() => formatDate(new Date(), "yyyy/MM")),
     integrationUrl: text("integrationUrl"),
     duration: integer("duration").notNull(),
-    description: text("description"),
+    description: text("description").notNull().default(""),
     locked: integer("locked", { mode: "boolean" }).default(false),
     billable: integer("billable", { mode: "boolean" }).default(true),
     trackedAt: text("trackedAt")
@@ -282,6 +285,7 @@ export const timeEntries = sqliteTable(
     durationIdx: index("timeEntries_duration_idx").on(t.duration),
     weekNumberIdx: index("timeEntries_weekNumber_idx").on(t.weekNumber),
     trackedAtIdx: index("timeEntries_trackedAt_idx").on(t.trackedAt),
+    monthDateIdx: index("timeEntries_monthDate_idx").on(t.monthDate),
   }),
 );
 
@@ -290,6 +294,8 @@ export const timeEntrySchema = omit(createInsertSchema(timeEntries, {}), [
   "userId",
   "id",
 ]);
+export type NewTimeEntry = Output<typeof timeEntrySchema>;
+
 export const timeEntrySelect = createInsertSchema(timeEntries);
 export type TimeEntry = Output<typeof timeEntrySelect>;
 
