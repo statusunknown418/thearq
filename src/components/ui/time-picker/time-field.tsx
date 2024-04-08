@@ -5,7 +5,7 @@ import type { Options } from "timescape";
 import { useTimescape, type DateType } from "timescape/react";
 import { cn } from "~/lib/utils";
 
-export type TimePickerProps = HTMLAttributes<HTMLDivElement> & {
+export type TimePickerProps = Omit<HTMLAttributes<HTMLDivElement>, "onChange"> & {
   value?: Date;
   onChange: (date?: Date) => void;
   children: ReactNode;
@@ -27,7 +27,7 @@ const useTimePickerContext = (): TimePickerContextValue => {
 const TimePicker = forwardRef<React.ElementRef<"div">, TimePickerProps>(
   ({ value, onChange, options, className, ...props }, ref) => {
     const timePickerContext = useTimescape({
-      date: value,
+      date: new Date(value ?? ""),
       onChangeDate: onChange,
       ...options,
     });
