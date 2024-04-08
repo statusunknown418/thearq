@@ -66,6 +66,7 @@
     "clsx": "^2.1.0",
     "cmdk": "^0.2.1",
     "date-fns": "^3.6.0",
+    "date-fns-tz": "^3.0.0",
     "dayjs": "^1.11.10",
     "drizzle-orm": "^0.29.5",
     "drizzle-valibot": "^0.1.1",

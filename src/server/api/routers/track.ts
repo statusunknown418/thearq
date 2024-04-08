@@ -3,10 +3,8 @@ import { cookies } from "next/headers";
 import { omit, parse } from "valibot";
 import { RECENT_W_ID_KEY } from "~/lib/constants";
 import { timeEntries, timeEntrySchema } from "~/server/db/edge-schema";
-import { type RouterOutputs } from "~/trpc/shared";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
-export type CustomEvent = RouterOutputs["logsHistory"]["get"][number];
 export const autoTrackerSchema = omit(timeEntrySchema, ["duration", "end"]);
 export const manualTrackerSchema = timeEntrySchema;
 

@@ -105,8 +105,8 @@
   display: none !important;
 }
 
-.rbc-time-content > * + * > * {
-  @apply !border-l-0
+.rbc-time-content {
+  @apply !border-l-0 !border-t-0
 }
 
 .rbc-time-slot {
@@ -125,6 +125,10 @@
   @apply !bg-indigo-100/30;
   background-size: 10px 10px;
   background-image: repeating-linear-gradient(45deg, #dddfff 0, #dddfff 1px, #f6f6ff 0, #f6f6ff 50%);
+}
+
+.rbc-time-view > * {
+  scrollbar-width: 2px !important;
 }
 
 .rbc-event {
