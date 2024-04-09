@@ -1,5 +1,5 @@
 import { createId } from "@paralleldrive/cuid2";
-import { formatDate, getWeek } from "date-fns";
+import { formatDate } from "date-fns";
 import { type User } from "next-auth";
 import { type stringOrDate } from "react-big-calendar";
 import { create } from "zustand";
@@ -72,7 +72,6 @@ export const createFakeEvent = (
       userId: user.id ?? createId(),
       monthDate: "",
       trackedAt: formatDate(new Date(), "yyyy/MM/dd"),
-      weekNumber: getWeek(rangeStart),
       duration,
       project: {
         color: "#000",
@@ -87,7 +86,6 @@ export const createFakeEvent = (
     duration: 0,
     start: new Date(),
     end: new Date(),
-    weekNumber: 0,
     monthDate: "",
     workspaceId: 0,
     description: "",

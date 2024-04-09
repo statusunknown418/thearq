@@ -268,7 +268,6 @@ export const timeEntries = sqliteTable(
       .notNull()
       .$defaultFn(() => new Date()),
     end: integer("end", { mode: "timestamp" }),
-    weekNumber: int("weekNumber").notNull(),
     monthDate: text("monthDate")
       .notNull()
       .$defaultFn(() => formatDate(new Date(), "yyyy/MM")),
@@ -285,7 +284,6 @@ export const timeEntries = sqliteTable(
     userIdIdx: index("timeEntries_userId_idx").on(t.userId),
     workspaceIdIdx: index("timeEntries_workspaceId_idx").on(t.workspaceId),
     durationIdx: index("timeEntries_duration_idx").on(t.duration),
-    weekNumberIdx: index("timeEntries_weekNumber_idx").on(t.weekNumber),
     trackedAtIdx: index("timeEntries_trackedAt_idx").on(t.trackedAt),
     monthDateIdx: index("timeEntries_monthDate_idx").on(t.monthDate),
   }),

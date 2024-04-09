@@ -174,7 +174,6 @@ export const DynamicDateView = ({
       start: fromZonedTime(data.start, "America/Lima"),
       end: fromZonedTime(data.end, "America/Lima"),
       duration,
-      weekNumber,
     });
   };
 
@@ -189,7 +188,6 @@ export const DynamicDateView = ({
       start: new Date(data.start),
       end: new Date(data.end),
       duration,
-      weekNumber,
     });
   };
 
