@@ -11,7 +11,7 @@ import {
   startOfWeek,
 } from "date-fns";
 import { fromZonedTime } from "date-fns-tz";
-import enUs from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 import { useCallback, useEffect, useState } from "react";
 import { Calendar, dateFnsLocalizer, type SlotInfo } from "react-big-calendar";
 import withDragAndDrop, {
@@ -31,7 +31,7 @@ import {
   useDynamicMonthStore,
   useQueryDateState,
 } from "~/lib/stores/dynamic-dates-store";
-import { createFakeEvent, useEventsStore } from "~/lib/stores/events-store";
+import { computeDuration, createFakeEvent, useEventsStore } from "~/lib/stores/events-store";
 import { useHotkeys } from "~/lib/use-hotkeys";
 import { cn } from "~/lib/utils";
 import { type CustomEvent } from "~/server/api/routers/entries";
@@ -42,7 +42,7 @@ const now = new Date();
 const monthDate = format(now, "yyyy/MM");
 
 const locales = {
-  en: enUs,
+  en: enUS,
 };
 
 const localizer = dateFnsLocalizer({
@@ -90,21 +90,34 @@ export const DynamicDateView = ({
   };
 
   const utils = api.useUtils();
-  const { data: events, refetch } = api.entries.getByMonth.useQuery(
+  const { data: events } = api.entries.getByMonth.useQuery(
     { workspaceId, monthDate: format(month, "yyyy/MM") },
     { initialData, refetchOnWindowFocus: false, refetchOnReconnect: false },
   );
 
+  console.log({ events });
+
   const { mutate } = api.entries.update.useMutation({
     onMutate: async (input) => {
+      await utils.entries.getByMonth.cancel();
       const prev = utils.entries.getByMonth.getData({ workspaceId, monthDate });
 
       if (!prev || !auth) return;
 
-      utils.entries.getByMonth.setData({ workspaceId, monthDate }, () => [...prev]);
+      const updatedEvent = {
+        ...prev.find((e) => e.id === input.id)!,
+        ...input,
+      };
+
+      utils.entries.getByMonth.setData({ workspaceId, monthDate }, (prevState) => [
+        ...prevState!.filter((e) => e.id !== input.id),
+        updatedEvent,
+      ]);
+
+      return { prev };
     },
     onSettled: async () => {
-      return await utils.entries.getByMonth.invalidate({
+      await utils.entries.getByMonth.invalidate({
         workspaceId,
         monthDate,
       });
@@ -140,7 +153,7 @@ export const DynamicDateView = ({
       }
 
       /**
-       *  Set a temporal event and then delete it if the mutation is successful
+       * Set a temporal event and then delete it if the mutation is successful
        * @description assertion as CustomEvent is intentional
        */
       setTemporalEvents((prev) => prev.concat([fakeEvent as CustomEvent]));
@@ -152,7 +165,7 @@ export const DynamicDateView = ({
 
   const onEventResize: withDragAndDropProps<CustomEvent>["onEventResize"] = (data) => {
     const prevEvent = data.event;
-    const duration = new Date(data.end).getTime() / 1000 - new Date(data.start).getTime() / 1000;
+    const duration = computeDuration({ start: data.start, end: data.end });
     const weekNumber = getWeek(data.start);
 
     /** Mutation */
@@ -167,7 +180,7 @@ export const DynamicDateView = ({
 
   const onEventDrop: withDragAndDropProps<CustomEvent>["onEventDrop"] = (data) => {
     const prevEvent = data.event;
-    const duration = new Date(data.end).getTime() / 1000 - new Date(data.start).getTime() / 1000;
+    const duration = computeDuration({ start: data.start, end: data.end });
     const weekNumber = getWeek(data.start);
 
     /** Mutation */
@@ -292,15 +305,13 @@ export const DynamicDateView = ({
               return (
                 <div
                   className={cn(
-                    "h-full w-full items-start rounded-xl border p-4",
+                    "h-full w-full items-start rounded-xl border border-gray-400 p-4",
                     event?.temp ? "pointer-events-none bg-gray-500" : "bg-gray-700",
                   )}
                 >
                   <div className="h-full w-full">
                     <p className="text-xs">{event.description}</p>
                   </div>
-
-                  {event.temp && <p>temporal event</p>}
 
                   {event.locked && <p className="text-xs text-destructive">Locked</p>}
                 </div>

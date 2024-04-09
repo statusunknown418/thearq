@@ -39,7 +39,7 @@ export const entriesRouter = createTRPCRouter({
         },
       });
 
-      /** I want to think this is safe because we're only dealing with one single user entries */
+      /** I want to think this is performance-safe because we're only dealing with one single user entries */
       return weekEntries.sort((a, b) => a.start.getTime() - b.start.getTime());
     }),
   update: protectedProcedure

@@ -12,6 +12,7 @@ import {
   PiSquaresFourDuotone,
   PiTriangleDuotone,
 } from "react-icons/pi";
+import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { DateTimeInput } from "~/components/ui/date-time-input";
@@ -34,8 +35,10 @@ import {
 } from "~/components/ui/time-picker/time-field";
 import { Toggle } from "~/components/ui/toggle";
 import { useCommandsStore } from "~/lib/stores/commands-store";
-import { useEventsStore } from "~/lib/stores/events-store";
+import { createFakeEvent, useEventsStore } from "~/lib/stores/events-store";
+import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 import { useHotkeys } from "~/lib/use-hotkeys";
+import { type CustomEvent } from "~/server/api/routers/entries";
 import { timeEntrySchema, type NewTimeEntry } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 
@@ -53,13 +56,15 @@ const baseDefaultValues = {
   workspaceId: 0,
 };
 
-export const TrackerCommand = ({ defaultValues }: { defaultValues?: NewTimeEntry }) => {
+export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent }) => {
   const router = useRouter();
 
   const open = useCommandsStore((s) => s.track);
   const setOpen = useCommandsStore((s) => s.setTrack);
   const clear = useCommandsStore((s) => s.clear);
   const clearEvents = useEventsStore((s) => s.clear);
+
+  const workspaceId = useWorkspaceStore((s) => s.active?.id);
   const { data: auth } = useSession({
     required: true,
     onUnauthenticated: () => {
@@ -85,21 +90,59 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: NewTimeEntry
 
   const utils = api.useUtils();
 
-  const { mutate: manualTrack } = api.tracker.manual.useMutation({
+  const { mutate: updateEntry } = api.entries.update.useMutation({
     onSettled: async () => {
       clearEvents();
       return await utils.entries.getByMonth.invalidate();
     },
   });
 
+  const { mutate: manualTrack } = api.tracker.manual.useMutation({
+    onMutate: async (input) => {
+      const monthDate = format(new Date(), "yyyy/MM");
+
+      if (!workspaceId) return;
+
+      const prev = utils.entries.getByMonth.getData({ workspaceId, monthDate });
+
+      if (!prev || !auth?.user || !workspaceId) return;
+
+      const computedEvent = createFakeEvent("temporal", {
+        end: input.end ?? null,
+        start: input.start,
+        workspaceId,
+        auth: auth.user,
+      });
+
+      clearEvents();
+
+      return utils.entries.getByMonth.setData({ workspaceId, monthDate }, () => [
+        ...prev,
+        computedEvent as CustomEvent,
+      ]);
+    },
+    onSettled: async () => {
+      return await utils.entries.getByMonth.invalidate();
+    },
+  });
+
   const onSubmit = form.handleSubmit(async (data) => {
-    manualTrack({
-      ...data,
-      /**
-       * @todo: investigate the computed duration turns out to be negative
-       */
-      duration: -Number(data.duration),
-    });
+    if (isEditing && !defaultValues.temp) {
+      updateEntry({
+        ...data,
+        id: defaultValues.id,
+        duration: Number(data.duration),
+      });
+
+      toast("Updated entry");
+    } else {
+      manualTrack({
+        ...data,
+        duration: Number(data.duration),
+      });
+
+      toast("Added new entry");
+    }
 
     clear();
     form.reset({});

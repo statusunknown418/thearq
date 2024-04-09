@@ -1,6 +1,7 @@
 import { createId } from "@paralleldrive/cuid2";
 import { formatDate, getWeek } from "date-fns";
 import { type User } from "next-auth";
+import { type stringOrDate } from "react-big-calendar";
 import { create } from "zustand";
 import { type CustomEvent } from "~/server/api/routers/entries";
 import { type NewTimeEntry } from "~/server/db/edge-schema";
@@ -36,11 +37,15 @@ export const createFakeEvent = (
     end: Date | null;
     workspaceId?: number;
   },
+  isQueryData?: boolean,
 ) => {
   if (variant === "temporal") {
+    const overrideTemporal = variant === "temporal" && !isQueryData ? true : false;
     const user = auth!;
-    const rangeStart = end ?? new Date();
-    const rangeEnd = start ?? new Date(rangeStart.getTime() + 1000 * 60 * 60);
+    const rangeStart = start ?? new Date();
+    const rangeEnd = end ?? new Date(rangeStart.getTime() + 1000 * 60 * 60);
+
+    const duration = computeDuration({ start: rangeStart, end: rangeEnd });
 
     if (!user) {
       return null;
@@ -48,7 +53,7 @@ export const createFakeEvent = (
 
     return {
       billable: true,
-      temp: true,
+      temp: overrideTemporal,
       locked: true,
       id: Math.random() * 10000,
       start,
@@ -68,7 +73,7 @@ export const createFakeEvent = (
       monthDate: "",
       trackedAt: formatDate(new Date(), "yyyy/MM/dd"),
       weekNumber: getWeek(rangeStart),
-      duration: (rangeEnd.getTime() - rangeStart.getTime()) / 1000,
+      duration,
       project: {
         color: "#000",
         identifier: "PRX",
@@ -88,4 +93,20 @@ export const createFakeEvent = (
     description: "",
     projectId: 0,
   } satisfies NewTimeEntry;
+};
+
+/**
+ * @description Simple function to calculate the duration of an event
+ * @param start Range start
+ * @param end Range end
+ * @returns Returns `-1` if there's no end set so the DB can know that as well
+ */
+export const computeDuration = ({
+  start,
+  end,
+}: {
+  start: stringOrDate;
+  end: stringOrDate | null;
+}) => {
+  return end ? (new Date(end).getTime() - new Date(start).getTime()) / 1000 : -1;
 };

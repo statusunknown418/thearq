@@ -26,7 +26,9 @@ export const CommandK = () => {
   const search = useCommandsStore((s) => s.search);
   const track = useCommandsStore((s) => s.track);
   const setSearch = useCommandsStore((s) => s.setSearch);
+
   const defaultEvent = useEventsStore((s) => s.temporalEvents[0]);
+  const selectedEvent = useCommandsStore((s) => s.defaultValues);
 
   return (
     <>
@@ -80,7 +82,7 @@ export const CommandK = () => {
         </CommandList>
       </CommandDialog>
 
-      {track && <TrackerCommand defaultValues={defaultEvent} />}
+      {track && <TrackerCommand defaultValues={defaultEvent ?? selectedEvent} />}
     </>
   );
 };
