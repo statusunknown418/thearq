@@ -110,7 +110,11 @@
 }
 
 .rbc-time-slot {
-  @apply !text-muted-foreground
+  @apply !text-muted-foreground !border-border
+}
+
+.rbc-timeslot-group {
+  @apply !border-l-0 !border-y-0
 }
 
 .rbc-time-view {

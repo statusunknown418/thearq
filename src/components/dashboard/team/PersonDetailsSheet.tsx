@@ -81,7 +81,7 @@ export const PersonDetailsSheet = () => {
         change(sw);
       }}
     >
-      <SheetContent className="sm:max-w-sm">
+      <SheetContent className="sm:max-w-md">
         <SheetHeader>
           <SheetTitle>{details?.user.name}&apos;s profile</SheetTitle>
 
@@ -130,15 +130,15 @@ export const PersonDetailsSheet = () => {
               name="defaultBillableRate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Default billable rate</FormLabel>
+                  <FormLabel>Billable rate (Default)</FormLabel>
 
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
 
                   <FormDescription>
-                    This is the default billable rate for this person. However it is customizable
-                    per project.
+                    This is the default billable rate for this person. It can be customized per
+                    project.
                   </FormDescription>
 
                   <FormMessage />
@@ -158,7 +158,7 @@ export const PersonDetailsSheet = () => {
                   </FormControl>
 
                   <FormDescription>
-                    This is the costs of this person to the company. It is used to calculate the
+                    This is the person&apos;s cost to the company. It is used to calculate the
                     profitability of the projects.
                   </FormDescription>
 

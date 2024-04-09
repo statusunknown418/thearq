@@ -21,6 +21,8 @@ import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
+import { KBD } from "~/components/ui/kbd";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import { useAuthStore } from "~/lib/stores/auth-store";
 import { useCommandsStore } from "~/lib/stores/commands-store";
 import {
@@ -198,6 +200,13 @@ export const DynamicDateView = ({
         void update(toPrevDay);
       },
     ],
+    [
+      "T",
+      () => {
+        setMonth(now);
+        void update(null);
+      },
+    ],
   ]);
 
   useEffect(() => {
@@ -215,28 +224,66 @@ export const DynamicDateView = ({
               return (
                 <ul className="mb-4 flex items-center gap-0.5">
                   <li>
-                    <Button onClick={() => onNavigate("PREV")} variant={"secondary"} size={"icon"}>
-                      <ArrowLeftIcon />
-                    </Button>
+                    <TooltipProvider delayDuration={0}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            onClick={() => onNavigate("PREV")}
+                            variant={"secondary"}
+                            size={"icon"}
+                          >
+                            <ArrowLeftIcon />
+                          </Button>
+                        </TooltipTrigger>
+
+                        <TooltipContent>
+                          Previous day <KBD>H</KBD>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </li>
                   <li>
-                    <Button
-                      variant={"ghost"}
-                      onClick={() => {
-                        setMonth(new Date());
-                        onNavigate("TODAY");
-                      }}
-                      className={cn("min-w-24")}
-                    >
-                      {format(date, "yyyy/MM/dd") === format(now, "yyyy/MM/dd")
-                        ? localizer.messages.today
-                        : label}
-                    </Button>
+                    <TooltipProvider delayDuration={0}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant={"ghost"}
+                            onClick={() => {
+                              setMonth(new Date());
+                              onNavigate("TODAY");
+                            }}
+                            className={cn("min-w-24")}
+                          >
+                            {format(date, "yyyy/MM/dd") === format(now, "yyyy/MM/dd")
+                              ? localizer.messages.today
+                              : label}
+                          </Button>
+                        </TooltipTrigger>
+
+                        <TooltipContent>
+                          Today <KBD>T</KBD>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </li>
                   <li>
-                    <Button onClick={() => onNavigate("NEXT")} variant={"secondary"} size={"icon"}>
-                      <ArrowRightIcon />
-                    </Button>
+                    <TooltipProvider delayDuration={0}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            onClick={() => onNavigate("NEXT")}
+                            variant={"secondary"}
+                            size={"icon"}
+                          >
+                            <ArrowRightIcon />
+                          </Button>
+                        </TooltipTrigger>
+
+                        <TooltipContent>
+                          Next day <KBD>L</KBD>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </li>
                 </ul>
               );

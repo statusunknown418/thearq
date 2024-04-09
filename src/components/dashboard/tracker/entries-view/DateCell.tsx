@@ -11,7 +11,7 @@ export const DateCell = ({ date }: { date: Date }) => {
 
   return (
     <button
-      className={cn("h-full border-t p-0.5")}
+      className={cn("h-full border-t p-0.5 focus:outline-none focus:ring focus:ring-ring")}
       onClick={() => {
         if (formatDate(date, "yyyy/MM/dd") === toNow()) {
           return setQueryDate(null);
