@@ -7,7 +7,9 @@ import { type AdapterAccount } from "next-auth/adapters";
 import {
   array,
   coerce,
+  custom,
   email,
+  forward,
   maxLength,
   minLength,
   number,
@@ -265,7 +267,7 @@ export const timeEntries = sqliteTable(
     start: integer("start", { mode: "timestamp" })
       .notNull()
       .$defaultFn(() => new Date()),
-    end: integer("end", { mode: "timestamp" }).notNull(),
+    end: integer("end", { mode: "timestamp" }),
     weekNumber: int("weekNumber").notNull(),
     monthDate: text("monthDate")
       .notNull()
@@ -289,11 +291,24 @@ export const timeEntries = sqliteTable(
   }),
 );
 
-export const timeEntrySchema = omit(createInsertSchema(timeEntries, {}), [
-  "locked",
-  "userId",
-  "id",
-]);
+export const timeEntrySchema = omit(
+  createInsertSchema(timeEntries, {
+    description: string([minLength(1)]),
+  }),
+  ["locked", "userId", "id"],
+  [
+    forward(
+      custom((input) => {
+        if (input.start && input.end) {
+          return input.start < input.end;
+        }
+
+        return true;
+      }, 'The "start" date must be before the "end" date'),
+      ["end"],
+    ),
+  ],
+);
 export type NewTimeEntry = Output<typeof timeEntrySchema>;
 
 export const timeEntrySelect = createInsertSchema(timeEntries);

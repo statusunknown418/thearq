@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { formatDate } from "date-fns";
 import { cookies } from "next/headers";
 import { omit, parse } from "valibot";
 import { RECENT_W_ID_KEY } from "~/lib/constants";
@@ -31,7 +32,7 @@ export const trackerRouter = createTRPCRouter({
           ...input,
           duration: -1,
           start: new Date(),
-          end: new Date(),
+          end: null,
           userId: user.id,
           workspaceId: Number(workspaceId),
         })
@@ -40,7 +41,36 @@ export const trackerRouter = createTRPCRouter({
 
   manual: protectedProcedure
     .input((i) => parse(manualTrackerSchema, i))
-    .mutation(({ ctx }) => {
-      return;
+    .mutation(({ ctx, input }) => {
+      const {
+        session: { user },
+      } = ctx;
+
+      if (!input.workspaceId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No workspace selected",
+        });
+      }
+
+      if (!input.start || !input.end) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Start and end date are required",
+        });
+      }
+
+      return ctx.db
+        .insert(timeEntries)
+        .values({
+          ...input,
+          userId: user.id,
+          duration: Number(input.duration),
+          start: new Date(input.start),
+          end: new Date(input.end),
+          monthDate: formatDate(new Date(input.start), "yyyy/MM"),
+          trackedAt: formatDate(new Date(), "yyyy/MM/dd"),
+        })
+        .returning();
     }),
 });

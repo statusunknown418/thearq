@@ -1,8 +1,6 @@
-import { and } from "drizzle-orm";
-import { cookies } from "next/headers";
+import { and, eq } from "drizzle-orm";
 import { omit, parse } from "valibot";
 import { number, object, string } from "zod";
-import { RECENT_W_ID_KEY } from "~/lib/constants";
 import { timeEntries, timeEntrySelect } from "~/server/db/edge-schema";
 import { type RouterOutputs } from "~/trpc/shared";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
@@ -54,25 +52,11 @@ export const entriesRouter = createTRPCRouter({
         };
       }
 
-      const workspaceId = Number(cookies().get(RECENT_W_ID_KEY)?.value);
-
-      const entry = await ctx.db.query.timeEntries.findFirst({
-        where: (t, op) =>
-          op.and(
-            op.eq(t.id, input.id!),
-            op.eq(t.userId, ctx.session.user.id),
-            op.eq(t.workspaceId, workspaceId),
-          ),
-      });
-
-      if (!entry) {
-        return {
-          error: true,
-          message: "Entry not found",
-        };
-      }
-
-      const updatedEntry = await ctx.db.update(timeEntries).set(input).returning();
+      const updatedEntry = await ctx.db
+        .update(timeEntries)
+        .set(input)
+        .where(eq(timeEntries.id, input.id))
+        .returning();
 
       return updatedEntry;
     }),
