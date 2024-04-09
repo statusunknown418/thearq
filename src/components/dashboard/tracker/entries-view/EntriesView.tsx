@@ -1,44 +1,45 @@
 "use client";
 import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons";
-import { format } from "date-fns";
-import { useMemo, useState } from "react";
+import { endOfMonth, format, startOfMonth } from "date-fns";
+import { useMemo } from "react";
 import { Button } from "~/components/ui/button";
 import { KBD } from "~/components/ui/kbd";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
-import { useSafeParams, useSafeSearchParams } from "~/lib/navigation";
 import {
   computeMonthDays,
-  toNextDay,
+  header,
   toNextMonthDate,
-  toNow,
-  toPrevDay,
   toPrevMonthDate,
-  useQueryDateState,
+  useDynamicMonthStore,
 } from "~/lib/stores/dynamic-dates-store";
 import { useHotkeys } from "~/lib/use-hotkeys";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
+import { DateCell } from "./DateCell";
 
 export const EntriesViews = ({
   workspaceId,
   initialData,
 }: {
   workspaceId: number;
-  initialData: RouterOutputs["logsHistory"]["get"];
+  initialData: RouterOutputs["entries"]["getByMonth"];
 }) => {
-  const params = useSafeParams("dashboard");
-  const search = useSafeSearchParams("tracker");
+  const month = useDynamicMonthStore((s) => s.month);
+  const setMonth = useDynamicMonthStore((s) => s.setMonth);
 
-  const [month, setMonth] = useState(new Date());
-  const [_, setQueryDate] = useQueryDateState();
+  const startDate = startOfMonth(month);
+  const endDate = endOfMonth(month);
+
+  const prefixDays = useMemo(() => startDate.getDay(), [startDate]);
+  const suffixDays = useMemo(() => 6 - endDate.getDay(), [endDate]);
 
   const computedMonthGrid = useMemo(() => computeMonthDays(month), [month]);
 
-  const [data] = api.logsHistory.get.useSuspenseQuery(
+  const [data] = api.entries.getByMonth.useSuspenseQuery(
     {
       workspaceId,
-      date: new Date(),
+      monthDate: format(month, "yyyy/MM"),
     },
     {
       initialData,
@@ -46,14 +47,12 @@ export const EntriesViews = ({
   );
 
   useHotkeys([
-    ["ArrowUp", () => setMonth(toNextMonthDate)],
-    ["ArrowDown", () => setMonth(toPrevMonthDate)],
-    ["ArrowLeft", () => setQueryDate(toPrevDay)],
-    ["ArrowRight", () => setQueryDate(toNextDay)],
+    ["K", () => setMonth(toPrevMonthDate(month))],
+    ["J", () => setMonth(toNextMonthDate(month))],
   ]);
 
   return (
-    <section className="flex h-full flex-col gap-4">
+    <section className="flex h-full w-full flex-col gap-4">
       <header>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-0.5 rounded-md">
@@ -63,13 +62,14 @@ export const EntriesViews = ({
                   <Button
                     variant={"secondary"}
                     size={"icon"}
-                    onClick={() => setMonth(toPrevMonthDate)}
+                    onClick={() => setMonth(toPrevMonthDate(month))}
                   >
                     <ArrowLeftIcon />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <KBD>↓</KBD>
+                  Previous month
+                  <KBD>K</KBD>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -96,14 +96,15 @@ export const EntriesViews = ({
                   <Button
                     variant={"secondary"}
                     size={"icon"}
-                    onClick={() => setMonth(toNextMonthDate)}
+                    onClick={() => setMonth(toNextMonthDate(month))}
                   >
                     <ArrowRightIcon />
                   </Button>
                 </TooltipTrigger>
 
                 <TooltipContent>
-                  <KBD>↑</KBD>
+                  Next month
+                  <KBD>J</KBD>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -111,26 +112,33 @@ export const EntriesViews = ({
         </div>
       </header>
 
-      <div className="grid h-full min-w-full resize-none grid-cols-1 justify-stretch overflow-scroll rounded-lg border bg-popover text-center md:grid-cols-3 lg:grid-cols-7">
-        {computedMonthGrid.map(({ date, id }) => (
-          <div
-            key={id}
-            onClick={() => {
-              if (format(date, "yyyy/MM/dd") === toNow()) {
-                return setQueryDate(null);
-              }
+      <div className="flex h-full w-full flex-col">
+        <section className="grid min-w-full grid-cols-7 rounded-t-md border-x border-t bg-muted py-1 text-muted-foreground">
+          {header.map((day) => (
+            <div key={day} className="flex items-center justify-center">
+              <p className="text-xs">{day}</p>
+            </div>
+          ))}
+        </section>
 
-              void setQueryDate(format(date, "yyyy/MM/dd"));
-            }}
-            className={cn(
-              "flex h-full flex-col items-center justify-center rounded-lg p-2 transition-colors hover:bg-primary hover:text-primary-foreground",
-            )}
-          >
-            <div className="text-xs text-muted-foreground">{format(date, "EEEE do")}</div>
+        <section
+          className={cn(
+            "grid h-full min-w-full resize-none grid-cols-1 justify-stretch overflow-scroll",
+            "rounded-b-lg border-x border-b bg-popover text-center last:border-r md:grid-cols-3 lg:grid-cols-7",
+          )}
+        >
+          {Array.from({ length: prefixDays }).map((_, index) => (
+            <div key={index} className="border-t p-0.5" />
+          ))}
 
-            <div className="flex flex-grow items-center justify-center text-2xl font-bold">0</div>
-          </div>
-        ))}
+          {computedMonthGrid.map(({ date, id }) => (
+            <DateCell key={id} date={date} />
+          ))}
+
+          {Array.from({ length: suffixDays }).map((_, index) => (
+            <div key={index} className="border-t p-0.5" />
+          ))}
+        </section>
       </div>
     </section>
   );

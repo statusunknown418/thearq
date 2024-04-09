@@ -37,7 +37,7 @@ const TimePicker = forwardRef<React.ElementRef<"div">, TimePickerProps>(
         <div
           ref={ref}
           className={cn(
-            "inline-flex h-8 w-max items-center justify-center rounded-md border bg-secondary text-sm",
+            "inline-flex h-8 w-max items-center justify-center rounded-md border bg-secondary text-sm shadow",
             "ring-offset-background focus-within:outline-none",
             "disabled:cursor-not-allowed disabled:opacity-50",
             className,
@@ -62,7 +62,7 @@ const TimePickerSegment = forwardRef<React.ElementRef<"input">, TimePickerSegmen
     return (
       <div
         className={cn(
-          "inline-flex h-full w-8 border border-transparent px-2 text-accent-foreground transition-colors focus-within:bg-accent focus-within:ring-2 focus-within:ring-ring hover:border-primary/60",
+          "inline-flex h-full w-8 justify-center border border-transparent text-center text-accent-foreground transition-colors focus-within:bg-accent focus-within:ring-2 focus-within:ring-ring hover:border-primary/60",
           segment === "hours" && "rounded-l-md",
           segment === "minutes" && "rounded",
           segment === "seconds" && "rounded-r-md",
@@ -80,7 +80,7 @@ const TimePickerSegment = forwardRef<React.ElementRef<"input">, TimePickerSegmen
             timePickerInputRef(node);
           }}
           className={cn(
-            "w-8 font-mono tabular-nums caret-transparent",
+            "inline-flex w-8 items-center justify-center text-center font-mono tabular-nums caret-transparent",
             "border-transparent bg-transparent outline-none ring-0 ring-offset-0 focus-visible:border-transparent focus-visible:ring-0",
             inputClassName,
           )}
@@ -99,7 +99,7 @@ const TimePickerSeparator = forwardRef<React.ElementRef<"span">, TimePickerSepar
       <span
         ref={ref}
         className={cn(
-          "inline-flex max-w-max items-center px-1 py-1 text-center text-xs text-muted-foreground",
+          "inline-flex max-w-max items-center px-0.5 py-1 text-center text-xs text-muted-foreground",
           className,
         )}
         {...props}

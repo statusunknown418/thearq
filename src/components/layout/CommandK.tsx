@@ -8,6 +8,7 @@ import {
 } from "@radix-ui/react-icons";
 import { PiCommandDuotone, PiMagnifyingGlassDuotone } from "react-icons/pi";
 import { useCommandsStore } from "~/lib/stores/commands-store";
+import { useEventsStore } from "~/lib/stores/events-store";
 import { TrackerCommand } from "../dashboard/tracker/TrackerCommand";
 import { Button } from "../ui/button";
 import {
@@ -23,7 +24,9 @@ import {
 
 export const CommandK = () => {
   const search = useCommandsStore((s) => s.search);
+  const track = useCommandsStore((s) => s.track);
   const setSearch = useCommandsStore((s) => s.setSearch);
+  const defaultEvent = useEventsStore((s) => s.temporalEvents[0]);
 
   return (
     <>
@@ -77,7 +80,7 @@ export const CommandK = () => {
         </CommandList>
       </CommandDialog>
 
-      <TrackerCommand />
+      {track && <TrackerCommand defaultValues={defaultEvent} />}
     </>
   );
 };

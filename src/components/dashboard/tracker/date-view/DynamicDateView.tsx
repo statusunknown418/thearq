@@ -3,31 +3,41 @@ import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons";
 import {
   addHours,
   format,
-  formatDate,
   getDay,
+  getMonth,
+  getWeek,
   parse,
   startOfDay,
-  startOfHour,
   startOfWeek,
 } from "date-fns";
+import { fromZonedTime } from "date-fns-tz";
 import enUs from "date-fns/locale";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Calendar, dateFnsLocalizer, type SlotInfo } from "react-big-calendar";
 import withDragAndDrop, {
   type withDragAndDropProps,
 } from "react-big-calendar/lib/addons/dragAndDrop";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
+import { useAuthStore } from "~/lib/stores/auth-store";
 import { useCommandsStore } from "~/lib/stores/commands-store";
-import { useQueryDateState } from "~/lib/stores/dynamic-dates-store";
+import {
+  toNextDay,
+  toPrevDay,
+  useDynamicMonthStore,
+  useQueryDateState,
+} from "~/lib/stores/dynamic-dates-store";
+import { createFakeEvent, useEventsStore } from "~/lib/stores/events-store";
+import { useHotkeys } from "~/lib/use-hotkeys";
 import { cn } from "~/lib/utils";
-import { type CustomEvent } from "~/server/api/routers/track";
+import { type CustomEvent } from "~/server/api/routers/entries";
+import { api } from "~/trpc/react";
+import { type RouterOutputs } from "~/trpc/shared";
 
-const endOfHour = (date: Date): Date => addHours(startOfHour(date), 1);
 const now = new Date();
-const start = endOfHour(now);
-const end = addHours(start, 2);
+const monthDate = format(now, "yyyy/MM");
 
 const locales = {
   en: enUs,
@@ -42,10 +52,26 @@ const localizer = dateFnsLocalizer({
 });
 const DnDCalendar = withDragAndDrop<CustomEvent>(Calendar);
 
-export const DynamicDateView = () => {
+export const DynamicDateView = ({
+  initialData,
+  workspaceId,
+}: {
+  initialData: RouterOutputs["entries"]["getByMonth"];
+  workspaceId: number;
+}) => {
+  const auth = useAuthStore((s) => s.user);
   const [date, update] = useQueryDateState();
+
   const [allowSelection] = useState(true);
+
   const openTracker = useCommandsStore((s) => s.setTrack);
+  const setTrackerValues = useCommandsStore((s) => s.setDefaultValues);
+
+  const month = useDynamicMonthStore((s) => s.month);
+  const setMonth = useDynamicMonthStore((s) => s.setMonth);
+
+  const temporalEvents = useEventsStore((s) => s.temporalEvents);
+  const setTemporalEvents = useEventsStore((s) => s.setTemporalEvents);
 
   const updateDay = (newDate: Date) => {
     const isToday = format(newDate, "yyyy/MM/dd") === format(now, "yyy/MM/dd");
@@ -54,33 +80,34 @@ export const DynamicDateView = () => {
       return update(null);
     }
 
+    if (getMonth(newDate) !== getMonth(now)) {
+      setMonth(newDate);
+    }
+
     void update(format(newDate, "yyyy/MM/dd"));
   };
 
-  const [events, setEvents] = useState<CustomEvent[]>([
-    {
-      title: "Learn cool stuff",
-      start,
-      end,
-      resource: "something",
-      data: {
-        projectColor: "#000",
-        id: 1,
-        locked: false,
-        billable: true,
-        description: "Learn cool stuff",
-        duration: 120,
-        end: end,
-        start: start,
-        projectId: 1,
-        userId: "123123",
-        weekNumber: 13,
-        workspaceId: 1,
-        trackedAt: formatDate(now, "yyyy/MM/dd"),
-      },
+  const utils = api.useUtils();
+  const { data: events, refetch } = api.entries.getByMonth.useQuery(
+    { workspaceId, monthDate: format(month, "yyyy/MM") },
+    { initialData, refetchOnWindowFocus: false, refetchOnReconnect: false },
+  );
+
+  const { mutate } = api.entries.update.useMutation({
+    onMutate: async (input) => {
+      const prev = utils.entries.getByMonth.getData({ workspaceId, monthDate });
+
+      if (!prev || !auth) return;
+
+      utils.entries.getByMonth.setData({ workspaceId, monthDate }, () => [...prev]);
     },
-  ]);
-  const [temporalEvents, setTemporalEvents] = useState<CustomEvent[]>([]);
+    onSettled: async () => {
+      return await utils.entries.getByMonth.invalidate({
+        workspaceId,
+        monthDate,
+      });
+    },
+  });
 
   const onSelectingTimeSlots = () => {
     if (!allowSelection) return false;
@@ -88,85 +115,98 @@ export const DynamicDateView = () => {
     return true;
   };
 
-  const onDragFromSlot = useCallback((range: SlotInfo) => {
-    /**
-     * Here we are waiting 250 milliseconds (use what you want) prior to firing
-     * our method. Why? Because both 'click' and 'doubleClick'
-     * would fire, in the event of a 'doubleClick'. By doing
-     * this, the 'click' handler is overridden by the 'doubleClick'
-     * action.
-     */
+  const onDragFromSlot = useCallback(
+    (range: SlotInfo) => {
+      if (!range.end) return false;
 
-    if (!range.end) return false;
+      openTracker(true);
 
-    openTracker(true);
+      if (!auth) {
+        return toast.error("You need to be logged in!");
+      }
 
-    setTemporalEvents((currentEvents) => [
-      ...currentEvents,
-      {
-        title: "New Event",
+      const fakeEvent = createFakeEvent("temporal", {
+        auth,
         start: range.start,
         end: range.end,
-        resource: "something",
-        data: {
-          projectColor: "#000",
-          id: 1,
-          locked: false,
-          billable: true,
-          description: "Learn cool stuff",
-          duration: 120,
-          end: end,
-          start: start,
-          projectId: 1,
-          userId: "123123",
-          weekNumber: 13,
-          workspaceId: 1,
-        },
-      },
-    ]);
-
-    return true;
-  }, []);
-
-  const onEventResize: withDragAndDropProps["onEventResize"] = (data) => {
-    const newEvent = data.event;
-
-    setEvents((currentEvents) => {
-      return currentEvents.map((event) => {
-        if (event.title === newEvent.title) {
-          return {
-            ...event,
-            start: new Date(data.start),
-            end: new Date(data.end),
-          };
-        }
-
-        return event;
+        workspaceId,
       });
+
+      if (!fakeEvent) {
+        toast.error("Failed to create a temporal event");
+        return false;
+      }
+
+      /**
+       *  Set a temporal event and then delete it if the mutation is successful
+       * @description assertion as CustomEvent is intentional
+       */
+      setTemporalEvents((prev) => prev.concat([fakeEvent as CustomEvent]));
+
+      return true;
+    },
+    [auth, openTracker, setTemporalEvents, workspaceId],
+  );
+
+  const onEventResize: withDragAndDropProps<CustomEvent>["onEventResize"] = (data) => {
+    const prevEvent = data.event;
+    const duration = new Date(data.end).getTime() / 1000 - new Date(data.start).getTime() / 1000;
+    const weekNumber = getWeek(data.start);
+
+    /** Mutation */
+    mutate({
+      id: prevEvent.id,
+      start: fromZonedTime(data.start, "America/Lima"),
+      end: fromZonedTime(data.end, "America/Lima"),
+      duration,
+      weekNumber,
     });
   };
 
   const onEventDrop: withDragAndDropProps<CustomEvent>["onEventDrop"] = (data) => {
-    const newEvent = data.event;
+    const prevEvent = data.event;
+    const duration = new Date(data.end).getTime() / 1000 - new Date(data.start).getTime() / 1000;
+    const weekNumber = getWeek(data.start);
 
-    setEvents((currentEvents) => {
-      return currentEvents.map((event) => {
-        if (event.data.id === newEvent.data.id) {
-          return {
-            ...event,
-            start: new Date(data.start),
-            end: new Date(data.end),
-          };
-        }
-
-        return event;
-      });
+    /** Mutation */
+    mutate({
+      id: prevEvent.id,
+      start: new Date(data.start),
+      end: new Date(data.end),
+      duration,
+      weekNumber,
     });
   };
 
+  const onSelectEvent = (e: CustomEvent) => {
+    if (e.temp) return;
+
+    openTracker(true);
+    setTrackerValues(e);
+  };
+
+  useHotkeys([
+    [
+      "L",
+      () => {
+        void update(toNextDay);
+      },
+    ],
+    [
+      "H",
+      () => {
+        void update(toPrevDay);
+      },
+    ],
+  ]);
+
+  useEffect(() => {
+    setMonth(new Date(date ?? now));
+  }, [date, setMonth]);
+
   return (
     <section className="rounded-xl">
-      <section className="h-[calc(100vh-150px)] min-w-80 max-w-80">
+      <section className="h-[calc(100vh-150px)] min-w-[360px] max-w-80">
         <DnDCalendar
           className="text-xs"
           defaultView="day"
@@ -182,10 +222,15 @@ export const DynamicDateView = () => {
                   <li>
                     <Button
                       variant={"ghost"}
-                      onClick={() => onNavigate("TODAY")}
+                      onClick={() => {
+                        setMonth(new Date());
+                        onNavigate("TODAY");
+                      }}
                       className={cn("min-w-24")}
                     >
-                      {getDay(date) === getDay(now) ? localizer.messages.today : label}
+                      {format(date, "yyyy/MM/dd") === format(now, "yyyy/MM/dd")
+                        ? localizer.messages.today
+                        : label}
                     </Button>
                   </li>
                   <li>
@@ -198,12 +243,19 @@ export const DynamicDateView = () => {
             },
             event: ({ event }) => {
               return (
-                <div className={cn("h-full w-full items-start rounded-xl border bg-gray-700 p-4")}>
+                <div
+                  className={cn(
+                    "h-full w-full items-start rounded-xl border p-4",
+                    event?.temp ? "pointer-events-none bg-gray-500" : "bg-gray-700",
+                  )}
+                >
                   <div className="h-full w-full">
-                    <p className="text-xs">{event.title}</p>
+                    <p className="text-xs">{event.description}</p>
                   </div>
 
-                  {event.data.locked && <p className="text-xs text-destructive">Locked</p>}
+                  {event.temp && <p>temporal event</p>}
+
+                  {event.locked && <p className="text-xs text-destructive">Locked</p>}
                 </div>
               );
             },
@@ -212,9 +264,12 @@ export const DynamicDateView = () => {
           timeslots={2}
           step={15}
           events={events.concat(temporalEvents)}
-          resizableAccessor={(e) => !e.data.locked}
-          draggableAccessor={(e) => !e.data.locked}
+          resizableAccessor={(e) => !e.locked || e.temp === undefined}
+          draggableAccessor={(e) => !e.locked || e.temp === undefined}
           date={date ? new Date(date) : now}
+          titleAccessor={(e) => e.description}
+          startAccessor={(e) => e.start}
+          endAccessor={(e) => e.end ?? new Date()}
           localizer={localizer}
           onNavigate={updateDay}
           onEventDrop={onEventDrop}
@@ -222,7 +277,7 @@ export const DynamicDateView = () => {
           min={addHours(startOfDay(now), 6)}
           onSelectSlot={onDragFromSlot}
           onSelecting={onSelectingTimeSlots}
-          onSelectEvent={() => openTracker(true)}
+          onSelectEvent={onSelectEvent}
           selectable
           showMultiDayTimes
           resizable
@@ -231,4 +286,3 @@ export const DynamicDateView = () => {
     </section>
   );
 };
-

@@ -1,18 +1,20 @@
-import { CalendarIcon, InfoCircledIcon } from "@radix-ui/react-icons";
-import { format, setDate, setDay, startOfMonth, subDays, subWeeks } from "date-fns";
+import { valibotResolver } from "@hookform/resolvers/valibot";
+import { InfoCircledIcon } from "@radix-ui/react-icons";
+import { format } from "date-fns";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import {
-  PiArrowArcLeft,
-  PiArrowCounterClockwise,
+  PiArrowRight,
+  PiFloppyDisk,
   PiLink,
-  PiRewind,
   PiShuffle,
   PiSquaresFourDuotone,
   PiTriangleDuotone,
 } from "react-icons/pi";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Calendar } from "~/components/ui/calendar";
+import { DateTimeInput } from "~/components/ui/date-time-input";
 import { Dialog, DialogContent, DialogFooter } from "~/components/ui/dialog";
 import {
   DropdownMenu,
@@ -23,7 +25,6 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "~/components/ui/form";
-import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import { Separator } from "~/components/ui/separator";
 import { Textarea } from "~/components/ui/textarea";
 import {
@@ -33,19 +34,84 @@ import {
 } from "~/components/ui/time-picker/time-field";
 import { Toggle } from "~/components/ui/toggle";
 import { useCommandsStore } from "~/lib/stores/commands-store";
-import { cn } from "~/lib/utils";
+import { useEventsStore } from "~/lib/stores/events-store";
+import { useHotkeys } from "~/lib/use-hotkeys";
+import { timeEntrySchema, type NewTimeEntry } from "~/server/db/edge-schema";
+import { api } from "~/trpc/react";
 
-export const TrackerCommand = () => {
+const baseDefaultValues = {
+  description: "",
+  billable: true,
+  start: undefined,
+  duration: 0,
+  projectId: 0,
+  end: undefined,
+  integrationUrl: "",
+  monthDate: format(new Date(), "yyyy/MM"),
+  trackedAt: format(new Date(), "yyyy/MM/dd"),
+  weekNumber: 0,
+  workspaceId: 0,
+};
+
+export const TrackerCommand = ({ defaultValues }: { defaultValues?: NewTimeEntry }) => {
+  const router = useRouter();
+
   const open = useCommandsStore((s) => s.track);
   const setOpen = useCommandsStore((s) => s.setTrack);
+  const clear = useCommandsStore((s) => s.clear);
+  const clearEvents = useEventsStore((s) => s.clear);
+  const { data: auth } = useSession({
+    required: true,
+    onUnauthenticated: () => {
+      void router.replace("/api/auth/signin");
+    },
+  });
 
-  const form = useForm();
+  const isEditing = !!defaultValues;
+
+  const onCancelTrack = (state: boolean) => {
+    if (!state) {
+      setOpen(state);
+      clear();
+      clearEvents();
+      form.reset({});
+    }
+  };
+
+  const form = useForm<NewTimeEntry>({
+    resolver: valibotResolver(timeEntrySchema),
+    defaultValues: defaultValues ?? baseDefaultValues,
+  });
+
+  const utils = api.useUtils();
+
+  const { mutate: manualTrack } = api.tracker.manual.useMutation({
+    onSettled: async () => {
+      clearEvents();
+      return await utils.entries.getByMonth.invalidate();
+    },
+  });
+
+  const onSubmit = form.handleSubmit(async (data) => {
+    manualTrack({
+      ...data,
+      /**
+       * @todo: investigate the computed duration turns out to be negative
+       */
+      duration: -Number(data.duration),
+    });
+
+    clear();
+    form.reset({});
+  });
+
+  useHotkeys([["Meta+Enter", () => onSubmit()]], ["textarea", "input"]);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onCancelTrack}>
       <DialogContent className="top-[40%] max-w-2xl">
         <Form {...form}>
-          <form className="grid grid-cols-1 gap-4">
+          <form className="grid grid-cols-1 gap-4" onSubmit={onSubmit}>
             <div className="flex items-center gap-2">
               <Badge className="w-max">
                 Auto
@@ -65,13 +131,13 @@ export const TrackerCommand = () => {
                 name="description"
                 render={({ field }) => (
                   <FormItem className="flex-grow">
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>Description </FormLabel>
 
                     <FormControl>
                       <Textarea
-                        {...field}
                         className="max-w-full resize-none rounded-none border-none bg-transparent p-0 text-sm shadow-none focus-visible:ring-0"
                         placeholder="Added new features ..."
+                        {...field}
                       />
                     </FormControl>
                   </FormItem>
@@ -81,137 +147,34 @@ export const TrackerCommand = () => {
 
             <section className="mt-2 flex items-center gap-2">
               <div className="relative flex items-center gap-2">
-                <FormField
-                  control={form.control}
-                  name="date"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"secondary"}
-                              className={cn(
-                                "h-8 min-w-64 max-w-max text-left text-sm font-normal",
-                                !field.value && "text-muted-foreground",
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "eeee, do MMMM 'at' p")
-                              ) : (
-                                <span>Today, now at {format(new Date(), "p")}</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <section className="flex">
-                            <div className="flex min-w-40 flex-col gap-3 p-3 text-xs">
-                              <div className="flex items-center justify-center gap-2">
-                                <p>At</p>
-                                <TimePicker onChange={console.log} options={{ hour12: true }}>
-                                  <TimePickerSegment segment={"hours"} />
-                                  <TimePickerSeparator>:</TimePickerSeparator>
-                                  <TimePickerSegment segment={"minutes"} className="rounded-r-md" />
-                                </TimePicker>
-                              </div>
-
-                              <ul className="flex flex-col gap-2">
-                                <Button
-                                  type="button"
-                                  asChild
-                                  variant={"secondary"}
-                                  className="bg-muted"
-                                  onClick={() => {
-                                    field.onChange(subDays(new Date(), 1));
-                                  }}
-                                >
-                                  <li>
-                                    <PiArrowCounterClockwise />
-                                    Yesterday
-                                  </li>
-                                </Button>
-
-                                <Button
-                                  type="button"
-                                  asChild
-                                  variant={"secondary"}
-                                  className="bg-muted"
-                                  onClick={() => {
-                                    field.onChange(subDays(new Date(), 2));
-                                  }}
-                                >
-                                  <li>
-                                    <PiArrowArcLeft />
-                                    The day before
-                                  </li>
-                                </Button>
-
-                                <Button
-                                  type="button"
-                                  asChild
-                                  variant={"secondary"}
-                                  className="bg-muted"
-                                  onClick={() => {
-                                    field.onChange(
-                                      subWeeks(setDay(new Date(), 1, { weekStartsOn: 1 }), 1),
-                                    );
-                                  }}
-                                >
-                                  <li>
-                                    <PiRewind />
-                                    Last monday
-                                  </li>
-                                </Button>
-
-                                <Button
-                                  type="button"
-                                  asChild
-                                  variant={"secondary"}
-                                  className="bg-muted"
-                                  onClick={() => {
-                                    field.onChange(setDate(startOfMonth(new Date()), 1));
-                                  }}
-                                >
-                                  <li>
-                                    <PiRewind />
-                                    Start of month
-                                  </li>
-                                </Button>
-                              </ul>
-                            </div>
-
-                            <Calendar
-                              initialFocus
-                              mode="single"
-                              selected={field.value as Date}
-                              onSelect={field.onChange}
-                              disabled={(date) =>
-                                date > new Date() || date < new Date("1900-01-01")
-                              }
-                            />
-                          </section>
-                        </PopoverContent>
-                      </Popover>
-                    </FormItem>
-                  )}
-                />
+                <DateTimeInput selector="start" />
+                <PiArrowRight size={15} />
+                <DateTimeInput selector="end" />
               </div>
 
               <p className="text-xs text-muted-foreground">took</p>
 
               <FormField
+                control={form.control}
                 name="duration"
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <TimePicker onChange={field.onChange} value={field.value as Date}>
+                      <TimePicker
+                        value={new Date(new Date().setSeconds(field.value))}
+                        onChange={(date) => {
+                          const value = date ? new Date(date) : new Date();
+
+                          field.onChange(
+                            new Date(new Date().setSeconds(value.getSeconds())).getSeconds(),
+                          );
+
+                          return value;
+                        }}
+                      >
                         <TimePickerSegment segment={"hours"} />
-                        <TimePickerSeparator>hours</TimePickerSeparator>
+                        <TimePickerSeparator>:</TimePickerSeparator>
                         <TimePickerSegment segment={"minutes"} />
-                        <TimePickerSeparator>minutes</TimePickerSeparator>
                       </TimePicker>
                     </FormControl>
                   </FormItem>
@@ -221,7 +184,8 @@ export const TrackerCommand = () => {
 
             <div className="flex items-center gap-2">
               <FormField
-                name="project"
+                control={form.control}
+                name="projectId"
                 render={({ field }) => (
                   <FormItem>
                     <DropdownMenu>
@@ -245,11 +209,19 @@ export const TrackerCommand = () => {
               />
 
               <FormField
-                name="project"
+                control={form.control}
+                name="billable"
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Toggle size={"sm"} variant={"outline"} type="button" {...field}>
+                      <Toggle
+                        size={"sm"}
+                        variant={"outline"}
+                        type="button"
+                        pressed={!!field.value}
+                        onPressedChange={field.onChange}
+                        onBlur={field.onBlur}
+                      >
                         $ Billable
                       </Toggle>
                     </FormControl>
@@ -264,8 +236,8 @@ export const TrackerCommand = () => {
               <Button variant="outline">Cancel</Button>
 
               <Button>
-                Start
-                <PiTriangleDuotone className="rotate-90" />
+                {isEditing ? "Save" : "Start"}
+                {isEditing ? <PiFloppyDisk /> : <PiTriangleDuotone className="rotate-90" />}
               </Button>
             </DialogFooter>
           </form>
