@@ -3,13 +3,27 @@ import { createParser, useQueryState } from "nuqs";
 import { create } from "zustand";
 
 export type DynamicDatesStore = {
-  selectedDate: Date;
+  selectedDate: Date | null;
   setSelectedDate: (date: Date) => void;
+  reset: () => void;
 };
+
+export type DynamicMonthStore = {
+  month: Date;
+  setMonth: (month: Date) => void;
+};
+
+export const header = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export const useDynamicDatesStore = create<DynamicDatesStore>((set) => ({
   selectedDate: new Date(),
   setSelectedDate: (date) => set({ selectedDate: date }),
+  reset: () => set({ selectedDate: null }),
+}));
+
+export const useDynamicMonthStore = create<DynamicMonthStore>((set) => ({
+  month: new Date(),
+  setMonth: (month) => set({ month }),
 }));
 
 export const useQueryDateState = () => {
@@ -73,4 +87,8 @@ export const toPrevMonthDate = (base: Date) => {
   const prev = new Date(base.getFullYear(), base.getMonth() - 1);
 
   return prev;
+};
+
+export const toGenericMonth = (base: Date) => {
+  return format(base, "yyyy/MM");
 };

@@ -22,7 +22,7 @@ export default function WorkspaceTrackerPage() {
         </p>
       </header>
 
-      <div className="flex gap-4">
+      <div className="flex w-full gap-2">
         <Suspense fallback={<Loader />}>
           <DateViewWrapperRSC />
         </Suspense>
