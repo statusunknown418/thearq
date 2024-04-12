@@ -4,6 +4,7 @@ import { endOfMonth, format, startOfMonth } from "date-fns";
 import { useMemo } from "react";
 import { Button } from "~/components/ui/button";
 import { KBD } from "~/components/ui/kbd";
+import { Loader } from "~/components/ui/loader";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import {
   computeMonthDays,
@@ -23,7 +24,7 @@ export const EntriesViews = ({
   initialData,
 }: {
   workspaceId: number;
-  initialData: RouterOutputs["entries"]["getByMonth"];
+  initialData: RouterOutputs["entries"]["getSummary"];
 }) => {
   const month = useDynamicMonthStore((s) => s.month);
   const setMonth = useDynamicMonthStore((s) => s.setMonth);
@@ -36,7 +37,7 @@ export const EntriesViews = ({
 
   const computedMonthGrid = useMemo(() => computeMonthDays(month), [month]);
 
-  const [data] = api.entries.getByMonth.useSuspenseQuery(
+  const { data, isLoading } = api.entries.getSummary.useQuery(
     {
       workspaceId,
       monthDate: format(month, "yyyy/MM"),
@@ -50,6 +51,10 @@ export const EntriesViews = ({
     ["K", () => setMonth(toPrevMonthDate(month))],
     ["J", () => setMonth(toNextMonthDate(month))],
   ]);
+
+  if (isLoading) {
+    return <Loader />;
+  }
 
   return (
     <section className="flex h-full w-full flex-col gap-4">
@@ -132,7 +137,7 @@ export const EntriesViews = ({
           ))}
 
           {computedMonthGrid.map(({ date, id }) => (
-            <DateCell key={id} date={date} />
+            <DateCell key={id} date={date} duration={data.hoursByDay[date.getDate()]} />
           ))}
 
           {Array.from({ length: suffixDays }).map((_, index) => (

@@ -1,15 +1,6 @@
 "use client";
 import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons";
-import {
-  addHours,
-  format,
-  getDay,
-  getMonth,
-  getWeek,
-  parse,
-  startOfDay,
-  startOfWeek,
-} from "date-fns";
+import { addHours, format, getDay, getMonth, parse, startOfDay, startOfWeek } from "date-fns";
 import { fromZonedTime } from "date-fns-tz";
 import { enUS } from "date-fns/locale";
 import { useCallback, useEffect, useState } from "react";
@@ -20,6 +11,7 @@ import withDragAndDrop, {
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { toast } from "sonner";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { KBD } from "~/components/ui/kbd";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
@@ -31,12 +23,18 @@ import {
   useDynamicMonthStore,
   useQueryDateState,
 } from "~/lib/stores/dynamic-dates-store";
-import { computeDuration, createFakeEvent, useEventsStore } from "~/lib/stores/events-store";
+import {
+  computeDuration,
+  convertTime,
+  createFakeEvent,
+  useEventsStore,
+} from "~/lib/stores/events-store";
 import { useHotkeys } from "~/lib/use-hotkeys";
 import { cn } from "~/lib/utils";
 import { type CustomEvent } from "~/server/api/routers/entries";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
+import { RealtimeCounter } from "./RealtimeCounter";
 
 const now = new Date();
 const monthDate = format(now, "yyyy/MM");
@@ -92,12 +90,14 @@ export const DynamicDateView = ({
   const utils = api.useUtils();
   const { data: events } = api.entries.getByMonth.useQuery(
     { workspaceId, monthDate: format(month, "yyyy/MM") },
-    { initialData, refetchOnWindowFocus: false, refetchOnReconnect: false },
+    {
+      initialData,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+    },
   );
 
-  console.log({ events });
-
-  const { mutate } = api.entries.update.useMutation({
+  const { mutate } = api.tracker.update.useMutation({
     onMutate: async (input) => {
       await utils.entries.getByMonth.cancel();
       const prev = utils.entries.getByMonth.getData({ workspaceId, monthDate });
@@ -107,20 +107,31 @@ export const DynamicDateView = ({
       const updatedEvent = {
         ...prev.find((e) => e.id === input.id)!,
         ...input,
+        temp: true,
       };
 
-      utils.entries.getByMonth.setData({ workspaceId, monthDate }, (prevState) => [
-        ...prevState!.filter((e) => e.id !== input.id),
-        updatedEvent,
-      ]);
+      utils.entries.getByMonth.setData({ workspaceId, monthDate }, (prevState) => {
+        if (!prevState) return [];
 
-      return { prev };
+        return [...prevState.filter((e) => e.id !== updatedEvent.id), updatedEvent];
+      });
+
+      return () => utils.entries.getByMonth.setData({ workspaceId, monthDate }, prev);
     },
-    onSettled: async () => {
-      await utils.entries.getByMonth.invalidate({
+    onSettled: () => {
+      return utils.entries.getByMonth.invalidate({
         workspaceId,
         monthDate,
       });
+    },
+    onError: (error, _variables, rollback) => {
+      toast.error("Something happened, please try again!", {
+        description: error.message,
+      });
+
+      if (rollback) {
+        rollback();
+      }
     },
   });
 
@@ -166,7 +177,6 @@ export const DynamicDateView = ({
   const onEventResize: withDragAndDropProps<CustomEvent>["onEventResize"] = (data) => {
     const prevEvent = data.event;
     const duration = computeDuration({ start: data.start, end: data.end });
-    const weekNumber = getWeek(data.start);
 
     /** Mutation */
     mutate({
@@ -180,7 +190,6 @@ export const DynamicDateView = ({
   const onEventDrop: withDragAndDropProps<CustomEvent>["onEventDrop"] = (data) => {
     const prevEvent = data.event;
     const duration = computeDuration({ start: data.start, end: data.end });
-    const weekNumber = getWeek(data.start);
 
     /** Mutation */
     mutate({
@@ -226,7 +235,7 @@ export const DynamicDateView = ({
 
   return (
     <section className="rounded-xl">
-      <section className="h-[calc(100vh-150px)] min-w-[360px] max-w-80">
+      <section className="h-[calc(100vh-150px)] w-[340px]">
         <DnDCalendar
           className="text-xs"
           defaultView="day"
@@ -253,6 +262,7 @@ export const DynamicDateView = ({
                       </Tooltip>
                     </TooltipProvider>
                   </li>
+
                   <li>
                     <TooltipProvider delayDuration={0}>
                       <Tooltip>
@@ -277,6 +287,7 @@ export const DynamicDateView = ({
                       </Tooltip>
                     </TooltipProvider>
                   </li>
+
                   <li>
                     <TooltipProvider delayDuration={0}>
                       <Tooltip>
@@ -301,18 +312,30 @@ export const DynamicDateView = ({
             },
             event: ({ event }) => {
               return (
-                <div
+                <section
                   className={cn(
-                    "h-full w-full items-start rounded-xl border border-gray-400 p-4",
-                    event?.temp ? "pointer-events-none bg-gray-500" : "bg-gray-700",
+                    "flex h-full w-full flex-col items-start gap-2 rounded-xl border border-primary p-4",
+                    "bg-gradient-to-b from-gray-900 to-gray-600",
+                    event?.temp && "pointer-events-none bg-gray-500",
+                    !event.end && "border-dashed via-gray-500 to-transparent",
                   )}
                 >
-                  <div className="h-full w-full">
-                    <p className="text-xs">{event.description}</p>
-                  </div>
+                  <p>{event.description}</p>
 
-                  {event.locked && <p className="text-xs text-destructive">Locked</p>}
-                </div>
+                  {event.project?.name && <Badge>{event.project.name}</Badge>}
+
+                  {event.end === null && <RealtimeCounter start={event.start} />}
+
+                  {event.end && (
+                    <div>
+                      <p className="text-sm">
+                        {convertTime(computeDuration({ start: event.start, end: event.end }), {
+                          includeSeconds: true,
+                        })}
+                      </p>
+                    </div>
+                  )}
+                </section>
               );
             },
           }}
@@ -320,8 +343,16 @@ export const DynamicDateView = ({
           timeslots={2}
           step={15}
           events={events.concat(temporalEvents)}
-          resizableAccessor={(e) => !e.locked || e.temp === undefined}
-          draggableAccessor={(e) => !e.locked || e.temp === undefined}
+          resizableAccessor={(e) => {
+            if (e.temp) return false;
+            if (e.locked) return false;
+            return true;
+          }}
+          draggableAccessor={(e) => {
+            if (e.temp) return false;
+            if (e.locked) return false;
+            return true;
+          }}
           date={date ? new Date(date) : now}
           titleAccessor={(e) => e.description}
           startAccessor={(e) => e.start}

@@ -8,7 +8,7 @@ export const CalendarWrapperRSC = async () => {
   const today = new Date();
 
   const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
-  const data = await api.entries.getByMonth.query({
+  const data = await api.entries.getSummary.query({
     workspaceId: Number(workspaceId),
     monthDate: formatDate(today, "yyyy/MM"),
   });

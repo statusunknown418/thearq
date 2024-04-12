@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { DateTimeInput } from "~/components/ui/date-time-input";
-import { Dialog, DialogContent, DialogFooter } from "~/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogFooter } from "~/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,8 +63,8 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
   const setOpen = useCommandsStore((s) => s.setTrack);
   const clear = useCommandsStore((s) => s.clear);
   const clearEvents = useEventsStore((s) => s.clear);
-
   const workspaceId = useWorkspaceStore((s) => s.active?.id);
+
   const { data: auth } = useSession({
     required: true,
     onUnauthenticated: () => {
@@ -85,15 +85,46 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
 
   const form = useForm<NewTimeEntry>({
     resolver: valibotResolver(timeEntrySchema),
-    defaultValues: defaultValues ?? baseDefaultValues,
+    defaultValues: defaultValues
+      ? defaultValues
+      : {
+          ...baseDefaultValues,
+          start: new Date(),
+        },
   });
 
   const utils = api.useUtils();
 
-  const { mutate: updateEntry } = api.entries.update.useMutation({
+  const { mutate: deleteEntry } = api.tracker.delete.useMutation({
+    onMutate: async (entry) => {
+      const monthDate = format(new Date(), "yyyy/MM");
+
+      if (!workspaceId) return;
+
+      const prev = utils.entries.getByMonth.getData({ workspaceId, monthDate });
+
+      if (!prev || !auth?.user || !workspaceId) return;
+
+      clearEvents();
+
+      return utils.entries.getByMonth.setData({ workspaceId, monthDate }, (oldData) => {
+        if (!oldData) return [];
+
+        return oldData.filter((e) => e.id !== entry.id);
+      });
+    },
+  });
+
+  const { mutate: updateEntry } = api.tracker.update.useMutation({
     onSettled: async () => {
       clearEvents();
       return await utils.entries.getByMonth.invalidate();
+    },
+    onSuccess: () => {
+      toast("Updated entry");
+    },
+    onError: (error) => {
+      toast.error("Failed to update entry", { description: error.message });
     },
   });
 
@@ -110,8 +141,8 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
       const computedEvent = createFakeEvent("temporal", {
         end: input.end ?? null,
         start: input.start,
-        workspaceId,
         auth: auth.user,
+        workspaceId,
       });
 
       clearEvents();
@@ -124,6 +155,12 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
     onSettled: async () => {
       return await utils.entries.getByMonth.invalidate();
     },
+    onSuccess: () => {
+      toast("Added new entry");
+    },
+    onError: (error) => {
+      toast.error("Failed to add new entry", { description: error.message });
+    },
   });
 
   const onSubmit = form.handleSubmit(async (data) => {
@@ -133,15 +170,11 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
         id: defaultValues.id,
         duration: Number(data.duration),
       });
-
-      toast("Updated entry");
     } else {
       manualTrack({
         ...data,
         duration: Number(data.duration),
       });
-
-      toast("Added new entry");
     }
 
     clear();
@@ -276,7 +309,11 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
             <Separator className="-ml-5 mb-1 mt-4 w-[670px]" />
 
             <DialogFooter>
-              <Button variant="outline">Cancel</Button>
+              <DialogClose asChild>
+                <Button variant="outline" type="button">
+                  Cancel
+                </Button>
+              </DialogClose>
 
               <Button>
                 {isEditing ? "Save" : "Start"}
