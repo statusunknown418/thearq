@@ -340,7 +340,7 @@ export const projects = sqliteTable(
     shareableUrl: text("shareableUrl")
       .notNull()
       .unique()
-      .$defaultFn(() => `${env.NEXT_PUBLIC_APP_URL}/portal/projects/${createId()}`),
+      .$defaultFn(() => `${env.NEXT_PUBLIC_APP_URL}/share/projects/${createId()}`),
     name: text("name").notNull(),
     description: text("description"),
     color: text("color").notNull().default("#000000"),
@@ -358,6 +358,9 @@ export const projects = sqliteTable(
     identifierIdx: index("projects_identifier_idx").on(t.identifier),
   }),
 );
+
+export const projectsSchema = createInsertSchema(projects);
+export type ProjectSchema = Output<typeof projectsSchema>;
 
 export const projectRelations = relations(projects, ({ one, many }) => ({
   workspace: one(workspaces, {
@@ -385,6 +388,7 @@ export const usersOnProjects = sqliteTable(
     permissions: text("permissions", { mode: "text" })
       .notNull()
       .$default(() => JSON.stringify(memberPermissions)),
+    weekCapacity: int("capacity").default(40),
   },
   (t) => ({
     compoundKey: primaryKey({ columns: [t.userId, t.projectId] }),

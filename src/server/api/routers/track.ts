@@ -1,9 +1,10 @@
 import { TRPCError } from "@trpc/server";
 import { formatDate } from "date-fns";
+import { and, eq } from "drizzle-orm";
 import { cookies } from "next/headers";
-import { omit, parse } from "valibot";
+import { number, object, omit, parse } from "valibot";
 import { RECENT_W_ID_KEY } from "~/lib/constants";
-import { timeEntries, timeEntrySchema } from "~/server/db/edge-schema";
+import { timeEntries, timeEntrySchema, timeEntrySelect } from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const autoTrackerSchema = omit(timeEntrySchema, ["duration", "end"]);
@@ -72,5 +73,34 @@ export const trackerRouter = createTRPCRouter({
           trackedAt: formatDate(new Date(), "yyyy/MM/dd"),
         })
         .returning();
+    }),
+  update: protectedProcedure
+    .input((i) => parse(omit(timeEntrySelect, ["userId", "workspaceId"]), i))
+    .mutation(async ({ ctx, input }) => {
+      if (!input.id) {
+        return {
+          error: true,
+          message: "No id provided",
+        };
+      }
+
+      const updatedEntry = await ctx.db
+        .update(timeEntries)
+        .set(input)
+        .where(eq(timeEntries.id, input.id))
+        .returning();
+
+      return updatedEntry;
+    }),
+
+  delete: protectedProcedure
+    .input((i) => parse(object({ id: number() }), i))
+    .mutation(async ({ ctx, input }) => {
+      const deletedEntry = await ctx.db
+        .delete(timeEntries)
+        .where(and(eq(timeEntries.id, input.id), eq(timeEntries.userId, ctx.session.user.id)))
+        .returning();
+
+      return deletedEntry;
     }),
 });

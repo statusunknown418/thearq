@@ -1,7 +1,6 @@
-import { and, eq } from "drizzle-orm";
-import { omit, parse } from "valibot";
+import { and } from "drizzle-orm";
 import { number, object, string } from "zod";
-import { timeEntries, timeEntrySelect } from "~/server/db/edge-schema";
+import { computeDuration } from "~/lib/stores/events-store";
 import { type RouterOutputs } from "~/trpc/shared";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
@@ -42,22 +41,60 @@ export const entriesRouter = createTRPCRouter({
       /** I want to think this is performance-safe because we're only dealing with one single user entries */
       return weekEntries.sort((a, b) => a.start.getTime() - b.start.getTime());
     }),
-  update: protectedProcedure
-    .input((i) => parse(omit(timeEntrySelect, ["userId", "workspaceId"]), i))
-    .mutation(async ({ ctx, input }) => {
-      if (!input.id) {
-        return {
-          error: true,
-          message: "No id provided",
-        };
-      }
+  getSummary: protectedProcedure
+    .input(
+      object({
+        workspaceId: number(),
+        monthDate: string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const summary = await ctx.db.query.timeEntries.findMany({
+        where: (t, op) =>
+          and(
+            op.eq(t.userId, ctx.session.user.id),
+            op.eq(t.workspaceId, input.workspaceId),
+            op.eq(t.monthDate, input.monthDate),
+          ),
+        with: {
+          project: {
+            columns: {
+              color: true,
+              name: true,
+              identifier: true,
+            },
+          },
+          user: true,
+        },
+      });
 
-      const updatedEntry = await ctx.db
-        .update(timeEntries)
-        .set(input)
-        .where(eq(timeEntries.id, input.id))
-        .returning();
+      const total = summary.reduce((acc, entry) => {
+        acc += entry.duration;
+        return acc;
+      }, 0);
 
-      return updatedEntry;
+      /**
+       * TODO: Check for potential performance issues when we scale to
+       * more users
+       */
+      const hoursByDay = summary.reduce(
+        (acc, entry) => {
+          const date = entry.start.getDate();
+          const duration = computeDuration(entry);
+
+          if (!acc[date]) {
+            acc[date] = 0;
+          }
+
+          acc[date] += duration;
+          return acc;
+        },
+        {} as Record<number, number>,
+      );
+
+      return {
+        total,
+        hoursByDay,
+      };
     }),
 });

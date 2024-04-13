@@ -2,6 +2,7 @@ import { createTRPCRouter } from "~/server/api/trpc";
 import { emailsRouter } from "./routers/emails";
 import { entriesRouter } from "./routers/entries";
 import { integrationsRouter } from "./routers/integrations";
+import { projectsRouter } from "./routers/projects";
 import { trackerRouter } from "./routers/track";
 import { viewerRouter } from "./routers/viewer";
 import { workspacesRouter } from "./routers/workspaces";
@@ -18,6 +19,7 @@ export const appRouter = createTRPCRouter({
   viewer: viewerRouter,
   tracker: trackerRouter,
   entries: entriesRouter,
+  projects: projectsRouter,
 });
 
 // export type definition of API
