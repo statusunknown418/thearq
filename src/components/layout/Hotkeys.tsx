@@ -3,19 +3,26 @@
 import { useRouter } from "next/navigation";
 import { routes } from "~/lib/navigation";
 import { useCommandsStore } from "~/lib/stores/commands-store";
+import { useEventsStore } from "~/lib/stores/events-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 import { useHotkeys } from "~/lib/use-hotkeys";
+import { ProjectCommand } from "../dashboard/projects/ProjectCommand";
+import { TrackerCommand } from "../dashboard/tracker/TrackerCommand";
 
 export const Hotkeys = () => {
-  const workspace = useWorkspaceStore((s) => s.active);
-
-  const setCmdK = useCommandsStore((s) => s.setSearch);
-  const setAutoTracker = useCommandsStore((s) => s.setTrack);
   const router = useRouter();
 
+  const workspace = useWorkspaceStore((s) => s.active);
+
+  const setOpened = useCommandsStore((s) => s.setCommand);
+  const selectedEvent = useCommandsStore((s) => s.defaultValues);
+  const opened = useCommandsStore((s) => s.opened);
+
+  const defaultEvent = useEventsStore((s) => s.temporalEvents[0]);
+
   useHotkeys([
-    ["mod + K", () => setCmdK(true)],
-    ["A", () => setAutoTracker(true)],
+    ["mod + K", () => setOpened("search")],
+    ["A", () => setOpened("auto-tracker")],
     [
       "shift + D",
       () => {
@@ -58,7 +65,21 @@ export const Hotkeys = () => {
         router.push(routes.people({ slug: workspace.slug }));
       },
     ],
+    [
+      "mod + shift + Y",
+      () => {
+        setOpened("new-project");
+      },
+    ],
   ]);
 
-  return <></>;
+  return (
+    <>
+      {opened === "auto-tracker" && (
+        <TrackerCommand defaultValues={defaultEvent ?? selectedEvent} />
+      )}
+
+      {opened === "new-project" && <ProjectCommand />}
+    </>
+  );
 };

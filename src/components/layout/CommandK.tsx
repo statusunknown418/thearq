@@ -8,8 +8,6 @@ import {
 } from "@radix-ui/react-icons";
 import { PiCommandDuotone, PiMagnifyingGlassDuotone } from "react-icons/pi";
 import { useCommandsStore } from "~/lib/stores/commands-store";
-import { useEventsStore } from "~/lib/stores/events-store";
-import { TrackerCommand } from "../dashboard/tracker/TrackerCommand";
 import { Button } from "../ui/button";
 import {
   CommandDialog,
@@ -23,16 +21,16 @@ import {
 } from "../ui/command";
 
 export const CommandK = () => {
-  const search = useCommandsStore((s) => s.search);
-  const track = useCommandsStore((s) => s.track);
-  const setSearch = useCommandsStore((s) => s.setSearch);
+  const search = useCommandsStore((s) => s.opened) === "search";
+  const setSearch = useCommandsStore((s) => s.setCommand);
 
-  const defaultEvent = useEventsStore((s) => s.temporalEvents[0]);
-  const selectedEvent = useCommandsStore((s) => s.defaultValues);
+  const onOpenChange = (opened: boolean) => {
+    setSearch(opened ? "search" : null);
+  };
 
   return (
     <>
-      <Button variant={"secondary"} onClick={() => setSearch(true)}>
+      <Button variant={"secondary"} onClick={() => setSearch(null)}>
         <PiMagnifyingGlassDuotone size={16} />
         Search
         <kbd className="flex items-center text-muted-foreground">
@@ -41,22 +39,22 @@ export const CommandK = () => {
         </kbd>
       </Button>
 
-      <CommandDialog open={search} onOpenChange={setSearch}>
+      <CommandDialog open={search} onOpenChange={onOpenChange}>
         <CommandInput placeholder="Type a command or search..." />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Suggestions">
             <CommandItem>
               <CalendarIcon className="mr-2" />
-              <span>Calendar</span>
+              <span>Tracker</span>
             </CommandItem>
             <CommandItem>
               <FaceIcon className="mr-2" />
-              <span>Search Emoji</span>
+              <span>Projects</span>
             </CommandItem>
             <CommandItem>
               <RocketIcon className="mr-2" />
-              <span>Launch</span>
+              <span>Analytics</span>
             </CommandItem>
           </CommandGroup>
 
@@ -65,24 +63,22 @@ export const CommandK = () => {
           <CommandGroup heading="Settings">
             <CommandItem>
               <PersonIcon className="mr-2" />
-              <span>Profile</span>
+              <span>Workspace</span>
               <CommandShortcut>⌘P</CommandShortcut>
             </CommandItem>
             <CommandItem>
               <EnvelopeClosedIcon className="mr-2" />
-              <span>Mail</span>
+              <span>Personal</span>
               <CommandShortcut>⌘B</CommandShortcut>
             </CommandItem>
             <CommandItem>
               <GearIcon className="mr-2" />
-              <span>Settings</span>
+              <span>Integrations</span>
               <CommandShortcut>⌘S</CommandShortcut>
             </CommandItem>
           </CommandGroup>
         </CommandList>
       </CommandDialog>
-
-      {track && <TrackerCommand defaultValues={defaultEvent ?? selectedEvent} />}
     </>
   );
 };
