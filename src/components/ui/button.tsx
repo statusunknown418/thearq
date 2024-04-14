@@ -32,6 +32,7 @@ const buttonVariants = cva(
       subSize: {
         iconSm: "h-6 w-6 rounded",
         iconXs: "h-5 w-5",
+        iconLg: "h-10 w-10",
       },
     },
     defaultVariants: {

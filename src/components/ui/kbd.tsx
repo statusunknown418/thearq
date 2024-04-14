@@ -25,7 +25,7 @@ export const TextKBD = ({
 
 export const KBD = ({ children }: { children: ReactNode }) => {
   return (
-    <kbd className="flex aspect-square h-5 items-center justify-center rounded-[4px] border bg-secondary px-1 text-xs uppercase text-secondary-foreground">
+    <kbd className="flex h-5 min-w-5 items-center justify-center rounded-[4px] border bg-secondary px-1 text-xs uppercase text-secondary-foreground">
       {children}
     </kbd>
   );
