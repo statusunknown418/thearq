@@ -1,6 +1,8 @@
+import { startOfDay } from "date-fns";
 import { and } from "drizzle-orm";
 import { number, object, string } from "zod";
 import { computeDuration } from "~/lib/stores/events-store";
+import { TimeEntry } from "~/server/db/edge-schema";
 import { type RouterOutputs } from "~/trpc/shared";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
@@ -98,3 +100,63 @@ export const entriesRouter = createTRPCRouter({
       };
     }),
 });
+
+interface DurationData {
+  totalDurationForDay: number;
+  percentageCompared: number;
+}
+
+function processTimeEntries(entries: TimeEntry[]): Record<number, DurationData> {
+  // Object to store results by date
+  const results: Record<number, DurationData> = {};
+  const dailyDurations: Record<number, number> = {};
+
+  // Process each entry
+  entries.forEach((entry) => {
+    if (!entry.start) {
+      return;
+    }
+
+    const dayStart = startOfDay(entry.start).getDate();
+
+    if (!results[dayStart]) {
+      results[dayStart] = {
+        totalDurationForDay: 0,
+        percentageCompared: 0, // Initialize but will calculate later
+      };
+    }
+
+    results[dayStart]!.totalDurationForDay += entry.duration;
+    dailyDurations[dayStart] = results[dayStart]!.totalDurationForDay;
+  });
+
+  // Calculate percentage changes in a separate loop
+  const sortedDays = Object.keys(dailyDurations).map(Number).sort();
+  sortedDays.forEach((day, index) => {
+    if (index > 0) {
+      const currentDuration = dailyDurations[day];
+      const selectIdx = sortedDays[index - 1];
+
+      if (!selectIdx) {
+        return;
+      }
+
+      const prevDuration = dailyDurations[selectIdx];
+
+      if (!results[day]) {
+        results[day] = {
+          totalDurationForDay: 0,
+          percentageCompared: 0,
+        };
+      }
+
+      if (!currentDuration || !prevDuration) {
+        return;
+      }
+
+      results[day]!.percentageCompared = ((currentDuration - prevDuration) / prevDuration) * 100;
+    }
+  });
+
+  return results;
+}

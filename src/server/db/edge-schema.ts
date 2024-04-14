@@ -148,6 +148,8 @@ export const sendInviteSchema = object({
   workspaceSlug: string(),
 });
 
+export const lockingSchedules = ["monthly", "weekly", "bi-weekly"] as const;
+
 export const workspaces = sqliteTable(
   "workspace",
   {
@@ -161,6 +163,9 @@ export const workspaces = sqliteTable(
       .references(() => users.id, { onDelete: "cascade" }),
     seatCount: int("seatCount").notNull().default(1),
     seatLimit: int("seatLimit").notNull().default(3),
+    globalLockingSchedule: text("lockingSchedule", { enum: lockingSchedules })
+      .notNull()
+      .default("monthly"),
     /**
      * Default for times will be integer(4) similar to this
      */
@@ -330,6 +335,8 @@ export const timeEntriesRelations = relations(timeEntries, ({ one }) => ({
 export const projectTypes = ["fixed", "project-hourly", "hourly", "non-billable"] as const;
 export type ProjectTypes = (typeof projectTypes)[number];
 
+const projectPaymentSchedule = ["monthly", "weekly", "bi-weekly"] as const;
+
 export const projects = sqliteTable(
   "project",
   {
@@ -350,6 +357,10 @@ export const projects = sqliteTable(
     projectHourlyRate: int("projectHourlyRate").default(0),
     startsAt: integer("startsAt", { mode: "timestamp" }),
     endsAt: integer("endsAt", { mode: "timestamp" }),
+    paymentSchedule: text("paymentSchedule", { enum: projectPaymentSchedule }).default("monthly"),
+    entriesLockingSchedule: text("entriesLockingSchedule", { enum: lockingSchedules }).default(
+      "monthly",
+    ),
     createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
   },
   (t) => ({
