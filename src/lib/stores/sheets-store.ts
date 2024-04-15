@@ -4,8 +4,8 @@ import { type RouterOutputs } from "~/trpc/shared";
 export type DetailsSheetsStore = {
   open: boolean;
   openChange: (open: boolean) => void;
-  details: RouterOutputs["workspaces"]["getTeamByWorkspace"][number] | null;
-  setDetails: (details: RouterOutputs["workspaces"]["getTeamByWorkspace"][number]) => void;
+  details: RouterOutputs["teams"]["getByWorkspace"][number] | null;
+  setDetails: (details: RouterOutputs["teams"]["getByWorkspace"][number]) => void;
   clear: () => void;
 };
 

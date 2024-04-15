@@ -30,12 +30,12 @@ export const createFakeEvent = (
     auth,
     start = new Date(),
     end,
-    workspaceId = 0,
+    workspaceId,
   }: {
     auth?: User;
     start?: Date;
     end: Date | null;
-    workspaceId?: number;
+    workspaceId: number;
   },
   isQueryData?: boolean,
 ) => {
@@ -55,6 +55,9 @@ export const createFakeEvent = (
       billable: true,
       temp: overrideTemporal,
       locked: true,
+      projectId: null,
+      integrationUrl: null,
+      workspaceId,
       id: Math.random() * 10000,
       start,
       end,
@@ -65,31 +68,24 @@ export const createFakeEvent = (
         image: user.image ?? null,
         name: user.name ?? null,
       },
-      workspaceId,
-      projectId: 0,
       description: "",
-      integrationUrl: null,
       userId: user.id ?? createId(),
-      monthDate: "",
+      monthDate: formatDate(new Date(), "yyyy/MM"),
       trackedAt: formatDate(new Date(), "yyyy/MM/dd"),
       duration,
-      project: {
-        color: "#000",
-        identifier: "PRX",
-        name: "ProjectX",
-      },
+      project: null,
     } satisfies CustomEvent;
   }
 
   return {
     billable: true,
+    projectId: null,
     duration: 0,
+    workspaceId,
     start: new Date(),
     end: new Date(),
     monthDate: "",
-    workspaceId: 0,
     description: "",
-    projectId: 0,
   } satisfies NewTimeEntry;
 };
 
@@ -107,4 +103,26 @@ export const computeDuration = ({
   end: stringOrDate | null;
 }) => {
   return end ? (new Date(end).getTime() - new Date(start).getTime()) / 1000 : -1;
+};
+
+type ConvertTimeOptions = {
+  includeSeconds?: boolean;
+};
+/**
+ * @description Utility function to convert seconds to hours and minutes only
+ * @param seconds
+ * @returns
+ */
+export const convertTime = (seconds = 0, options?: ConvertTimeOptions) => {
+  const d = Number(seconds);
+
+  const h = Math.floor(d / 3600);
+  const m = Math.floor((d % 3600) / 60);
+  const s = Math.floor((d % 3600) % 60);
+
+  const hDisplay = h > 0 ? `${h.toString().length > 1 ? `${h}` : `${0}${h}`}` : "00";
+  const mDisplay = m > 0 ? `${m.toString().length > 1 ? `${m}` : `${0}${m}`}` : "00";
+  const sDisplay = s > 0 ? `${s.toString().length > 1 ? `${s}` : `${0}${s}`}` : "00";
+
+  return `${hDisplay}:${mDisplay}${!!options?.includeSeconds ? `:${sDisplay}` : ""}`;
 };
