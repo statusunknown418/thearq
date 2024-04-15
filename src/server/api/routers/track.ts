@@ -47,7 +47,9 @@ export const trackerRouter = createTRPCRouter({
         session: { user },
       } = ctx;
 
-      if (!input.workspaceId) {
+      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+      if (!workspaceId) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "No workspace selected",
@@ -71,6 +73,7 @@ export const trackerRouter = createTRPCRouter({
           end: new Date(input.end),
           monthDate: formatDate(new Date(input.start), "yyyy/MM"),
           trackedAt: formatDate(new Date(), "yyyy/MM/dd"),
+          workspaceId: Number(workspaceId),
         })
         .returning();
     }),
