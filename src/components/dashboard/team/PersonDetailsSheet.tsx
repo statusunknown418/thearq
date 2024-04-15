@@ -44,7 +44,7 @@ export const PersonDetailsSheet = () => {
   const update = api.workspaces.updateMemberDetails.useMutation({
     onSuccess: async () => {
       change(false);
-      return await utils.workspaces.getTeamByWorkspace.invalidate();
+      return await utils.teams.getByWorkspace.invalidate();
     },
   });
   const form = useForm<UsersOnWorkspacesSchema>({

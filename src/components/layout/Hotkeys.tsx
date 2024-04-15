@@ -6,6 +6,7 @@ import { useCommandsStore } from "~/lib/stores/commands-store";
 import { useEventsStore } from "~/lib/stores/events-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 import { useHotkeys } from "~/lib/use-hotkeys";
+import { NewClientCommand } from "../dashboard/clients/NewClientCommand";
 import { ProjectCommand } from "../dashboard/projects/ProjectCommand";
 import { TrackerCommand } from "../dashboard/tracker/TrackerCommand";
 
@@ -71,15 +72,21 @@ export const Hotkeys = () => {
         setOpened("new-project");
       },
     ],
+    [
+      "ctrl + shift + C",
+      () => {
+        setOpened("new-client");
+      },
+    ],
   ]);
 
   return (
     <>
-      {opened === "auto-tracker" && (
-        <TrackerCommand defaultValues={defaultEvent ?? selectedEvent} />
-      )}
+      <TrackerCommand defaultValues={defaultEvent ?? selectedEvent} />
 
-      {opened === "new-project" && <ProjectCommand />}
+      <ProjectCommand />
+
+      <NewClientCommand />
     </>
   );
 };

@@ -74,7 +74,7 @@ export const IntegrationsList = ({
             />
           </div>
 
-          <section className="flex flex-col gap-4 rounded-xl border bg-secondary-background p-8">
+          <section className="flex flex-col gap-4 rounded-xl bg-background p-8 shadow">
             <header className="flex w-full items-center gap-3">
               <Image src={"/linear-icon.svg"} alt="linear icon" width={24} height={24} />
 

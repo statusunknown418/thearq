@@ -3,7 +3,7 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { api } from "~/trpc/server";
 import { InviteTeam } from "./InviteTeam";
 
-export const WrapperLoader = () => {
+export const InvitationLoading = () => {
   return (
     <Alert>
       <AlertTitle className="text-base">Invite teammates</AlertTitle>

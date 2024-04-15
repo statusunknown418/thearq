@@ -3,6 +3,7 @@ import { InfoCircledIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import {
   PiArrowRight,
@@ -59,11 +60,13 @@ const baseDefaultValues = {
 export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent }) => {
   const router = useRouter();
 
-  const open = useCommandsStore((s) => s.track);
-  const setOpen = useCommandsStore((s) => s.setTrack);
+  const open = useCommandsStore((s) => s.opened) === "auto-tracker";
+  const setOpen = useCommandsStore((s) => s.setCommand);
   const clear = useCommandsStore((s) => s.clear);
   const clearEvents = useEventsStore((s) => s.clear);
   const workspaceId = useWorkspaceStore((s) => s.active?.id);
+
+  const formRef = useRef<HTMLFormElement | null>(null);
 
   const { data: auth } = useSession({
     required: true,
@@ -76,7 +79,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
 
   const onCancelTrack = (state: boolean) => {
     if (!state) {
-      setOpen(state);
+      setOpen(null);
       clear();
       clearEvents();
       form.reset({});
@@ -120,8 +123,9 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
       clearEvents();
       return await utils.entries.getByMonth.invalidate();
     },
-    onSuccess: () => {
-      toast("Updated entry");
+    onSuccess: async () => {
+      toast.success("Updated entry");
+      await utils.entries.getSummary.invalidate();
     },
     onError: (error) => {
       toast.error("Failed to update entry", { description: error.message });
@@ -156,7 +160,8 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
       return await utils.entries.getByMonth.invalidate();
     },
     onSuccess: () => {
-      toast("Added new entry");
+      toast.success("Added new entry");
+      void utils.entries.getSummary.invalidate();
     },
     onError: (error) => {
       toast.error("Failed to add new entry", { description: error.message });
@@ -211,6 +216,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
 
                     <FormControl>
                       <Textarea
+                        autoFocus
                         className="max-w-full resize-none rounded-none border-none bg-transparent p-0 text-sm shadow-none focus-visible:ring-0"
                         placeholder="Added new features ..."
                         {...field}

@@ -3,13 +3,14 @@ import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons";
 import { addHours, format, getDay, getMonth, parse, startOfDay, startOfWeek } from "date-fns";
 import { fromZonedTime } from "date-fns-tz";
 import { enUS } from "date-fns/locale";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Calendar, dateFnsLocalizer, type SlotInfo } from "react-big-calendar";
 import withDragAndDrop, {
   type withDragAndDropProps,
 } from "react-big-calendar/lib/addons/dragAndDrop";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import { PiTrendDown, PiTrendUp } from "react-icons/pi";
 import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -64,7 +65,7 @@ export const DynamicDateView = ({
 
   const [allowSelection] = useState(true);
 
-  const openTracker = useCommandsStore((s) => s.setTrack);
+  const openTracker = useCommandsStore((s) => s.setCommand);
   const setTrackerValues = useCommandsStore((s) => s.setDefaultValues);
 
   const month = useDynamicMonthStore((s) => s.month);
@@ -107,7 +108,6 @@ export const DynamicDateView = ({
       const updatedEvent = {
         ...prev.find((e) => e.id === input.id)!,
         ...input,
-        temp: true,
       };
 
       utils.entries.getByMonth.setData({ workspaceId, monthDate }, (prevState) => {
@@ -133,6 +133,9 @@ export const DynamicDateView = ({
         rollback();
       }
     },
+    onSuccess: () => {
+      void utils.entries.getSummary.invalidate();
+    },
   });
 
   const onSelectingTimeSlots = () => {
@@ -145,7 +148,7 @@ export const DynamicDateView = ({
     (range: SlotInfo) => {
       if (!range.end) return false;
 
-      openTracker(true);
+      openTracker("auto-tracker");
 
       if (!auth) {
         return toast.error("You need to be logged in!");
@@ -203,7 +206,7 @@ export const DynamicDateView = ({
   const onSelectEvent = (e: CustomEvent) => {
     if (e.temp) return;
 
-    openTracker(true);
+    openTracker("auto-tracker");
     setTrackerValues(e);
   };
 
@@ -232,6 +235,29 @@ export const DynamicDateView = ({
   useEffect(() => {
     setMonth(new Date(date ?? now));
   }, [date, setMonth]);
+
+  const percentageChange = useMemo(() => {
+    const today = fromZonedTime(new Date(date ?? now), "America/Lima");
+    const start = fromZonedTime(startOfDay(today), "America/Lima");
+    const endOfToday = fromZonedTime(addHours(start, 24), "America/Lima");
+
+    const yesterday = fromZonedTime(addHours(start, -24), "America/Lima");
+    const end = fromZonedTime(startOfDay(yesterday), "America/Lima");
+
+    const totalForToday = events
+      .filter((e) => e.start >= start && e.start < endOfToday)
+      .reduce((acc, curr) => acc + computeDuration({ start: curr.start, end: curr.end }), 0);
+
+    const totalForYesterday = events
+      .filter((e) => e.start >= end && e.start < start)
+      .reduce((acc, curr) => acc + computeDuration({ start: curr.start, end: curr.end }), 0);
+
+    if (!totalForToday && !totalForYesterday) return null;
+
+    if (!totalForYesterday) return 100;
+
+    return ((totalForToday - totalForYesterday) / totalForYesterday) * 100;
+  }, [events, date]);
 
   return (
     <section className="rounded-xl">
@@ -307,6 +333,17 @@ export const DynamicDateView = ({
                       </Tooltip>
                     </TooltipProvider>
                   </li>
+
+                  {!!percentageChange && (
+                    <Badge
+                      className="ml-2"
+                      variant={percentageChange > 0 ? "success" : "destructive"}
+                    >
+                      {percentageChange > 0 ? <PiTrendUp /> : <PiTrendDown />}
+                      {percentageChange > 0 ? "+" : ""}
+                      {percentageChange.toFixed(0)}%
+                    </Badge>
+                  )}
                 </ul>
               );
             },
@@ -314,13 +351,13 @@ export const DynamicDateView = ({
               return (
                 <section
                   className={cn(
-                    "flex h-full w-full flex-col items-start gap-2 rounded-xl border border-primary p-4",
-                    "bg-gradient-to-b from-gray-900 to-gray-600",
-                    event?.temp && "pointer-events-none bg-gray-500",
-                    !event.end && "border-dashed via-gray-500 to-transparent",
+                    "flex h-full w-full flex-col items-start gap-2 rounded-xl border border-primary p-4 text-foreground",
+                    "bg-indigo-100",
+                    event?.temp && "pointer-events-none bg-gray-100",
+                    !event.end && "border-dashed bg-indigo-50",
                   )}
                 >
-                  <p>{event.description}</p>
+                  <p className="font-medium">{event.description}</p>
 
                   {event.project?.name && <Badge>{event.project.name}</Badge>}
 
@@ -328,7 +365,7 @@ export const DynamicDateView = ({
 
                   {event.end && (
                     <div>
-                      <p className="text-sm">
+                      <p className="text-sm font-light">
                         {convertTime(computeDuration({ start: event.start, end: event.end }), {
                           includeSeconds: true,
                         })}

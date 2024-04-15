@@ -133,15 +133,15 @@ export const EntriesViews = ({
           )}
         >
           {Array.from({ length: prefixDays }).map((_, index) => (
-            <div key={index} className="border-t p-0.5" />
+            <div key={index} className="border-t p-1.5" />
           ))}
 
           {computedMonthGrid.map(({ date, id }) => (
-            <DateCell key={id} date={date} duration={data.hoursByDay[date.getDate()]} />
+            <DateCell key={id} date={date} entryData={data.hoursByDay[date.getDate()]} />
           ))}
 
           {Array.from({ length: suffixDays }).map((_, index) => (
-            <div key={index} className="border-t p-0.5" />
+            <div key={index} className="border-t p-1.5" />
           ))}
         </section>
       </div>
