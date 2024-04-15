@@ -5,7 +5,7 @@ import GoogleProvider from "next-auth/providers/google";
 import { NextResponse } from "next/server";
 
 import { env } from "~/env";
-import { publicRoutes } from "~/lib/navigation";
+// import { publicRoutes } from "~/lib/navigation";
 import { db } from "~/server/db";
 
 /**
@@ -42,6 +42,8 @@ export const {
       },
     }),
     authorized: ({ auth, request }) => {
+      const publicRoutes = ["/", "/join", "/integrations"];
+
       if (publicRoutes.includes(request.nextUrl.pathname)) {
         return NextResponse.next();
       }
