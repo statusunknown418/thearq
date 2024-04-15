@@ -17,7 +17,7 @@ export const Hotkeys = () => {
 
   const setOpened = useCommandsStore((s) => s.setCommand);
   const selectedEvent = useCommandsStore((s) => s.defaultValues);
-  const opened = useCommandsStore((s) => s.opened);
+  // const opened = useCommandsStore((s) => s.opened);
 
   const defaultEvent = useEventsStore((s) => s.temporalEvents[0]);
 

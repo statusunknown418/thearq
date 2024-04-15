@@ -27,11 +27,10 @@ export default function SlugWorkspaceLayout({ children }: { children: ReactNode 
       </Suspense>
 
       <section className="max-h-screen py-2 pr-2">
-        <div className="h-full overflow-scroll rounded-2xl border border-border/70 bg-background">
+        <div className="h-full overflow-y-scroll rounded-2xl border border-border/70 bg-background shadow">
           {children}
         </div>
       </section>
-      {/* <nav className="col-span-2 border-l">Secondary collapsible nav</nav> */}
     </section>
   );
 }

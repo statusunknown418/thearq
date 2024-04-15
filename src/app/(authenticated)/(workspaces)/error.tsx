@@ -15,9 +15,7 @@ export default function WorkspacePageError({ error }: { error: Error & { digest?
 
         <h2 className="text-2xl font-bold">There was an error</h2>
 
-        <p className="kbd text-muted-foreground">
-          The workspace was not found or you may not be a member of it
-        </p>
+        <p className="kbd text-muted-foreground">{error.message}</p>
 
         <Button asChild className="mt-4" variant={"outline"}>
           <Link href={routes.allWorkspaces()}>
