@@ -149,6 +149,9 @@ dependencies:
   '@upstash/redis':
     specifier: ^1.29.0
     version: 1.29.0
+  '@vercel/speed-insights':
+    specifier: ^1.0.10
+    version: 1.0.10(next@14.2.1)(react@18.2.0)
   class-variance-authority:
     specifier: ^0.7.0
     version: 0.7.0
@@ -189,8 +192,8 @@ dependencies:
     specifier: 5.0.0-beta.15
     version: 5.0.0-beta.15(next@14.2.1)(react@18.2.0)
   next-safe-navigation:
-    specifier: ^0.1.1
-    version: 0.1.1(next@14.2.1)(typescript@5.4.5)(zod@3.22.4)
+    specifier: ^0.3.1
+    version: 0.3.1(next@14.2.1)(typescript@5.4.5)(zod@3.22.4)
   next-themes:
     specifier: ^0.2.1
     version: 0.2.1(next@14.2.1)(react-dom@18.2.0)(react@18.2.0)
@@ -4446,6 +4449,34 @@ packages:
       crypto-js: 4.2.0
     dev: false
 
+  /@vercel/speed-insights@1.0.10(next@14.2.1)(react@18.2.0):
+    resolution: {integrity: sha512-4uzdKB0RW6Ff2FkzshzjZ+RlJfLPxgm/00i0XXgxfMPhwnnsk92YgtqsxT9OcPLdJUyVU1DqFlSWWjIQMPkh0g==}
+    requiresBuild: true
+    peerDependencies:
+      '@sveltejs/kit': ^1 || ^2
+      next: '>= 13'
+      react: ^18 || ^19
+      svelte: ^4
+      vue: ^3
+      vue-router: ^4
+    peerDependenciesMeta:
+      '@sveltejs/kit':
+        optional: true
+      next:
+        optional: true
+      react:
+        optional: true
+      svelte:
+        optional: true
+      vue:
+        optional: true
+      vue-router:
+        optional: true
+    dependencies:
+      next: 14.2.1(react-dom@18.2.0)(react@18.2.0)
+      react: 18.2.0
+    dev: false
+
   /@webassemblyjs/ast@1.12.1:
     resolution: {integrity: sha512-EKfMUOPRRUTy5UII4qJDGPpqfwjOmZ5jeGFwid9mnoqIFK+e0vqoi1qH56JpmZSzEL53jKnNzScdmftJyG5xWg==}
     dependencies:
@@ -7564,8 +7595,8 @@ packages:
       react: 18.2.0
     dev: false
 
-  /next-safe-navigation@0.1.1(next@14.2.1)(typescript@5.4.5)(zod@3.22.4):
-    resolution: {integrity: sha512-S2f9HjzI4afDPVj7qGVT1oOb+kfpRyey+xqDbWFeGZdccaBGzzy0TOnmsrzeZNNi1d25RZHOIOgEjfrA/3aZpA==}
+  /next-safe-navigation@0.3.1(next@14.2.1)(typescript@5.4.5)(zod@3.22.4):
+    resolution: {integrity: sha512-X32TqDC3oN8BD2ZLSztaRUZhsQOy4Ge5j48nBs6MMDuwfucnfx8jd3kIQFl0WT5du77MNp6OjHhUekupu9mR6Q==}
     peerDependencies:
       next: '>=13.0.0'
       typescript: '>=4.8.2'
