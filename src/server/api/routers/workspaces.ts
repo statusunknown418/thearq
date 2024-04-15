@@ -136,7 +136,6 @@ export const workspacesRouter = createTRPCRouter({
       return {
         ...workspace,
         viewerPermissions: parsePermissions(viewer.permissions),
-
       };
     }),
   getPermissions: protectedProcedure
@@ -305,20 +304,6 @@ export const workspacesRouter = createTRPCRouter({
         success: true,
       };
     }),
-  getTeamByWorkspace: protectedProcedure.query(async ({ ctx }) => {
-    const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
-
-    if (!workspaceId) {
-      return notFound();
-    }
-
-    return ctx.db.query.usersOnWorkspaces.findMany({
-      where: (t, op) => op.eq(t.workspaceId, Number(workspaceId)),
-      with: {
-        user: true,
-      },
-    });
-  }),
   getInvitationDetails: publicProcedure
     .input((i) =>
       parse(
