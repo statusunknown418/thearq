@@ -17,8 +17,7 @@ export const Hotkeys = () => {
 
   const setOpened = useCommandsStore((s) => s.setCommand);
   const selectedEvent = useCommandsStore((s) => s.defaultValues);
-  // const opened = useCommandsStore((s) => s.opened);
-
+  const opened = useCommandsStore((s) => s.opened);
   const defaultEvent = useEventsStore((s) => s.temporalEvents[0]);
 
   useHotkeys([
@@ -82,7 +81,9 @@ export const Hotkeys = () => {
 
   return (
     <>
-      <TrackerCommand defaultValues={defaultEvent ?? selectedEvent} />
+      {opened === "auto-tracker" && (
+        <TrackerCommand defaultValues={defaultEvent ?? selectedEvent} />
+      )}
 
       <ProjectCommand />
 

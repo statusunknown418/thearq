@@ -292,6 +292,7 @@ export const timeEntries = sqliteTable(
     durationIdx: index("timeEntries_duration_idx").on(t.duration),
     trackedAtIdx: index("timeEntries_trackedAt_idx").on(t.trackedAt),
     monthDateIdx: index("timeEntries_monthDate_idx").on(t.monthDate),
+    endIdx: index("timeEntries_end_idx").on(t.end),
   }),
 );
 

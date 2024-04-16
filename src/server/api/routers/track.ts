@@ -7,13 +7,13 @@ import { RECENT_W_ID_KEY } from "~/lib/constants";
 import { timeEntries, timeEntrySchema, timeEntrySelect } from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
-export const autoTrackerSchema = omit(timeEntrySchema, ["duration", "end"]);
-export const manualTrackerSchema = timeEntrySchema;
+export const autoTrackerSchema = omit(timeEntrySchema, ["duration", "end", "workspaceId"]);
+export const manualTrackerSchema = omit(timeEntrySchema, ["workspaceId"]);
 
 export const trackerRouter = createTRPCRouter({
   start: protectedProcedure
     .input((i) => parse(autoTrackerSchema, i))
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
 
       if (!workspaceId) {
@@ -27,7 +27,7 @@ export const trackerRouter = createTRPCRouter({
         session: { user },
       } = ctx;
 
-      return ctx.db
+      const [entry] = await ctx.db
         .insert(timeEntries)
         .values({
           ...input,
@@ -38,6 +38,8 @@ export const trackerRouter = createTRPCRouter({
           workspaceId: Number(workspaceId),
         })
         .returning();
+
+      return entry;
     }),
 
   manual: protectedProcedure

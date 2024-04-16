@@ -1,8 +1,11 @@
+import { TRPCError } from "@trpc/server";
 import { startOfDay } from "date-fns";
 import { and } from "drizzle-orm";
+import { cookies } from "next/headers";
 import { number, object, string } from "zod";
+import { LIVE_ENTRY_DURATION, RECENT_W_ID_KEY } from "~/lib/constants";
 import { computeDuration } from "~/lib/stores/events-store";
-import { TimeEntry } from "~/server/db/edge-schema";
+import { type TimeEntry } from "~/server/db/edge-schema";
 import { type RouterOutputs } from "~/trpc/shared";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
@@ -99,6 +102,38 @@ export const entriesRouter = createTRPCRouter({
         hoursByDay,
       };
     }),
+  getLiveEntry: protectedProcedure.query(async ({ ctx }) => {
+    const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+    if (!workspaceId) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "No workspace selected",
+      });
+    }
+
+    const entry = await ctx.db.query.timeEntries.findFirst({
+      where: (t, op) =>
+        and(
+          op.eq(t.userId, ctx.session.user.id),
+          op.eq(t.workspaceId, Number(workspaceId)),
+          op.eq(t.duration, LIVE_ENTRY_DURATION),
+          op.isNull(t.end),
+        ),
+      with: {
+        project: {
+          columns: {
+            color: true,
+            name: true,
+            identifier: true,
+          },
+        },
+        user: true,
+      },
+    });
+
+    return entry;
+  }),
 });
 
 interface DurationData {
@@ -106,7 +141,12 @@ interface DurationData {
   percentageCompared: number;
 }
 
-function processTimeEntries(entries: TimeEntry[]): Record<number, DurationData> {
+/**
+ * @todo maybe implement this on the Analytics page?
+ * @param entries 
+ * @returns 
+ */
+function _processTimeEntries(entries: TimeEntry[]): Record<number, DurationData> {
   // Object to store results by date
   const results: Record<number, DurationData> = {};
   const dailyDurations: Record<number, number> = {};

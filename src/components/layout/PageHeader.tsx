@@ -11,7 +11,7 @@ export const PageHeader = ({
   return (
     <header
       className={cn(
-        "sticky inset-0 top-0 z-50 -mx-8 flex items-center gap-5 rounded-t-3xl border-b bg-background/70 px-8 py-5 backdrop-blur backdrop-filter",
+        "sticky inset-0 top-0 z-50 -mx-8 flex gap-5 rounded-t-3xl border-b bg-background/70 px-8 py-5 backdrop-blur backdrop-filter",
         className,
       )}
     >
