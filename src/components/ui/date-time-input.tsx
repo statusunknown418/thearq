@@ -2,13 +2,15 @@ import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { addDays, format, subDays } from "date-fns";
 import { useFormContext } from "react-hook-form";
+import { PiWarningCircleDuotone } from "react-icons/pi";
 import { cn } from "~/lib/utils";
 import { type NewTimeEntry } from "~/server/db/edge-schema";
 import { Button } from "../ui/button";
 import { Calendar } from "../ui/calendar";
-import { FormField, FormItem, FormMessage } from "../ui/form";
+import { FormField, FormItem } from "../ui/form";
 import { Input } from "../ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
 
 export const DateTimeInput = ({ selector }: { selector: "start" | "end" }) => {
   const form = useFormContext<NewTimeEntry>();
@@ -25,7 +27,11 @@ export const DateTimeInput = ({ selector }: { selector: "start" | "end" }) => {
     date.setHours(parseInt(hours));
     date.setMinutes(parseInt(minutes));
 
-    if (date > new Date()) {
+    if (date < new Date()) {
+      form.setError(selector, {
+        message: "End cannot be in the past",
+      });
+    } else {
       form.clearErrors(selector);
     }
 
@@ -38,22 +44,37 @@ export const DateTimeInput = ({ selector }: { selector: "start" | "end" }) => {
       name={selector}
       render={({ field }) => (
         <FormItem ref={parent}>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <Input
               type="time"
               id="time"
-              className="h-8"
+              className="h-8 w-24"
               onBlur={field.onBlur}
               disabled={!field.value}
               onChange={handleTimeSelect}
               value={field.value ? format(field.value, "HH:mm") : ""}
             />
 
+            {form.formState.errors[selector]?.message && (
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <PiWarningCircleDuotone className={cn("h-4 w-4 text-destructive")} />
+                  </TooltipTrigger>
+
+                  <TooltipContent className="text-destructive">
+                    {form.formState.errors[selector]?.message}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+
             {selector === "end" && (
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button size={"icon"} variant={field.value ? "primary" : "secondary"}>
+                  <Button variant={field.value ? "primary" : "secondary"}>
                     <CalendarIcon className={cn("h-4 w-4")} />
+                    {field.value && format(field.value, "do LLL")}
                   </Button>
                 </PopoverTrigger>
 
@@ -73,8 +94,6 @@ export const DateTimeInput = ({ selector }: { selector: "start" | "end" }) => {
               </Popover>
             )}
           </div>
-
-          <FormMessage />
         </FormItem>
       )}
     />
