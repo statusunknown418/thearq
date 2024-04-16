@@ -140,8 +140,12 @@
 }
 
 .rbc-event {
-  @apply !bg-transparent !p-0 !border-none !rounded-xl !outline-none focus:!ring
+  @apply !bg-transparent !p-0 !border-none !outline-none focus:!ring 
 }
+
+.rbc-event-content {
+  @apply !overflow-visible
+} 
 
 .rbc-event-label {
   @apply !hidden

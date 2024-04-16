@@ -5,7 +5,6 @@ import GoogleProvider from "next-auth/providers/google";
 import { NextResponse } from "next/server";
 
 import { env } from "~/env";
-// import { publicRoutes } from "~/lib/navigation";
 import { db } from "~/server/db";
 
 /**

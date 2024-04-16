@@ -1,8 +1,8 @@
 import { TRPCError } from "@trpc/server";
 import { formatDate } from "date-fns";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { cookies } from "next/headers";
-import { number, object, omit, parse } from "valibot";
+import { date, minValue, number, object, omit, parse } from "valibot";
 import { RECENT_W_ID_KEY } from "~/lib/constants";
 import { timeEntries, timeEntrySchema, timeEntrySelect } from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
@@ -27,16 +27,74 @@ export const trackerRouter = createTRPCRouter({
         session: { user },
       } = ctx;
 
+      const entry = await ctx.db.transaction(async (trx) => {
+        const existingEntry = await trx.query.timeEntries.findFirst({
+          where: (t, { and, eq, isNull }) => {
+            return and(
+              eq(t.userId, user.id),
+              eq(t.workspaceId, Number(workspaceId)),
+              eq(t.duration, -1),
+              isNull(t.end),
+            );
+          },
+        });
+
+        if (existingEntry) {
+          trx.rollback();
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "You already have a live entry going on",
+          });
+        }
+
+        const [entry] = await trx
+          .insert(timeEntries)
+          .values({
+            ...input,
+            duration: -1,
+            start: new Date(),
+            end: null,
+            userId: user.id,
+            workspaceId: Number(workspaceId),
+          })
+          .returning();
+
+        return entry;
+      });
+
+      return entry;
+    }),
+
+  stop: protectedProcedure
+    .input((i) => parse(object({ id: number(), end: date(), duration: number([minValue(0)]) }), i))
+    .mutation(async ({ ctx, input }) => {
+      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+      if (!workspaceId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No workspace selected",
+        });
+      }
+
+      const {
+        session: { user },
+      } = ctx;
+
       const [entry] = await ctx.db
-        .insert(timeEntries)
-        .values({
-          ...input,
-          duration: -1,
-          start: new Date(),
-          end: null,
-          userId: user.id,
-          workspaceId: Number(workspaceId),
+        .update(timeEntries)
+        .set({
+          end: input.end,
+          duration: input.duration,
         })
+        .where(
+          and(
+            eq(timeEntries.userId, user.id),
+            eq(timeEntries.workspaceId, Number(workspaceId)),
+            eq(timeEntries.duration, -1),
+            isNull(timeEntries.end),
+          ),
+        )
         .returning();
 
       return entry;
