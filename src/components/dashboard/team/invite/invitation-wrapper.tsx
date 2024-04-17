@@ -1,5 +1,7 @@
+import { cookies } from "next/headers";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Skeleton } from "~/components/ui/skeleton";
+import { RECENT_W_ID_KEY } from "~/lib/constants";
 import { api } from "~/trpc/server";
 import { InviteTeam } from "./InviteTeam";
 
@@ -16,7 +18,13 @@ export const InvitationLoading = () => {
 };
 
 export const InvitationWrapperRSC = async ({ slug }: { slug: string }) => {
-  const w = await api.workspaces.getBySlug.query({ slug });
+  const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
 
-  return <InviteTeam workspace={w} />;
+  if (!workspaceId) {
+    return <div>You must select a workspace first</div>;
+  }
+
+  const w = await api.workspaces.getBySlug.query({ slug, id: Number(workspaceId) });
+
+  return <InviteTeam workspace={w} workspaceId={Number(workspaceId)} />;
 };

@@ -29,14 +29,16 @@ import { TextKBD } from "../../../ui/kbd";
 
 export const InviteTeam = ({
   workspace,
+  workspaceId,
 }: {
   workspace: RouterOutputs["workspaces"]["getBySlug"];
+  workspaceId: number;
 }) => {
   const [open, setOpen] = useState(false);
 
   const utils = api.useUtils();
   const { data } = api.workspaces.getBySlug.useQuery(
-    { slug: workspace.slug },
+    { slug: workspace.slug, id: workspaceId },
     {
       initialData: workspace,
     },
