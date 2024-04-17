@@ -2,7 +2,7 @@
 
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import { useFormContext } from "react-hook-form";
-import { PiPlusCircle } from "react-icons/pi";
+import { PiPlusCircleDuotone } from "react-icons/pi";
 import { Button } from "~/components/ui/button";
 import {
   Command,
@@ -50,13 +50,20 @@ export const ClientsCombobox = () => {
             </FormControl>
           </div>
 
-          <PopoverContent className="w-[--radix-popover-anchor-width] p-0" align="start">
+          <PopoverContent className="w-[var(--radix-popper-anchor-width)] p-0" align="start">
             <Command>
               <CommandInput placeholder="Search" />
-              <CommandEmpty>No workspace found</CommandEmpty>
+              <CommandEmpty>No client found</CommandEmpty>
 
               <CommandGroup>
                 <div className="max-h-56 overflow-y-scroll">
+                  {!data ||
+                    (data.length === 0 && (
+                      <p className="flex flex-col items-center gap-1 p-2 text-xs text-muted-foreground">
+                        You have no clients created yet
+                      </p>
+                    ))}
+
                   {data?.map((client) => (
                     <CommandItem
                       key={client.workspaceId}
@@ -82,7 +89,7 @@ export const ClientsCombobox = () => {
                     return;
                   }}
                 >
-                  <PiPlusCircle size={16} className="text-primary" />
+                  <PiPlusCircleDuotone size={16} className="text-primary" />
                   <span className="font-medium">Add client</span>
                 </CommandItem>
               </CommandGroup>

@@ -1,23 +1,22 @@
 import { valibotResolver } from "@hookform/resolvers/valibot";
-import { InfoCircledIcon } from "@radix-ui/react-icons";
-import { format } from "date-fns";
+import { addHours, format } from "date-fns";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import {
   PiArrowRight,
+  PiDotsThreeVertical,
   PiFloppyDisk,
   PiLink,
-  PiShuffle,
+  PiPaperPlaneRightDuotone,
   PiSquaresFourDuotone,
-  PiTriangleDuotone,
+  PiTrashDuotone,
 } from "react-icons/pi";
 import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { DateTimeInput } from "~/components/ui/date-time-input";
-import { Dialog, DialogClose, DialogContent, DialogFooter } from "~/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter } from "~/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "~/components/ui/form";
+import { KBD } from "~/components/ui/kbd";
 import { Separator } from "~/components/ui/separator";
 import { Textarea } from "~/components/ui/textarea";
 import {
@@ -35,6 +35,7 @@ import {
   TimePickerSeparator,
 } from "~/components/ui/time-picker/time-field";
 import { Toggle } from "~/components/ui/toggle";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import { useCommandsStore } from "~/lib/stores/commands-store";
 import { createFakeEvent, useEventsStore } from "~/lib/stores/events-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
@@ -46,15 +47,12 @@ import { api } from "~/trpc/react";
 const baseDefaultValues = {
   description: "",
   billable: true,
-  start: undefined,
   duration: 0,
-  projectId: 0,
-  end: undefined,
+  projectId: null,
   integrationUrl: "",
   monthDate: format(new Date(), "yyyy/MM"),
   trackedAt: format(new Date(), "yyyy/MM/dd"),
-  weekNumber: 0,
-  workspaceId: 0,
+  weekNumber: null,
 };
 
 export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent }) => {
@@ -65,8 +63,6 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
   const clear = useCommandsStore((s) => s.clear);
   const clearEvents = useEventsStore((s) => s.clear);
   const workspaceId = useWorkspaceStore((s) => s.active?.id);
-
-  const formRef = useRef<HTMLFormElement | null>(null);
 
   const { data: auth } = useSession({
     required: true,
@@ -88,11 +84,12 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
 
   const form = useForm<NewTimeEntry>({
     resolver: valibotResolver(timeEntrySchema),
-    defaultValues: defaultValues
+    defaultValues: !!defaultValues
       ? defaultValues
       : {
           ...baseDefaultValues,
           start: new Date(),
+          end: addHours(new Date(), 1),
         },
   });
 
@@ -125,7 +122,10 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
     },
     onSuccess: async () => {
       toast.success("Updated entry");
-      await utils.entries.getSummary.invalidate();
+      await Promise.all([
+        utils.entries.getSummary.invalidate(),
+        utils.entries.getLiveEntry.invalidate(),
+      ]);
     },
     onError: (error) => {
       toast.error("Failed to update entry", { description: error.message });
@@ -194,16 +194,19 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
         <Form {...form}>
           <form className="grid grid-cols-1 gap-4" onSubmit={onSubmit}>
             <div className="flex items-center gap-2">
-              <Badge className="w-max">
-                Auto
-                <InfoCircledIcon />
-              </Badge>
+              <Badge className="w-max">Manual</Badge>
 
-              <PiShuffle size={20} className="text-muted-foreground" />
+              {/* <PiShuffle size={16} className="text-muted-foreground" /> */}
+              <p className="text-muted-foreground">or</p>
 
-              <Button variant={"secondary"} className="w-max" type="button">
-                <PiLink />
-                Link from integration
+              <Button
+                variant={"secondary"}
+                className="w-max rounded-full"
+                size={"sm"}
+                type="button"
+              >
+                <PiLink size={16} />
+                From integration
               </Button>
             </div>
 
@@ -312,19 +315,68 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
               />
             </div>
 
-            <Separator className="-ml-5 mb-1 mt-4 w-[670px]" />
+            <Separator className="-ml-6 mb-1 mt-4 w-[670px]" />
 
             <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline" type="button">
-                  Cancel
-                </Button>
-              </DialogClose>
+              {!defaultValues?.temp && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant={"outline"} size={"icon"} className="ml-auto">
+                      <PiDotsThreeVertical size={16} />
+                    </Button>
+                  </DropdownMenuTrigger>
 
-              <Button>
-                {isEditing ? "Save" : "Start"}
-                {isEditing ? <PiFloppyDisk /> : <PiTriangleDuotone className="rotate-90" />}
-              </Button>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem
+                        className="text-destructive"
+                        onClick={() => {
+                          if (!defaultValues?.id) return;
+
+                          deleteEntry({ id: defaultValues?.id });
+                          setOpen(null);
+                        }}
+                      >
+                        <PiTrashDuotone size={16} />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" type="button" onClick={() => setOpen(null)}>
+                      Cancel
+                    </Button>
+                  </TooltipTrigger>
+
+                  <TooltipContent side="bottom">
+                    Close <KBD>ESC</KBD>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button>
+                      {isEditing ? (
+                        <PiFloppyDisk size={16} />
+                      ) : (
+                        <PiPaperPlaneRightDuotone size={16} />
+                      )}
+                      {isEditing ? "Save" : "Add"}
+                    </Button>
+                  </TooltipTrigger>
+
+                  <TooltipContent side="bottom">
+                    Save <KBD>⌘</KBD> + <KBD>Enter</KBD>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </DialogFooter>
           </form>
         </Form>

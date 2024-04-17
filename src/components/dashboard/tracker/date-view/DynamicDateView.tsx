@@ -347,14 +347,15 @@ export const DynamicDateView = ({
                 </ul>
               );
             },
-            event: ({ event }) => {
+            event: ({ event, continuesPrior }) => {
               return (
                 <section
                   className={cn(
-                    "flex h-full w-full flex-col items-start gap-2 rounded-xl border border-primary p-4 text-foreground",
+                    "flex min-h-full w-full flex-col items-start gap-2 rounded-lg border border-primary p-4 text-foreground",
                     "bg-indigo-100",
                     event?.temp && "pointer-events-none bg-gray-100",
                     !event.end && "border-dashed bg-indigo-50",
+                    continuesPrior && "rounded-t-none",
                   )}
                 >
                   <p className="font-medium">{event.description}</p>

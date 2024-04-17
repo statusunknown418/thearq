@@ -27,7 +27,7 @@ export const DateTimeInput = ({ selector }: { selector: "start" | "end" }) => {
     date.setHours(parseInt(hours));
     date.setMinutes(parseInt(minutes));
 
-    if (date < new Date()) {
+    if (selector === "end" && date < new Date()) {
       form.setError(selector, {
         message: "End cannot be in the past",
       });
@@ -59,7 +59,7 @@ export const DateTimeInput = ({ selector }: { selector: "start" | "end" }) => {
               <TooltipProvider delayDuration={0}>
                 <Tooltip>
                   <TooltipTrigger>
-                    <PiWarningCircleDuotone className={cn("h-4 w-4 text-destructive")} />
+                    <PiWarningCircleDuotone size={20} className={cn("text-destructive")} />
                   </TooltipTrigger>
 
                   <TooltipContent className="text-destructive">

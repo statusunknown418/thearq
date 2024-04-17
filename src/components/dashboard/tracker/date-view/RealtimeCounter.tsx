@@ -3,10 +3,20 @@ import { useEffect, useState } from "react";
 import { computeDuration, convertTime } from "~/lib/stores/events-store";
 import { cn } from "~/lib/utils";
 
-export const RealtimeCounter = ({ start, className }: { start: Date; className?: string }) => {
+export const RealtimeCounter = ({
+  start,
+  className,
+  idle,
+}: {
+  start: Date;
+  className?: string;
+  idle?: boolean;
+}) => {
   const [duration, setDuration] = useState(() => computeDuration({ start, end: new Date() }));
 
   useEffect(() => {
+    if (idle) return;
+
     const interval = setInterval(() => {
       setDuration(() => computeDuration({ start, end: new Date() }));
     }, 1000);
@@ -14,7 +24,7 @@ export const RealtimeCounter = ({ start, className }: { start: Date; className?:
     return () => {
       clearInterval(interval);
     };
-  }, [start]);
+  }, [start, idle]);
 
   return (
     <div className={cn("flex items-center gap-1.5", className)}>

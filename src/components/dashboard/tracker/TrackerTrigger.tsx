@@ -14,12 +14,12 @@ export const TrackerTrigger = () => {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button size={"icon"} subSize={"iconLg"} onClick={() => setOpen("auto-tracker")}>
-            <PiTimerDuotone size={20} />
+            <PiTimerDuotone size={24} />
           </Button>
         </TooltipTrigger>
 
-        <TooltipContent side="bottom">
-          Start timer
+        <TooltipContent side="bottom" align="start">
+          Manual entry
           <KBD>A</KBD>
         </TooltipContent>
       </Tooltip>

@@ -3,7 +3,7 @@ import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
-import { PiPlusCircle } from "react-icons/pi";
+import { PiPlusCircleDuotone } from "react-icons/pi";
 import { routes } from "~/lib/navigation";
 import { parsePermissions, useAuthStore } from "~/lib/stores/auth-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
@@ -141,7 +141,7 @@ export const WorkspaceCombobox = () => {
             <CommandSeparator className="my-1" />
 
             <CommandItem onSelect={() => router.push(routes.newWorkspace())}>
-              <PiPlusCircle size={16} className="text-primary" />
+              <PiPlusCircleDuotone size={16} className="text-primary" />
               <span className="font-medium">New workspace</span>
             </CommandItem>
           </CommandGroup>

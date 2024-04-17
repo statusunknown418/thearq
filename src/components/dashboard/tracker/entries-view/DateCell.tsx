@@ -26,15 +26,13 @@ export const DateCell = ({ date, entryData }: { date: Date; entryData?: number }
     >
       <section
         className={cn(
-          "group flex h-full flex-col items-center justify-center rounded-lg border border-transparent p-2 transition-all hover:bg-primary hover:text-primary-foreground",
+          "group flex h-full flex-col items-center justify-center rounded-lg border border-transparent p-2 transition-all hover:border-primary hover:bg-secondary",
           "group-focus/container:ring group-focus/container:ring-ring group-focus/container:ring-offset-2",
           queryDate === formatDate(date, "yyyy/MM/dd") && "border-primary bg-secondary",
-          formatDate(date, "yyyy/MM/dd") === toNow() && "border-dashed border-primary",
+          formatDate(date, "yyyy/MM/dd") === toNow() && "border-dashed border-primary bg-muted",
         )}
       >
-        <p className="text-xs text-muted-foreground group-hover:text-primary-foreground">
-          {formatDate(date, "do")}
-        </p>
+        <p className="text-xs text-muted-foreground">{formatDate(date, "do")}</p>
 
         <section className="mt-auto flex h-full flex-col items-center justify-center gap-1">
           <div className="h-9 text-2xl font-bold">{!!entryData ? hours : <PiCircleDashed />}</div>
