@@ -32,7 +32,11 @@ export const updateCookiesAction = async (ctx: FormData) => {
     };
   }
 
-  store.set(RECENT_WORKSPACE_KEY, data.slug);
+  store.set(RECENT_WORKSPACE_KEY, data.slug, {
+    httpOnly: true,
+    path: "/",
+    sameSite: "lax",
+  });
   store.set(USER_WORKSPACE_PERMISSIONS, encodeURIComponent(data.permissions), {
     httpOnly: true,
     path: "/",

@@ -5,7 +5,7 @@ import { and, eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import slugify from "slugify";
-import { object, parse, string } from "valibot";
+import { number, object, parse, string } from "valibot";
 import {
   RECENT_WORKSPACE_KEY,
   RECENT_W_ID_KEY,
@@ -105,20 +105,19 @@ export const workspacesRouter = createTRPCRouter({
       parse(
         object({
           slug: string(),
+          id: number(),
         }),
         i,
       ),
     )
     .query(async ({ ctx, input }) => {
-      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
-
       const [workspace, viewer] = await Promise.all([
         ctx.db.query.workspaces.findFirst({
           where: (t, op) => op.eq(t.slug, input.slug),
         }),
         ctx.db.query.usersOnWorkspaces.findFirst({
           where: (t, op) =>
-            op.and(op.eq(t.userId, ctx.session.user.id), op.eq(t.workspaceId, Number(workspaceId))),
+            op.and(op.eq(t.userId, ctx.session.user.id), op.eq(t.workspaceId, input.id)),
         }),
       ]);
 

@@ -72,7 +72,7 @@ export const NewWorkspace = () => {
   }, [form, name]);
 
   return (
-    <section className="grid grid-cols-1 gap-6 rounded-3xl border p-8 shadow-2xl shadow-black">
+    <section className="grid grid-cols-1 gap-6 rounded-3xl border p-8 shadow-2xl dark:shadow-black/70">
       <header className="flex flex-col gap-2">
         <h2 className="text-2xl font-bold">New Workspace</h2>
         <p className="text-muted-foreground">

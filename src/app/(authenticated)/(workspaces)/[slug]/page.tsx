@@ -1,6 +1,8 @@
+import { cookies } from "next/headers";
 import { Suspense } from "react";
 import { Updater } from "~/components/Updater";
 import { Main } from "~/components/layout/Main";
+import { RECENT_W_ID_KEY } from "~/lib/constants";
 import { api } from "~/trpc/server";
 import { InviteTeam } from "../../../../components/dashboard/team/invite/InviteTeam";
 
@@ -11,9 +13,11 @@ export default async function WorkspaceDashboardPage({
     slug: string;
   };
 }) {
+  const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
 
   const workspace = await api.workspaces.getBySlug.query({
     slug: params.slug,
+    id: Number(workspaceId),
   });
 
   return (
