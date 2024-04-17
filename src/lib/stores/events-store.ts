@@ -81,11 +81,11 @@ export const createFakeEvent = (
     billable: true,
     projectId: null,
     duration: 0,
-    workspaceId,
     start: new Date(),
     end: new Date(),
     monthDate: "",
     description: "",
+    workspaceId,
   } satisfies NewTimeEntry;
 };
 

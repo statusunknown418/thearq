@@ -132,7 +132,11 @@ export const entriesRouter = createTRPCRouter({
       },
     });
 
-    return entry; 
+    if (entry) {
+      return entry;
+    }
+
+    return null;
   }),
 });
 
