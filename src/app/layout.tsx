@@ -11,7 +11,10 @@ import { auth } from "~/server/auth";
 import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata: Metadata = {
-  title: "ZenTrack",
+  title: {
+    template: "%s | Zentrack",
+    default: "Zentrack",
+  },
   description: "The new cool kid on the block.",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
