@@ -57,6 +57,7 @@ export const createFakeEvent = (
       locked: true,
       projectId: null,
       integrationUrl: null,
+      integrationProvider: null,
       workspaceId,
       id: Math.random() * 10000,
       start,

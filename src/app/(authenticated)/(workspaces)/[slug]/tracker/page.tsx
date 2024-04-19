@@ -1,8 +1,7 @@
 import { type Metadata } from "next";
+import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import { TrackerTrigger } from "~/components/dashboard/tracker/TrackerTrigger";
-import { DateViewWrapperRSC } from "~/components/dashboard/tracker/date-view/date-view-wrapper";
-import { CalendarWrapperRSC } from "~/components/dashboard/tracker/entries-view/entries-wrapper";
 import {
   LiveEntryWrapperLoading,
   LiveEntryWrapperRSC,
@@ -14,6 +13,18 @@ import { Loader } from "~/components/ui/loader";
 export const metadata: Metadata = {
   title: "Tracker",
 };
+
+const LazyDynamicDateViewWrapperRSC = dynamic(() =>
+  import("~/components/dashboard/tracker/date-view/date-view-wrapper").then(
+    (mod) => mod.DateViewWrapperRSC,
+  ),
+);
+
+const LazCalendarWrapperRSC = dynamic(() =>
+  import("~/components/dashboard/tracker/entries-view/entries-wrapper").then(
+    (mod) => mod.CalendarWrapperRSC,
+  ),
+);
 
 export default function WorkspaceTrackerPage() {
   return (
@@ -38,11 +49,11 @@ export default function WorkspaceTrackerPage() {
 
       <div className="flex w-full gap-2">
         <Suspense fallback={<Loader />}>
-          <DateViewWrapperRSC />
+          <LazyDynamicDateViewWrapperRSC />
         </Suspense>
 
         <Suspense fallback={<Loader />}>
-          <CalendarWrapperRSC />
+          <LazCalendarWrapperRSC />
         </Suspense>
       </div>
     </Main>

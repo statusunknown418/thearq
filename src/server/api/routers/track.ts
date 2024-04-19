@@ -3,7 +3,7 @@ import { formatDate } from "date-fns";
 import { and, eq, isNull } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { date, minValue, number, object, omit, parse } from "valibot";
-import { RECENT_W_ID_KEY } from "~/lib/constants";
+import { RECENT_W_ID_KEY, type Integration } from "~/lib/constants";
 import { timeEntries, timeEntrySchema, timeEntrySelect } from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
@@ -15,6 +15,7 @@ export const trackerRouter = createTRPCRouter({
     .input((i) => parse(autoTrackerSchema, i))
     .mutation(async ({ ctx, input }) => {
       const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const integrationProvider = input.integrationProvider as Integration | null;
 
       if (!workspaceId) {
         throw new TRPCError({
@@ -55,6 +56,7 @@ export const trackerRouter = createTRPCRouter({
             start: new Date(),
             end: null,
             userId: user.id,
+            integrationProvider,
             workspaceId: Number(workspaceId),
           })
           .returning();
@@ -107,6 +109,7 @@ export const trackerRouter = createTRPCRouter({
         session: { user },
       } = ctx;
 
+      const integrationProvider = input.integrationProvider as Integration | null;
       const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
 
       if (!workspaceId) {
@@ -127,6 +130,7 @@ export const trackerRouter = createTRPCRouter({
         .insert(timeEntries)
         .values({
           ...input,
+          integrationProvider,
           userId: user.id,
           duration: Number(input.duration),
           start: new Date(input.start),
@@ -147,9 +151,14 @@ export const trackerRouter = createTRPCRouter({
         };
       }
 
+      const integrationProvider = input.integrationProvider as Integration | null;
+
       const updatedEntry = await ctx.db
         .update(timeEntries)
-        .set(input)
+        .set({
+          ...input,
+          integrationProvider,
+        })
         .where(eq(timeEntries.id, input.id))
         .returning();
 

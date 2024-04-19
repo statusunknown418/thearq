@@ -9,7 +9,7 @@ export const INTEGRATIONS = {
   github: {
     name: "github",
     getTokenUrl: "https://github.com/login/oauth/access_token",
-    requestAuth: `https://github.com/apps/mobius-sync-dev/installations/new`,
+    requestAuth: `https://github.com/apps/${env.NEXT_PUBLIC_GITHUB_APP_NAME}/installations/new`,
   },
 } as const;
 
