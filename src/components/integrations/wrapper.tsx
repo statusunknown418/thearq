@@ -3,7 +3,7 @@ import { api } from "~/trpc/server";
 import { IntegrationsList } from "./IntegrationsList";
 
 export const IntegrationsWrapperRSC = async ({ slug }: { slug: string }) => {
-  const data = await api.workspaces.getViewerIntegrations.query();
+  const data = await api.viewer.getIntegrations.query();
 
   if (data.length === 0) {
     return (

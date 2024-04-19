@@ -108,6 +108,7 @@ export const DynamicDateView = ({
       const updatedEvent = {
         ...prev.find((e) => e.id === input.id)!,
         ...input,
+        integrationProvider: null,
       };
 
       utils.entries.getByMonth.setData({ workspaceId, monthDate }, (prevState) => {
@@ -207,6 +208,7 @@ export const DynamicDateView = ({
     if (e.temp) return;
 
     openTracker("auto-tracker");
+
     setTrackerValues(e);
   };
 
@@ -383,11 +385,13 @@ export const DynamicDateView = ({
           events={events.concat(temporalEvents)}
           resizableAccessor={(e) => {
             if (e.temp) return false;
+            if (e.end === null) return false;
             if (e.locked) return false;
             return true;
           }}
           draggableAccessor={(e) => {
             if (e.temp) return false;
+            if (e.end === null) return false;
             if (e.locked) return false;
             return true;
           }}

@@ -1,8 +1,12 @@
 import { formatDate } from "date-fns";
+import dynamic from "next/dynamic";
 import { cookies } from "next/headers";
 import { RECENT_W_ID_KEY } from "~/lib/constants";
 import { api } from "~/trpc/server";
-import { DynamicDateView } from "./DynamicDateView";
+
+const LazyDynamicDateView = dynamic(() =>
+  import("./DynamicDateView").then((mod) => mod.DynamicDateView),
+);
 
 export const DateViewWrapperRSC = async () => {
   const now = new Date();
@@ -11,5 +15,5 @@ export const DateViewWrapperRSC = async () => {
 
   const data = await api.entries.getByMonth.query({ workspaceId, monthDate });
 
-  return <DynamicDateView initialData={data} workspaceId={workspaceId} />;
+  return <LazyDynamicDateView initialData={data} workspaceId={workspaceId} />;
 };

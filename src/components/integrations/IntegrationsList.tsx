@@ -10,26 +10,26 @@ import { Switch } from "../ui/switch";
 export const IntegrationsList = ({
   initialData,
 }: {
-  initialData: RouterOutputs["workspaces"]["getViewerIntegrations"];
+  initialData: RouterOutputs["viewer"]["getIntegrations"];
   slug: string;
 }) => {
   const utils = api.useUtils();
 
-  const { data } = api.workspaces.getViewerIntegrations.useQuery(undefined, {
+  const { data } = api.viewer.getIntegrations.useQuery(undefined, {
     initialData,
   });
 
   const disconnect = api.integrations.disconnect.useMutation({
     onSuccess: async () => {
       toast.success("Integration disconnected");
-      return utils.workspaces.getViewerIntegrations.invalidate();
+      return utils.viewer.getIntegrations.invalidate();
     },
   });
 
   const reconnect = api.integrations.reconnect.useMutation({
     onSuccess: async () => {
       toast.success("Integration reconnected");
-      return utils.workspaces.getViewerIntegrations.invalidate();
+      return utils.viewer.getIntegrations.invalidate();
     },
   });
 

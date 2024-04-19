@@ -23,9 +23,14 @@ export const TextKBD = ({
   );
 };
 
-export const KBD = ({ children }: { children: ReactNode }) => {
+export const KBD = ({ children, className }: { children: ReactNode; className?: string }) => {
   return (
-    <kbd className="flex h-5 min-w-5 items-center justify-center rounded-[4px] border bg-secondary px-1 text-xs uppercase text-secondary-foreground">
+    <kbd
+      className={cn(
+        "flex h-5 min-w-5 items-center justify-center rounded-[4px] border bg-secondary px-1 text-xs uppercase text-secondary-foreground",
+        className,
+      )}
+    >
       {children}
     </kbd>
   );

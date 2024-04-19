@@ -1,6 +1,6 @@
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { CalendarIcon } from "@radix-ui/react-icons";
-import { addDays, format, subDays } from "date-fns";
+import { addDays, format, getHours } from "date-fns";
 import { useFormContext } from "react-hook-form";
 import { PiWarningCircleDuotone } from "react-icons/pi";
 import { cn } from "~/lib/utils";
@@ -16,10 +16,32 @@ export const DateTimeInput = ({ selector }: { selector: "start" | "end" }) => {
   const form = useFormContext<NewTimeEntry>();
   const [parent] = useAutoAnimate();
 
+  const time = form.watch(selector);
+
+  const start = form.watch("start") ?? new Date();
+  const end = form.watch("end") ?? new Date();
+
+  const handleDateSelectPersistingTime = (date: Date | undefined) => {
+    if (!date) return;
+
+    const newDate = new Date(date);
+    newDate.setHours(time ? getHours(time) : 0);
+    newDate.setMinutes(time ? time.getMinutes() : 0);
+
+    const start = form.getValues("start") ?? new Date();
+    start.setDate(newDate.getDate());
+
+    form.setValue(selector, newDate);
+
+    const otherDate = new Date(start);
+    otherDate.setHours(start ? getHours(start) : 0);
+    otherDate.setMinutes(start ? start.getMinutes() : 0);
+    selector === "end" && form.setValue("start", otherDate);
+  };
+
   const handleTimeSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const date = new Date(form.getValues(selector) ?? Date.now());
     const [hours, minutes] = e.target.value.split(":");
-
     if (!hours || !minutes) return;
 
     if (isNaN(parseInt(hours)) || isNaN(parseInt(minutes))) return;
@@ -27,9 +49,13 @@ export const DateTimeInput = ({ selector }: { selector: "start" | "end" }) => {
     date.setHours(parseInt(hours));
     date.setMinutes(parseInt(minutes));
 
-    if (selector === "end" && date < new Date()) {
+    if (selector === "end" && date < start) {
       form.setError(selector, {
-        message: "End cannot be in the past",
+        message: "End cannot be before start.",
+      });
+    } else if (selector === "start" && date > end) {
+      form.setError(selector, {
+        message: "Start cannot be after end.",
       });
     } else {
       form.clearErrors(selector);
@@ -81,11 +107,8 @@ export const DateTimeInput = ({ selector }: { selector: "start" | "end" }) => {
                 <PopoverContent className="max-w-max p-0" align="start">
                   <Calendar
                     mode="single"
-                    onSelect={field.onChange}
+                    onSelect={(e) => handleDateSelectPersistingTime(e)}
                     onDayBlur={field.onBlur}
-                    disabled={(date) =>
-                      date < subDays(new Date(), 1) || date > addDays(new Date(), 30)
-                    }
                     toMonth={addDays(new Date(), 30)}
                     selected={field.value ? new Date(field.value) : new Date()}
                     defaultMonth={field.value ? new Date(field.value) : new Date()}

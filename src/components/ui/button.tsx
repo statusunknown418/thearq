@@ -19,7 +19,7 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 border border-border/80 hover:border-primary/50 active:border-border active:bg-secondary",
         ghost:
           "hover:bg-accent/70 hover:border-primary/60 transition-colors border border-transparent active:border-border hover:text-accent-foreground",
-        link: "text-indigo-500 hover:text-indigo-400",
+        link: "text-indigo-600 dark:text-indigo-500 dark:hover:text-indigo-400 hover:text-indigo-500",
         primary:
           "bg-primary text-primary-foreground shadow-sm hover:bg-primary/85 active:bg-primary/70",
       },

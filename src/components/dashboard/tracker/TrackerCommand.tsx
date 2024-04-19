@@ -1,13 +1,17 @@
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { addHours, format } from "date-fns";
 import { useSession } from "next-auth/react";
+import dynamic from "next/dynamic";
+import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import {
   PiArrowRight,
   PiDotsThreeVertical,
   PiFloppyDisk,
-  PiLink,
+  PiGithubLogoDuotone,
   PiPaperPlaneRightDuotone,
   PiSquaresFourDuotone,
   PiTrashDuotone,
@@ -15,7 +19,6 @@ import {
 import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { DateTimeInput } from "~/components/ui/date-time-input";
 import { Dialog, DialogContent, DialogFooter } from "~/components/ui/dialog";
 import {
   DropdownMenu,
@@ -29,13 +32,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "~/components/
 import { KBD } from "~/components/ui/kbd";
 import { Separator } from "~/components/ui/separator";
 import { Textarea } from "~/components/ui/textarea";
-import {
-  TimePicker,
-  TimePickerSegment,
-  TimePickerSeparator,
-} from "~/components/ui/time-picker/time-field";
 import { Toggle } from "~/components/ui/toggle";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
+import { type Integration } from "~/lib/constants";
 import { useCommandsStore } from "~/lib/stores/commands-store";
 import { createFakeEvent, useEventsStore } from "~/lib/stores/events-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
@@ -43,12 +42,22 @@ import { useHotkeys } from "~/lib/use-hotkeys";
 import { type CustomEvent } from "~/server/api/routers/entries";
 import { timeEntrySchema, type NewTimeEntry } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
+import { FromIntegrationDialog } from "./FromIntegrationDialog";
+
+const DynamicDateTimeInput = dynamic(
+  () => import("~/components/ui/date-time-input").then((mod) => mod.DateTimeInput),
+  {
+    ssr: false,
+    loading: () => <div className="h-8 w-24 rounded-md border bg-secondary" />,
+  },
+);
 
 const baseDefaultValues = {
   description: "",
   billable: true,
   duration: 0,
   projectId: null,
+  temp: true,
   integrationUrl: "",
   monthDate: format(new Date(), "yyyy/MM"),
   trackedAt: format(new Date(), "yyyy/MM/dd"),
@@ -186,7 +195,16 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
     form.reset({});
   });
 
+  useEffect(() => {
+    if (workspaceId) {
+      form.setValue("workspaceId", workspaceId);
+    }
+  }, [form, workspaceId]);
+
   useHotkeys([["Meta+Enter", () => onSubmit()]], ["textarea", "input"]);
+
+  const provider = form.watch("integrationProvider") as Integration;
+  const integrationUrl = form.watch("integrationUrl");
 
   return (
     <Dialog open={open} onOpenChange={onCancelTrack}>
@@ -194,20 +212,68 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
         <Form {...form}>
           <form className="grid grid-cols-1 gap-4" onSubmit={onSubmit}>
             <div className="flex items-center gap-2">
-              <Badge className="w-max">Manual</Badge>
+              <Badge className="w-max rounded-sm">Manual</Badge>
 
-              {/* <PiShuffle size={16} className="text-muted-foreground" /> */}
               <p className="text-muted-foreground">or</p>
 
-              <Button
-                variant={"secondary"}
-                className="w-max rounded-full"
-                size={"sm"}
-                type="button"
-              >
-                <PiLink size={16} />
-                From integration
-              </Button>
+              <FromIntegrationDialog />
+
+              {provider === "github" && !!integrationUrl && (
+                <TooltipProvider delayDuration={0}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        asChild
+                        size={"sm"}
+                        variant={"link"}
+                        className="w-max justify-start border border-indigo-500"
+                      >
+                        <Link href={integrationUrl} target="_blank">
+                          <PiGithubLogoDuotone size={16} />
+                          View on Github
+                        </Link>
+                      </Button>
+                    </TooltipTrigger>
+
+                    <TooltipContent side="right">
+                      Links to
+                      <PiArrowRight />
+                      <span className="text-indigo-500">{integrationUrl}</span>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+
+              {provider === "linear" && !!integrationUrl && (
+                <TooltipProvider delayDuration={0}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        asChild
+                        variant={"link"}
+                        size={"sm"}
+                        className="w-max justify-start border border-indigo-500"
+                      >
+                        <Link href={integrationUrl} target="_blank">
+                          <Image
+                            src={"/linear-black.svg"}
+                            width={16}
+                            height={16}
+                            alt="linear-logo"
+                          />
+                          View on Linear
+                        </Link>
+                      </Button>
+                    </TooltipTrigger>
+
+                    <TooltipContent side="right">
+                      Links to
+                      <PiArrowRight />
+                      <span className="text-indigo-500">{integrationUrl}</span>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
 
             <div className="mt-2 flex flex-wrap justify-between gap-4">
@@ -232,12 +298,14 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
 
             <section className="mt-2 flex items-center gap-2">
               <div className="relative flex items-center gap-2">
-                <DateTimeInput selector="start" />
+                <DynamicDateTimeInput selector="start" />
+
                 <PiArrowRight size={15} />
-                <DateTimeInput selector="end" />
+
+                <DynamicDateTimeInput selector="end" />
               </div>
 
-              <p className="text-xs text-muted-foreground">took</p>
+              {/* <p className="text-xs text-muted-foreground">took</p>
 
               <FormField
                 control={form.control}
@@ -264,7 +332,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
                     </FormControl>
                   </FormItem>
                 )}
-              />
+              /> */}
             </section>
 
             <div className="flex items-center gap-2">
@@ -318,7 +386,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
             <Separator className="-ml-6 mb-1 mt-4 w-[670px]" />
 
             <DialogFooter>
-              {!defaultValues?.temp && (
+              {!defaultValues?.temp && !!defaultValues && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant={"outline"} size={"icon"} className="ml-auto">
@@ -329,7 +397,6 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
                   <DropdownMenuContent align="start">
                     <DropdownMenuGroup>
                       <DropdownMenuItem
-                        className="text-destructive"
                         onClick={() => {
                           if (!defaultValues?.id) return;
 
@@ -337,7 +404,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
                           setOpen(null);
                         }}
                       >
-                        <PiTrashDuotone size={16} />
+                        <PiTrashDuotone size={16} className="text-destructive" />
                         Delete
                       </DropdownMenuItem>
                     </DropdownMenuGroup>

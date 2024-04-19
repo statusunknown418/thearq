@@ -3,7 +3,7 @@
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useForm } from "react-hook-form";
 import {
-  PiPlayCircleDuotone,
+  PiPlayDuotone,
   PiSquaresFourDuotone,
   PiStopDuotone,
   PiWarningCircleDuotone,
@@ -21,6 +21,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Form, FormControl, FormField, FormItem } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
+import { KBD } from "~/components/ui/kbd";
 import { Toggle } from "~/components/ui/toggle";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import { computeDuration } from "~/lib/stores/events-store";
@@ -139,18 +140,23 @@ export const StartLiveEntry = ({
     <Form {...form}>
       <form
         onSubmit={handleSubmit}
-        className="ml-auto flex items-center gap-2 self-center rounded-xl border bg-muted p-2"
+        className="ml-auto flex items-center gap-2 self-center rounded-2xl bg-muted p-2 shadow"
       >
         <TooltipProvider delayDuration={0}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button size={"icon"} subSize={"iconMd"} disabled={starting || stopping}>
-                {data?.start ? <PiStopDuotone size={24} /> : <PiPlayCircleDuotone size={24} />}
+              <Button
+                size={"icon"}
+                className="rounded-full"
+                subSize={"iconMd"}
+                disabled={starting || stopping}
+              >
+                {data?.start ? <PiStopDuotone size={24} /> : <PiPlayDuotone size={20} />}
               </Button>
             </TooltipTrigger>
 
             <TooltipContent side="bottom" align="start">
-              {data?.start ? "Stop timer" : "Start timer"}
+              {data?.start ? "Stop timer" : "Start timer"} <KBD>S</KBD>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -180,7 +186,7 @@ export const StartLiveEntry = ({
                       <PiWarningCircleDuotone size={20} className={cn("text-destructive")} />
                     </TooltipTrigger>
 
-                    <TooltipContent className="text-destructive">
+                    <TooltipContent side="bottom" className="text-destructive">
                       {form.formState.errors.description.message}
                     </TooltipContent>
                   </Tooltip>
