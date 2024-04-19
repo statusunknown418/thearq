@@ -4,14 +4,16 @@ export const INTEGRATIONS = {
   linear: {
     name: "linear",
     getTokenUrl: "https://api.linear.app/oauth/token",
-    requestAuth: "https://linear.app/oauth/authorize",
+    requestAuth: `https://linear.app/oauth/authorize`,
   },
   github: {
     name: "github",
     getTokenUrl: "https://github.com/login/oauth/access_token",
-    requestAuth: "https://github.com/login/oauth/authorize",
+    requestAuth: `https://github.com/apps/mobius-sync-dev/installations/new`,
   },
 } as const;
+
+export type GithubQueryType = "is:issue" | "is:pull-request";
 
 export type Integration = (typeof INTEGRATIONS)[keyof typeof INTEGRATIONS]["name"];
 export const INTEGRATION_NAMES = Object.keys(INTEGRATIONS);
