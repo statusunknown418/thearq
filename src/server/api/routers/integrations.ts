@@ -171,7 +171,7 @@ export const integrationsRouter = createTRPCRouter({
           })
           .onConflictDoNothing();
 
-        const key: IntegrationCachingKey = `${ctx.session.user.id}:${INTEGRATIONS.linear.name}`;
+        const key: IntegrationCachingKey = `${ctx.session.user.id}:${INTEGRATIONS.github.name}`;
         await redis.set(key, {
           providerAccountId: viewer.data.login,
           access_token: authentication.token,

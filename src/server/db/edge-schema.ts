@@ -278,6 +278,7 @@ export const timeEntries = sqliteTable(
       .notNull()
       .$defaultFn(() => formatDate(new Date(), "yyyy/MM")),
     integrationUrl: text("integrationUrl"),
+    integrationProvider: text("integrationProvider").$type<Integration>(),
     duration: integer("duration").notNull(),
     description: text("description").notNull().default(""),
     locked: integer("locked", { mode: "boolean" }).default(false),
@@ -298,7 +299,7 @@ export const timeEntries = sqliteTable(
 
 export const timeEntrySchema = omit(
   createInsertSchema(timeEntries, {
-    description: string([minLength(1)]),
+    description: string([minLength(1, "Description must be at least 1 character long")]),
   }),
   ["locked", "userId", "id"],
   [

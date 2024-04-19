@@ -10,6 +10,7 @@ import { type RouterOutputs } from "~/trpc/shared";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export type CustomEvent = RouterOutputs["entries"]["getByMonth"][number] & { temp?: boolean };
+
 export const entriesRouter = createTRPCRouter({
   getByMonth: protectedProcedure
     .input(

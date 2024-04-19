@@ -335,18 +335,7 @@ export const workspacesRouter = createTRPCRouter({
         data: invite,
       };
     }),
-  getViewerIntegrations: protectedProcedure.query(async ({ ctx }) => {
-    const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
 
-    if (!workspaceId) {
-      return notFound();
-    }
-
-    return ctx.db.query.integrations.findMany({
-      where: (t, op) =>
-        and(op.eq(t.userId, ctx.session.user.id), op.eq(t.workspaceId, Number(workspaceId))),
-    });
-  }),
   updateMemberDetails: protectedProcedure
     .input((i) => parse(usersOnWorkspacesSchema, i))
     .mutation(({ ctx, input }) => {
