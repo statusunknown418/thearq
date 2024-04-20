@@ -16,3 +16,23 @@ export const useDetailsSheetStore = create<DetailsSheetsStore>((set) => ({
   setDetails: (details) => set({ details, open: true }),
   clear: () => set({ details: null, open: false }),
 }));
+
+type IntegrationDialogStore = {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+};
+
+export const useIntegrationDialogStore = create<IntegrationDialogStore>((set) => ({
+  open: false,
+  setOpen: (open: boolean) => set({ open }),
+}));
+
+type ClientsSheetStore = {
+  open: boolean;
+  openChange: (open: boolean) => void;
+};
+
+export const useClientsSheetStore = create<ClientsSheetStore>((set) => ({
+  open: false,
+  openChange: (state: boolean) => set({ open: state }),
+}));
