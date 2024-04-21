@@ -1,11 +1,10 @@
 import { Suspense } from "react";
-import { PiPlugDuotone } from "react-icons/pi";
+import { AddIntegrationsModal } from "~/components/integrations/AddIntegrationsModal";
+import { Connect } from "~/components/integrations/connect";
 import { IntegrationsWrapperRSC } from "~/components/integrations/wrapper";
 import { Main } from "~/components/layout/Main";
 import { PageHeader } from "~/components/layout/PageHeader";
-import { Button } from "~/components/ui/button";
 import { Loader } from "~/components/ui/loader";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import { routes } from "~/lib/navigation";
 
 export default function PersonalIntegrationsSettingsPage({ params }: { params: unknown }) {
@@ -14,17 +13,10 @@ export default function PersonalIntegrationsSettingsPage({ params }: { params: u
   return (
     <Main>
       <PageHeader className="items-start">
-        <TooltipProvider delayDuration={0}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button size={"icon"} subSize={"iconLg"}>
-                <PiPlugDuotone size={24} />
-              </Button>
-            </TooltipTrigger>
-
-            <TooltipContent>Add more integrations</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <AddIntegrationsModal>
+          <Connect to="linear" />
+          <Connect to="github" />
+        </AddIntegrationsModal>
 
         <section className="flex gap-2">
           <div className="flex flex-col gap-0.5">
