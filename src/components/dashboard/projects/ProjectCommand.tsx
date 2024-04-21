@@ -1,6 +1,14 @@
 "use client";
 
+import { valibotResolver } from "@hookform/resolvers/valibot";
+import { CalendarIcon } from "@radix-ui/react-icons";
+import { formatDate } from "date-fns";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { PiFloppyDisk } from "react-icons/pi";
+import { toast } from "sonner";
+import { Button } from "~/components/ui/button";
+import { Calendar } from "~/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -17,12 +25,20 @@ import {
   FormLabel,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import { Textarea } from "~/components/ui/textarea";
+import { routes } from "~/lib/navigation";
 import { useCommandsStore } from "~/lib/stores/commands-store";
-import { type ProjectSchema } from "~/server/db/edge-schema";
+import { useWorkspaceStore } from "~/lib/stores/workspace-store";
+import { cn } from "~/lib/utils";
+import { projectsSchema, type ProjectSchema } from "~/server/db/edge-schema";
+import { api } from "~/trpc/react";
 import { ClientsCombobox } from "../clients/ClientsCombobox";
 
 export const ProjectCommand = () => {
+  const router = useRouter();
+
+  const workspace = useWorkspaceStore((s) => s.active);
   const opened = useCommandsStore((s) => s.opened) === "new-project";
   const setOpened = useCommandsStore((s) => s.setCommand);
 
@@ -30,11 +46,40 @@ export const ProjectCommand = () => {
     setOpened(opened ? "new-project" : null);
   };
 
-  const form = useForm<ProjectSchema>();
+  const utils = api.useUtils();
+
+  const { mutate, isLoading } = api.projects.create.useMutation({
+    onSuccess: () => {
+      if (!workspace?.slug)
+        return toast.error("No workspace selected", {
+          description: "Try selecting one or reload the page",
+        });
+
+      setOpened(null);
+
+      toast.success("Project created");
+      void utils.projects.get.invalidate();
+      void router.push(routes.projects({ slug: workspace.slug }));
+    },
+  });
+
+  const form = useForm<ProjectSchema>({
+    resolver: valibotResolver(projectsSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      identifier: "",
+      color: "",
+    },
+  });
+
+  const onSubmit = form.handleSubmit((values) => {
+    mutate(values);
+  });
 
   return (
     <Dialog open={opened} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="top-[40%]">
         <DialogHeader>
           <DialogTitle>New project</DialogTitle>
           <DialogDescription>
@@ -43,33 +88,49 @@ export const ProjectCommand = () => {
         </DialogHeader>
 
         <Form {...form}>
-          <form className="mt-5 flex h-full flex-col gap-5">
+          <form className="mt-2 flex h-full flex-col gap-5" onSubmit={onSubmit}>
             <ClientsCombobox />
 
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+            <div className="flex gap-2">
+              <FormField
+                control={form.control}
+                name="identifier"
+                render={({ field }) => (
+                  <FormItem className="w-20">
+                    <FormLabel>Identifier</FormLabel>
+
+                    <FormControl>
+                      <Input {...field} value={field.value ?? ""} placeholder="TRX" />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem className="flex-grow">
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="SaaS App" />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}
-              name="name"
+              name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Notes</FormLabel>
                   <FormControl>
-                    <Textarea {...field} />
+                    <Textarea {...field} value={field.value ?? ""} maxRows={8} />
                   </FormControl>
                   <FormDescription>
-                    Useful notes about the project, like its purpose and goals.
+                    Internal notes about the project, like its purpose and goals.
                   </FormDescription>
                 </FormItem>
               )}
@@ -78,36 +139,73 @@ export const ProjectCommand = () => {
             <div className="flex gap-4">
               <FormField
                 control={form.control}
-                name="name"
+                name={"startsAt"}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Identifier</FormLabel>
+                    <FormLabel>
+                      Starts at <span className="text-muted-foreground">(Optional)</span>
+                    </FormLabel>
 
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant={field.value ? "primary" : "secondary"} size={"lg"}>
+                          <CalendarIcon className={cn("h-4 w-4")} />
+                          {field.value ? formatDate(field.value, "PPP") : "Select a start date"}
+                        </Button>
+                      </PopoverTrigger>
 
-                    <FormDescription>
-                      The identifier is used to generate a unique URL for your project.
-                    </FormDescription>
+                      <PopoverContent className="flex min-w-max items-center justify-center p-0">
+                        <Calendar
+                          className="w-full"
+                          mode="single"
+                          onSelect={field.onChange}
+                          onDayBlur={field.onBlur}
+                          selected={field.value ?? undefined}
+                          defaultMonth={field.value ?? undefined}
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </FormItem>
                 )}
               />
 
               <FormField
                 control={form.control}
-                name="name"
+                name={"endsAt"}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Color</FormLabel>
+                    <FormLabel>
+                      Ends at <span className="text-muted-foreground">(Optional)</span>
+                    </FormLabel>
 
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant={field.value ? "primary" : "secondary"} size={"lg"}>
+                          <CalendarIcon className={cn("h-4 w-4")} />
+                          {field.value ? formatDate(field.value, "PPP") : "Select an end date"}
+                        </Button>
+                      </PopoverTrigger>
+
+                      <PopoverContent className="flex min-w-max items-center justify-center p-0">
+                        <Calendar
+                          className="w-full"
+                          mode="single"
+                          onSelect={field.onChange}
+                          onDayBlur={field.onBlur}
+                          selected={field.value ?? undefined}
+                          defaultMonth={field.value ?? undefined}
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </FormItem>
                 )}
               />
             </div>
+
+            <Button className="mt-2" disabled={isLoading}>
+              <PiFloppyDisk size={16} />
+              Create
+            </Button>
           </form>
         </Form>
       </DialogContent>

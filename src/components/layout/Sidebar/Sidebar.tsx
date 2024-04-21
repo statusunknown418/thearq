@@ -40,9 +40,9 @@ export const Sidebar = ({ role }: { role: Roles }) => {
         <CommandK />
       </div>
 
-      <ul className="flex h-full w-full flex-col gap-1 overflow-y-scroll py-1 text-muted-foreground">
-        {role === "admin" && (
-          <TooltipProvider>
+      <TooltipProvider>
+        <ul className="flex h-full w-full flex-col gap-1 overflow-y-scroll py-1 text-muted-foreground">
+          {role === "admin" && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -69,10 +69,8 @@ export const Sidebar = ({ role }: { role: Roles }) => {
                 Navigate <KBD>Shift</KBD> + <KBD>D</KBD>
               </TooltipContent>
             </Tooltip>
-          </TooltipProvider>
-        )}
+          )}
 
-        <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -96,9 +94,7 @@ export const Sidebar = ({ role }: { role: Roles }) => {
               Navigate <KBD>Shift</KBD> + <KBD>T</KBD>
             </TooltipContent>
           </Tooltip>
-        </TooltipProvider>
 
-        <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -125,9 +121,7 @@ export const Sidebar = ({ role }: { role: Roles }) => {
               Navigate <KBD>Shift</KBD> + <KBD>A</KBD>
             </TooltipContent>
           </Tooltip>
-        </TooltipProvider>
 
-        <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -155,17 +149,15 @@ export const Sidebar = ({ role }: { role: Roles }) => {
               Navigate <KBD>Shift</KBD> + <KBD>Y</KBD>
             </TooltipContent>
           </Tooltip>
-        </TooltipProvider>
 
-        <Separator className="my-3" />
+          <Separator className="my-3" />
 
-        {role === "admin" && (
-          <div className="flex flex-col gap-1">
-            <h3 className="mb-2 inline-flex items-center pl-4 text-xs">
-              Manage <TriangleRightIcon />
-            </h3>
+          {role === "admin" && (
+            <div className="flex flex-col gap-1">
+              <h3 className="mb-2 inline-flex items-center pl-4 text-xs">
+                Manage <TriangleRightIcon />
+              </h3>
 
-            <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -192,9 +184,7 @@ export const Sidebar = ({ role }: { role: Roles }) => {
                   Navigate <KBD>Shift</KBD> + <KBD>I</KBD>
                 </TooltipContent>
               </Tooltip>
-            </TooltipProvider>
 
-            <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -221,9 +211,7 @@ export const Sidebar = ({ role }: { role: Roles }) => {
                   Navigate <KBD>Shift</KBD> + <KBD>Q</KBD>
                 </TooltipContent>
               </Tooltip>
-            </TooltipProvider>
 
-            <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -250,9 +238,7 @@ export const Sidebar = ({ role }: { role: Roles }) => {
                   Navigate <KBD>Shift</KBD> + <KBD>P</KBD>
                 </TooltipContent>
               </Tooltip>
-            </TooltipProvider>
 
-            <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -276,10 +262,10 @@ export const Sidebar = ({ role }: { role: Roles }) => {
                   Navigate <KBD>Shift</KBD> + <KBD>X</KBD>
                 </TooltipContent>
               </Tooltip>
-            </TooltipProvider>
-          </div>
-        )}
-      </ul>
+            </div>
+          )}
+        </ul>
+      </TooltipProvider>
 
       <div className="w-full">
         <UserDropdown />

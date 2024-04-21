@@ -81,6 +81,13 @@ export const Hotkeys = () => {
       },
     ],
     [
+      "mod + shift + x",
+      () => {
+        if (!workspace?.slug) return;
+        router.push(routes.integrations({ slug: workspace.slug }));
+      },
+    ],
+    [
       "mod + shift + Y",
       () => {
         setOpened("new-project");

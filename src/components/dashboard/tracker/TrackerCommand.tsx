@@ -2,8 +2,6 @@ import { valibotResolver } from "@hookform/resolvers/valibot";
 import { addHours, format } from "date-fns";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
-import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -11,7 +9,6 @@ import {
   PiArrowRight,
   PiDotsThreeVertical,
   PiFloppyDisk,
-  PiGithubLogoDuotone,
   PiPaperPlaneRightDuotone,
   PiSquaresFourDuotone,
   PiTrashDuotone,
@@ -34,7 +31,6 @@ import { Separator } from "~/components/ui/separator";
 import { Textarea } from "~/components/ui/textarea";
 import { Toggle } from "~/components/ui/toggle";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
-import { type Integration } from "~/lib/constants";
 import { useCommandsStore } from "~/lib/stores/commands-store";
 import { createFakeEvent, useEventsStore } from "~/lib/stores/events-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
@@ -203,77 +199,15 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
 
   useHotkeys([["Meta+Enter", () => onSubmit()]], ["textarea", "input"]);
 
-  const provider = form.watch("integrationProvider") as Integration;
-  const integrationUrl = form.watch("integrationUrl");
-
   return (
     <Dialog open={open} onOpenChange={onCancelTrack}>
-      <DialogContent className="top-[40%] max-w-2xl">
+      <DialogContent className="top-[40%] max-h-full max-w-2xl">
         <Form {...form}>
           <form className="grid grid-cols-1 gap-4" onSubmit={onSubmit}>
             <div className="flex items-center gap-2">
-              <Badge className="w-max rounded-sm">Manual</Badge>
-
-              <p className="text-muted-foreground">or</p>
+              <Badge className="w-max rounded-sm">{isEditing ? "Edit" : "Add new"}</Badge>
 
               <FromIntegrationDialog />
-
-              {provider === "github" && !!integrationUrl && (
-                <TooltipProvider delayDuration={0}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        asChild
-                        size={"sm"}
-                        variant={"link"}
-                        className="w-max justify-start border border-indigo-500"
-                      >
-                        <Link href={integrationUrl} target="_blank">
-                          <PiGithubLogoDuotone size={16} />
-                          View on Github
-                        </Link>
-                      </Button>
-                    </TooltipTrigger>
-
-                    <TooltipContent side="right">
-                      Links to
-                      <PiArrowRight />
-                      <span className="text-indigo-500">{integrationUrl}</span>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-
-              {provider === "linear" && !!integrationUrl && (
-                <TooltipProvider delayDuration={0}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        asChild
-                        variant={"link"}
-                        size={"sm"}
-                        className="w-max justify-start border border-indigo-500"
-                      >
-                        <Link href={integrationUrl} target="_blank">
-                          <Image
-                            src={"/linear-black.svg"}
-                            width={16}
-                            height={16}
-                            alt="linear-logo"
-                          />
-                          View on Linear
-                        </Link>
-                      </Button>
-                    </TooltipTrigger>
-
-                    <TooltipContent side="right">
-                      Links to
-                      <PiArrowRight />
-                      <span className="text-indigo-500">{integrationUrl}</span>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
             </div>
 
             <div className="mt-2 flex flex-wrap justify-between gap-4">
@@ -286,8 +220,11 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
                     <FormControl>
                       <Textarea
                         autoFocus
-                        className="max-w-full resize-none rounded-none border-none bg-transparent p-0 text-sm shadow-none focus-visible:ring-0"
-                        placeholder="Added new features ..."
+                        cacheMeasurements
+                        minRows={2}
+                        maxRows={10}
+                        className="max-w-full resize-none rounded-none border-none bg-transparent p-0 text-sm shadow-none focus:outline-none focus:ring-0 focus-visible:ring-0"
+                        placeholder="Add a description..."
                         {...field}
                       />
                     </FormControl>

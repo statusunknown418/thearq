@@ -35,11 +35,12 @@ export const columns: ColumnDef<TeamTableColumn>[] = [
     id: "avatar",
     header: undefined,
     accessorFn: (row) => row.user.image,
+    size: 40,
     cell: ({ row }) => (
       <Image
         src={row.getValue("avatar")}
         alt={row.getValue("name")}
-        className="h-8 w-8 self-center rounded-full"
+        className="ml-2 h-8 w-8 self-center rounded-full"
         width={32}
         height={32}
       />
@@ -137,7 +138,7 @@ export const TeamTable = ({ data }: { data: TeamTableData }) => {
   });
 
   return (
-    <div className="grid grid-cols-1 gap-4 rounded-xl border bg-secondary-background p-5">
+    <div className="grid grid-cols-1 gap-4 rounded-xl border bg-muted p-5">
       <FormItem>
         <Label>Search</Label>
         <Input
@@ -148,7 +149,7 @@ export const TeamTable = ({ data }: { data: TeamTableData }) => {
         />
       </FormItem>
 
-      <div className="rounded-lg border bg-background p-1">
+      <div className="rounded-lg border bg-background">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -167,14 +168,14 @@ export const TeamTable = ({ data }: { data: TeamTableData }) => {
           <TableBody className="text-sm">
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                  onClick={() => updateDetails(row.original)}
+                  className="cursor-pointer"
+                >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      onClick={() => {
-                        cell.column.id === "name" && updateDetails(row.original);
-                      }}
-                    >
+                    <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
@@ -191,7 +192,7 @@ export const TeamTable = ({ data }: { data: TeamTableData }) => {
         </Table>
       </div>
 
-      <div className="flex-1 text-sm text-muted-foreground">
+      <div className="flex-1 text-xs text-muted-foreground">
         {data.length} teammate{data.length === 1 ? "" : "s"} in this workspace
       </div>
     </div>

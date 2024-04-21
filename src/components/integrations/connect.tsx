@@ -7,7 +7,7 @@ import { buildConnectionURL } from "~/server/api/routers/integrations";
 
 export const Connect = ({ to }: { to: Integration }) => {
   return (
-    <Button asChild className="capitalize">
+    <Button asChild className="capitalize" size={"lg"}>
       <Link href={buildConnectionURL(to)}>
         {to === "github" && <GitHubLogoIcon />}
         {to === "linear" && (

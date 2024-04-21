@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { PiGithubLogoDuotone } from "react-icons/pi";
 import { toast } from "sonner";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
@@ -50,47 +51,55 @@ export const IntegrationsList = ({
   };
 
   return (
-    <ul className="grid grid-cols-1 gap-4">
-      {data.map((integration) => (
-        <li
-          className="flex flex-col gap-4 rounded-xl bg-muted p-1 pt-4"
-          key={integration.providerAccountId}
-        >
-          <div className="flex items-center gap-4 rounded-full px-4">
-            <p className={cn(integration.enabled ? "text-indigo-400" : "text-muted-foreground")}>
-              {integration.enabled ? "Enabled" : "Disabled"}
-            </p>
+    <div>
+      <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {data.map((integration) => (
+          <li
+            className="flex flex-col gap-4 rounded-xl bg-muted p-1 pt-4"
+            key={integration.providerAccountId}
+          >
+            <div className="flex items-center gap-4 rounded-full px-4">
+              <p className={cn(integration.enabled ? "text-indigo-400" : "text-muted-foreground")}>
+                {integration.enabled ? "Enabled" : "Disabled"}
+              </p>
 
-            <Switch
-              disabled={reconnect.isLoading || disconnect.isLoading}
-              checked={integration.enabled}
-              onCheckedChange={async (v) => {
-                if (!!v) {
-                  await handleReconnect(integration.provider);
-                } else {
-                  await handleDisconnect(integration.provider);
-                }
-              }}
-            />
-          </div>
+              <Switch
+                disabled={reconnect.isLoading || disconnect.isLoading}
+                checked={integration.enabled}
+                onCheckedChange={async (v) => {
+                  if (!!v) {
+                    await handleReconnect(integration.provider);
+                  } else {
+                    await handleDisconnect(integration.provider);
+                  }
+                }}
+              />
+            </div>
 
-          <section className="flex flex-col gap-4 rounded-xl bg-background p-8 shadow">
-            <header className="flex w-full items-center gap-3">
-              <Image src={"/linear-icon.svg"} alt="linear icon" width={24} height={24} />
+            <section className="flex flex-col gap-4 rounded-xl border bg-background p-8 shadow">
+              <header className="flex w-full items-center gap-3">
+                {integration.provider === "github" ? (
+                  <PiGithubLogoDuotone size={24} />
+                ) : (
+                  <Image src={"/linear-black.svg"} alt="linear icon" width={24} height={24} />
+                )}
 
-              <h2 className="text-xl font-medium capitalize">{integration.provider}</h2>
-            </header>
+                <h2 className="text-xl font-medium capitalize">{integration.provider}</h2>
+              </header>
 
-            <p className="text-muted-foreground">
-              All connected {integration.provider} account data will be synced to this workspace and
-              each teammate will have its tasks auto assigned to them based on the integration
-              settings.
-            </p>
+              <p className="text-muted-foreground">
+                {integration.provider === "github" &&
+                  "Links your opened issues and pull requests to your account"}
+                {integration.provider === "linear" &&
+                  "Links assigned linear issues to your account"}
+              </p>
 
-            <p className="text-muted-foreground">You can disconnect at anytime.</p>
-          </section>
-        </li>
-      ))}
-    </ul>
+              <p className="text-muted-foreground">You can disconnect at anytime.</p>
+            </section>
+          </li>
+        ))}
+      </ul>
+
+    </div>
   );
 };
