@@ -1,5 +1,4 @@
 import { createId } from "@paralleldrive/cuid2";
-import { DatabaseError } from "@planetscale/database";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { cookies } from "next/headers";
@@ -82,13 +81,6 @@ export const workspacesRouter = createTRPCRouter({
           permissions: adminPermissions,
         };
       } catch (e) {
-        if (e instanceof DatabaseError && e.body.message.includes("AlreadyExists")) {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: "Workspace with this url already exists",
-          });
-        }
-
         throw e;
       }
     }),

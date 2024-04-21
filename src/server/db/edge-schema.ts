@@ -361,7 +361,6 @@ export const projects = sqliteTable(
     ownerId: integer("ownerId").references(() => users.id, { onDelete: "set null" }),
     startsAt: integer("startsAt", { mode: "timestamp" }),
     endsAt: integer("endsAt", { mode: "timestamp" }),
-    timeEstimate: int("timeEstimate").default(0),
     paymentSchedule: text("paymentSchedule", { enum: projectPaymentSchedule }).default("monthly"),
     entriesLockingSchedule: text("entriesLockingSchedule", { enum: lockingSchedules }).default(
       "monthly",
@@ -378,7 +377,7 @@ export const projects = sqliteTable(
   }),
 );
 
-export const projectsSchema = createInsertSchema(projects);
+export const projectsSchema = omit(createInsertSchema(projects), ["workspaceId"]);
 export type ProjectSchema = Output<typeof projectsSchema>;
 
 export const projectRelations = relations(projects, ({ one, many }) => ({
@@ -401,8 +400,8 @@ export const clients = sqliteTable(
       .references(() => workspaces.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     email: text("email"),
-    phone: text("phone"),
     address: text("address"),
+    notes: text("notes"),
     createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
   },
   (t) => ({
@@ -410,7 +409,7 @@ export const clients = sqliteTable(
   }),
 );
 
-export const clientsSchema = createInsertSchema(clients);
+export const clientsSchema = omit(createInsertSchema(clients), ["workspaceId"]);
 
 export const clientsRelations = relations(clients, ({ one, many }) => ({
   workspace: one(workspaces, {
