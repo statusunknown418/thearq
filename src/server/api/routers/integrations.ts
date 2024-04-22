@@ -85,17 +85,46 @@ export const integrationsRouter = createTRPCRouter({
 
         const viewer = await linear.viewer;
 
-        await ctx.db
-          .insert(integrations)
-          .values({
-            access_token: data.access_token,
-            providerAccountId: viewer.id,
-            provider: "linear",
-            userId: ctx.session.user.id,
-            workspaceId: Number(workspaceId),
-            scope: data.scope,
-          })
-          .onConflictDoNothing();
+        /**
+         * Override values if the user has already connected the integration
+         */
+        await ctx.db.transaction(async (trx) => {
+          const exists = await trx.query.integrations.findFirst({
+            where: (t, op) => {
+              return op.and(
+                op.eq(t.userId, ctx.session.user.id),
+                op.eq(t.workspaceId, Number(workspaceId)),
+                op.eq(t.provider, "linear"),
+              );
+            },
+          });
+
+          if (exists) {
+            await trx
+              .update(integrations)
+              .set({
+                access_token: data.access_token,
+                providerAccountId: viewer.id,
+                scope: data.scope,
+              })
+              .where(
+                and(
+                  eq(integrations.userId, ctx.session.user.id),
+                  eq(integrations.workspaceId, Number(workspaceId)),
+                  eq(integrations.provider, "linear"),
+                ),
+              );
+          } else {
+            await trx.insert(integrations).values({
+              access_token: data.access_token,
+              providerAccountId: viewer.id,
+              provider: "linear",
+              userId: ctx.session.user.id,
+              workspaceId: Number(workspaceId),
+              scope: data.scope,
+            });
+          }
+        });
 
         try {
           const key: IntegrationCachingKey = `${ctx.session.user.id}:${INTEGRATIONS.linear.name}`;
@@ -159,19 +188,44 @@ export const integrationsRouter = createTRPCRouter({
 
         const viewer = await octokit.request("GET /user");
 
-        await ctx.db
-          .insert(integrations)
-          .values({
-            access_token: authentication.token,
-            providerAccountId: viewer.data.login,
-            provider: "github",
-            userId: ctx.session.user.id,
-            scope: authentication.scopes.join(" "),
-            workspaceId: Number(workspaceId),
-          })
-          .onConflictDoNothing();
+        await ctx.db.transaction(async (trx) => {
+          const exists = await trx.query.integrations.findFirst({
+            where: (t, op) => {
+              return op.and(
+                op.eq(t.userId, ctx.session.user.id),
+                op.eq(t.workspaceId, Number(workspaceId)),
+                op.eq(t.provider, "github"),
+              );
+            },
+          });
+
+          if (exists) {
+            await trx
+              .update(integrations)
+              .set({
+                access_token: authentication.token,
+                providerAccountId: viewer.data.login,
+              })
+              .where(
+                and(
+                  eq(integrations.userId, ctx.session.user.id),
+                  eq(integrations.workspaceId, Number(workspaceId)),
+                  eq(integrations.provider, "github"),
+                ),
+              );
+          } else {
+            await trx.insert(integrations).values({
+              access_token: authentication.token,
+              providerAccountId: viewer.data.login,
+              provider: "github",
+              userId: ctx.session.user.id,
+              workspaceId: Number(workspaceId),
+            });
+          }
+        });
 
         const key: IntegrationCachingKey = `${ctx.session.user.id}:${INTEGRATIONS.github.name}`;
+
         await redis.set(key, {
           providerAccountId: viewer.data.login,
           access_token: authentication.token,
@@ -249,7 +303,7 @@ export const integrationsRouter = createTRPCRouter({
         });
       }
 
-      await ctx.db
+      const [data] = await ctx.db
         .update(integrations)
         .set({
           enabled: true,
@@ -260,7 +314,20 @@ export const integrationsRouter = createTRPCRouter({
             eq(integrations.workspaceId, Number(workspaceId)),
             eq(integrations.provider, input.provider as Integration),
           ),
-        );
+      )
+        .returning();
+
+      if (!data) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No integration found",
+        });
+      }
+
+      await redis.set(`${ctx.session.user.id}:${input.provider}`, {
+        providerAccountId: data.providerAccountId,
+        access_token: data.access_token,
+      });
 
       return { success: true };
     }),

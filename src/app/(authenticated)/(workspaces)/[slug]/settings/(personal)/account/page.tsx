@@ -22,7 +22,7 @@ export default async function AccountSettingsPage() {
         </section>
       </PageHeader>
 
-      <section className="flex flex-col rounded-lg border">
+      <section className="flex max-w-xl flex-col rounded-lg border">
         <div className="flex justify-center border-b bg-secondary p-8">
           {session?.user.image && (
             <Image
@@ -35,8 +35,8 @@ export default async function AccountSettingsPage() {
           )}
         </div>
 
-        <section className="flex w-full flex-col gap-4 self-center py-4">
-          <div className="flex w-full max-w-md items-center justify-between self-center p-2">
+        <section className="flex w-full flex-col gap-4 self-center py-2">
+          <div className="flex w-full max-w-md items-center justify-between self-center py-2">
             <p className="text-muted-foreground">Name</p>
 
             <Input defaultValue={session?.user.name ?? ""} className="w-52" />
@@ -44,7 +44,7 @@ export default async function AccountSettingsPage() {
 
           <Separator />
 
-          <div className="flex w-full max-w-md items-center justify-between self-center p-2">
+          <div className="flex w-full max-w-md items-center justify-between self-center py-2">
             <p className="text-muted-foreground">Email</p>
 
             <Input defaultValue={session?.user.email ?? ""} className="w-52" disabled />

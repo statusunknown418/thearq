@@ -1,4 +1,3 @@
-import { createId } from "@paralleldrive/cuid2";
 import { formatDate } from "date-fns";
 import { relations } from "drizzle-orm";
 import { index, int, integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
@@ -16,9 +15,8 @@ import {
   object,
   omit,
   string,
-  type Output,
+  type Output
 } from "valibot";
-import { env } from "~/env";
 import { type Integration } from "~/lib/constants";
 import { memberPermissions } from "~/lib/stores/auth-store";
 
@@ -349,8 +347,7 @@ export const projects = sqliteTable(
       .references(() => workspaces.id, { onDelete: "cascade" }),
     shareableUrl: text("shareableUrl")
       .notNull()
-      .unique()
-      .$defaultFn(() => `${env.NEXT_PUBLIC_APP_URL}/share/projects/${createId()}`),
+      .unique(),
     name: text("name").notNull(),
     description: text("description"),
     color: text("color").notNull().default("#000000"),
@@ -358,7 +355,7 @@ export const projects = sqliteTable(
     type: text("type", { enum: projectTypes }).notNull().default("hourly"),
     budgetHours: int("budget").default(0),
     projectHourlyRate: int("projectHourlyRate").default(0),
-    ownerId: integer("ownerId").references(() => users.id, { onDelete: "set null" }),
+    ownerId: text("ownerId").notNull(),
     startsAt: integer("startsAt", { mode: "timestamp" }),
     endsAt: integer("endsAt", { mode: "timestamp" }),
     paymentSchedule: text("paymentSchedule", { enum: projectPaymentSchedule }).default("monthly"),
@@ -377,7 +374,20 @@ export const projects = sqliteTable(
   }),
 );
 
-export const projectsSchema = omit(createInsertSchema(projects), ["workspaceId"]);
+export const projectsSchema = omit(createInsertSchema(projects, {
+  name: string([minLength(3, 'Name must be at least 3 characters long')]),
+}), ["workspaceId", 'shareableUrl', 'ownerId'], [
+  forward(
+    custom((input) => {
+      if (input.startsAt && input.endsAt) {
+        return input.startsAt < input.endsAt;
+      }
+
+      return true;
+    }, 'The end date must be after the start date'),
+    ["endsAt"],
+  )
+]);
 export type ProjectSchema = Output<typeof projectsSchema>;
 
 export const projectRelations = relations(projects, ({ one, many }) => ({
@@ -428,6 +438,7 @@ export const usersOnProjects = sqliteTable(
     projectId: int("projectId", { mode: "number" })
       .notNull()
       .references(() => projects.id, { onDelete: "cascade" }),
+    projectShareableUrl: text("projectShareableUrl").notNull().references(() => projects.shareableUrl),
     workspaceId: int("workspaceId")
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
