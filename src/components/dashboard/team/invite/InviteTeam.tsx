@@ -3,10 +3,11 @@ import { valibotResolver } from "@hookform/resolvers/valibot";
 import { PlusIcon, TrashIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { PiArrowsClockwise, PiCopyDuotone, PiLinkDuotone, PiPaperPlaneTilt } from "react-icons/pi";
+import { PiArrowsClockwise, PiLinkDuotone, PiPaperPlaneTilt } from "react-icons/pi";
 import { toast } from "sonner";
 import { type Output } from "valibot";
 import { Button } from "~/components/ui/button";
+import { CopyButton } from "~/components/ui/copy-button";
 import {
   Dialog,
   DialogClose,
@@ -90,11 +91,6 @@ export const InviteTeam = ({
     });
   });
 
-  const copyLinkToClipboard = () => {
-    void navigator.clipboard.writeText(data.inviteLink ?? "");
-    toast.success("Invite link copied to clipboard");
-  };
-
   const handleRotateInviteLink = () => {
     toast.promise(rotateInviteLink.mutateAsync({ workspaceSlug: data.slug }), {
       loading: "Updating ...",
@@ -113,9 +109,7 @@ export const InviteTeam = ({
         <div className="flex gap-2">
           <TextKBD size="lg">{data.inviteLink}</TextKBD>
 
-          <Button variant={"secondary"} size={"icon"} onClick={copyLinkToClipboard}>
-            <PiCopyDuotone size={15} />
-          </Button>
+          <CopyButton text={data.inviteLink ?? ""} />
 
           <Dialog>
             <TooltipProvider delayDuration={0}>

@@ -201,7 +201,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
 
   return (
     <Dialog open={open} onOpenChange={onCancelTrack}>
-      <DialogContent className="top-[40%] max-h-full max-w-2xl">
+      <DialogContent className="top-[45%] max-h-full max-w-2xl">
         <Form {...form}>
           <form className="grid grid-cols-1 gap-4" onSubmit={onSubmit}>
             <div className="flex items-center gap-2">

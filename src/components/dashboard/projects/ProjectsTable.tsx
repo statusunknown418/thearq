@@ -7,8 +7,17 @@ import {
   useReactTable,
   type ColumnDef,
 } from "@tanstack/react-table";
-import { formatDate } from "date-fns";
-import { PiArrowSquareOutDuotone, PiMapTrifold } from "react-icons/pi";
+import { formatDate, formatDistanceToNow } from "date-fns";
+import Link from "next/link";
+import {
+  PiArrowSquareOutDuotone,
+  PiCalendarX,
+  PiInfo,
+  PiMapTrifold,
+  PiXCircle,
+  PiXSquare,
+} from "react-icons/pi";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { FormItem } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
@@ -21,7 +30,10 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
+import { routes } from "~/lib/navigation";
 import { useCommandsStore } from "~/lib/stores/commands-store";
+import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
@@ -36,15 +48,26 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
     header: "Identifier",
     size: 20,
     maxSize: 20,
-    accessorFn: (row) => row.identifier,
+    accessorFn: (row) => row.project.identifier,
     cell: ({ row }) => {
-      return <span className="font-medium">[{row.getValue("identifier")}]</span>;
+      return (
+        <p className="font-medium">
+          {!!row.getValue("identifier") ? (
+            row.getValue("identifier")
+          ) : (
+            <span className="flex items-center gap-1 font-normal text-muted-foreground">
+              <PiXSquare size={16} />
+              Not set
+            </span>
+          )}
+        </p>
+      );
     },
   },
   {
     id: "name",
     header: "Name",
-    accessorFn: (row) => row.name,
+    accessorFn: (row) => row.project.name,
     cell: ({ row }) => {
       return (
         <Button variant={"link"} className="justify-start px-0 text-sm">
@@ -54,29 +77,88 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
     },
   },
   {
-    id: "budget",
-    header: "Budget",
-    accessorFn: (row) => row.budgetHours,
+    id: "budgetHours",
+    header: "Budget hours",
+    accessorFn: (row) => row.project.budgetHours,
+    cell: ({ row }) => (
+      <p
+        className={cn(
+          "text-muted-foreground",
+          !!row.getValue("budgetHours") && "font-medium text-foreground",
+        )}
+      >
+        {!!row.original.project.budgetHours ? (
+          `${row.original.project.budgetHours} hours`
+        ) : (
+          <span className="flex items-center gap-1">
+            <PiXCircle size={16} />
+            Not set
+          </span>
+        )}
+      </p>
+    ),
+  },
+  {
+    id: "type",
+    header: "Billing type",
+    accessorFn: (row) => row.project.type,
+    cell: ({ row }) => (
+      <Badge
+        variant={row.original.project.type === "hourly" ? "default" : "secondary"}
+        className="text-xs font-normal"
+      >
+        {row.getValue("type")}
+      </Badge>
+    ),
   },
   {
     id: "startsAt",
     header: "Starts At",
-    accessorFn: (row) => row.startsAt,
+    accessorFn: (row) => row.project.startsAt,
     cell: ({ row }) => (
-      <span className={cn(!!row.getValue("startsAt") && "font-medium")}>
-        {!!row.getValue("startsAt") ? formatDate(row.getValue("startsAt"), "PPP") : "Not set"}
+      <span
+        className={cn(
+          "text-muted-foreground",
+          !!row.getValue("startsAt") && "font-medium text-foreground",
+        )}
+      >
+        {!!row.getValue("startsAt") ? (
+          formatDate(row.getValue("startsAt"), "PPP")
+        ) : (
+          <span className="flex items-center gap-1">
+            <PiCalendarX size={16} />
+            Not set
+          </span>
+        )}
       </span>
     ),
   },
   {
     id: "endsAt",
     header: "Ends At",
-    accessorFn: (row) => row.endsAt,
-    cell: ({ row }) => (
-      <span className={cn(!!row.getValue("endsAt") && "font-medium")}>
-        {!!row.getValue("endsAt") ? formatDate(row.getValue("endsAt"), "PPP") : "Not set"}
-      </span>
-    ),
+    accessorFn: (row) => row.project.endsAt,
+    cell: ({ row }) =>
+      !!row.getValue("endsAt") ? (
+        <span className={cn("flex items-center gap-1 font-medium text-foreground")}>
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger>
+                <PiInfo size={16} />
+              </TooltipTrigger>
+              <TooltipContent>
+                Expected to end {formatDistanceToNow(row.getValue("endsAt"), { addSuffix: true })}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          {formatDate(row.getValue("endsAt"), "PPP")}
+        </span>
+      ) : (
+        <span className="flex items-center gap-1">
+          <PiCalendarX size={16} />
+          Not set
+        </span>
+      ),
   },
 ];
 
@@ -88,6 +170,8 @@ export const ProjectsTable = ({
   const { data: projects } = api.projects.get.useQuery(undefined, {
     initialData,
   });
+
+  const workspace = useWorkspaceStore((s) => s.active);
 
   const table = useReactTable({
     data: projects,
@@ -143,7 +227,14 @@ export const ProjectsTable = ({
                       className="px-4"
                       style={{ width: `${cell.column.getSize()}px` }}
                     >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      <Link
+                        href={routes.projectId({
+                          slug: workspace?.slug ?? "",
+                          id: row.original.projectShareableUrl,
+                        })}
+                      >
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </Link>
                     </TableCell>
                   ))}
                 </TableRow>

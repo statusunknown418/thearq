@@ -23,6 +23,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
@@ -56,10 +57,15 @@ export const ProjectCommand = () => {
         });
 
       setOpened(null);
-
+      form.reset();
       toast.success("Project created");
       void utils.projects.get.invalidate();
       void router.push(routes.projects({ slug: workspace.slug }));
+    },
+    onError: (err) => {
+      toast.error("Unable to create project", {
+        description: err.message ?? err.data?.code ?? err.shape?.message ?? "Unknown error",
+      });
     },
   });
 
@@ -79,7 +85,7 @@ export const ProjectCommand = () => {
 
   return (
     <Dialog open={opened} onOpenChange={onOpenChange}>
-      <DialogContent className="top-[40%]">
+      <DialogContent className="top-[45%]">
         <DialogHeader>
           <DialogTitle>New project</DialogTitle>
           <DialogDescription>
@@ -94,13 +100,12 @@ export const ProjectCommand = () => {
             <div className="flex gap-2">
               <FormField
                 control={form.control}
-                name="identifier"
+                name="name"
                 render={({ field }) => (
-                  <FormItem className="w-20">
-                    <FormLabel>Identifier</FormLabel>
-
+                  <FormItem className="flex-grow">
+                    <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <Input {...field} value={field.value ?? ""} placeholder="TRX" />
+                      <Input {...field} placeholder="SaaS App" />
                     </FormControl>
                   </FormItem>
                 )}
@@ -108,12 +113,13 @@ export const ProjectCommand = () => {
 
               <FormField
                 control={form.control}
-                name="name"
+                name="identifier"
                 render={({ field }) => (
-                  <FormItem className="flex-grow">
-                    <FormLabel>Name</FormLabel>
+                  <FormItem className="w-20">
+                    <FormLabel>Identifier</FormLabel>
+
                     <FormControl>
-                      <Input {...field} placeholder="SaaS App" />
+                      <Input {...field} value={field.value ?? ""} placeholder="TRX" />
                     </FormControl>
                   </FormItem>
                 )}
@@ -160,11 +166,14 @@ export const ProjectCommand = () => {
                           mode="single"
                           onSelect={field.onChange}
                           onDayBlur={field.onBlur}
+                          disabled={{ before: new Date() }}
                           selected={field.value ?? undefined}
                           defaultMonth={field.value ?? undefined}
                         />
                       </PopoverContent>
                     </Popover>
+
+                    <FormDescription />
                   </FormItem>
                 )}
               />
@@ -194,9 +203,12 @@ export const ProjectCommand = () => {
                           onDayBlur={field.onBlur}
                           selected={field.value ?? undefined}
                           defaultMonth={field.value ?? undefined}
+                          disabled={{ before: new Date() }}
                         />
                       </PopoverContent>
                     </Popover>
+
+                    <FormMessage />
                   </FormItem>
                 )}
               />

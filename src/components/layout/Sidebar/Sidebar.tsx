@@ -227,9 +227,9 @@ export const Sidebar = ({ role }: { role: Roles }) => {
                     <Link href={routes.people({ slug: workspace?.slug ?? "" })}>
                       <PiUsersDuotone
                         size={20}
-                        className="group-data-[active=true]:text-green-500 dark:group-data-[active=true]:text-green-400"
+                        className="group-data-[active=true]:text-green-600 dark:group-data-[active=true]:text-green-500"
                       />
-                      People
+                      Team
                     </Link>
                   </Button>
                 </TooltipTrigger>
