@@ -131,6 +131,14 @@
   background-image: repeating-linear-gradient(45deg, #e9eaff 0, #e9eaff 1px, #f5f5ff 0, #f5f5ff 50%);
 }
 
+@media(prefers-color-scheme: dark) {
+  .rbc-today {
+    @apply !bg-indigo-900/30;
+    background-size: 10px 10px;
+    background-image: repeating-linear-gradient(45deg, #323 0, #323  1px, hsl(240, 13%, 9.5%) 0, hsl(240, 13%, 9.5%) 50%);
+  }
+}
+
 .rbc-addons-dnd .rbc-addons-dnd-resize-ns-anchor .rbc-addons-dnd-resize-ns-icon {
   @apply !border-primary
 }

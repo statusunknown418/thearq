@@ -185,7 +185,7 @@ export const projectsRouter = createTRPCRouter({
           });
         }
 
-        return await ctx.db.update(projects).set(input).where(eq(projects.id, input.id!));
+        return await trx.update(projects).set(input).where(eq(projects.id, input.id!)).returning();
       });
 
       return data;

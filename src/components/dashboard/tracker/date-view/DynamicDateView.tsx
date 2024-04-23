@@ -354,10 +354,10 @@ export const DynamicDateView = ({
                 <section
                   className={cn(
                     "flex min-h-full w-full flex-col items-start gap-2 rounded-lg border border-primary p-4 text-foreground",
-                    "bg-indigo-100",
-                    event?.temp && "pointer-events-none bg-gray-100",
-                    !event.end && "border-dashed bg-indigo-50",
+                    !event.end && "border-dashed bg-indigo-50 dark:bg-zinc-700",
+                    event?.temp && "pointer-events-none bg-gray-100 dark:bg-gray-800",
                     continuesPrior && "rounded-t-none",
+                    "bg-indigo-100 dark:border-primary/20 dark:bg-zinc-800 dark:text-foreground",
                   )}
                 >
                   <p className="font-medium">{event.description}</p>

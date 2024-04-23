@@ -9,14 +9,7 @@ import {
 } from "@tanstack/react-table";
 import { formatDate, formatDistanceToNow } from "date-fns";
 import Link from "next/link";
-import {
-  PiArrowSquareOutDuotone,
-  PiCalendarX,
-  PiInfo,
-  PiMapTrifold,
-  PiXCircle,
-  PiXSquare,
-} from "react-icons/pi";
+import { PiCalendarX, PiInfo, PiMapTrifold, PiXCircle, PiXSquare } from "react-icons/pi";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { FormItem } from "~/components/ui/form";
@@ -67,12 +60,21 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
   {
     id: "name",
     header: "Name",
+    maxSize: 200,
     accessorFn: (row) => row.project.name,
     cell: ({ row }) => {
       return (
-        <Button variant={"link"} className="justify-start px-0 text-sm">
-          {row.getValue("name")} <PiArrowSquareOutDuotone size={16} />
-        </Button>
+        <TooltipProvider delayDuration={0}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <p className="max-w-[20ch] justify-start overflow-hidden text-ellipsis whitespace-nowrap px-0 text-sm font-medium text-indigo-500">
+                {row.getValue("name")}
+              </p>
+            </TooltipTrigger>
+
+            <TooltipContent>{row.getValue("name")}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       );
     },
   },
@@ -225,7 +227,12 @@ export const ProjectsTable = ({
                     <TableCell
                       key={cell.id}
                       className="px-4"
-                      style={{ width: `${cell.column.getSize()}px` }}
+                      style={{
+                        maxWidth: `${cell.column.getSize()}px`,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
                     >
                       <Link
                         href={routes.projectId({

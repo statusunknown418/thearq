@@ -17,6 +17,7 @@ export const viewerRouter = createTRPCRouter({
         return op.and(
           op.eq(t.userId, ctx.session.user.id),
           op.eq(t.workspaceId, Number(workspaceId)),
+          op.eq(t.enabled, true)
         );
       },
       columns: {

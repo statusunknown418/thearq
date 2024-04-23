@@ -26,11 +26,14 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
+import { KBD } from "~/components/ui/kbd";
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import { Textarea } from "~/components/ui/textarea";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import { routes } from "~/lib/navigation";
 import { useCommandsStore } from "~/lib/stores/commands-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
+import { useHotkeys } from "~/lib/use-hotkeys";
 import { cn } from "~/lib/utils";
 import { projectsSchema, type ProjectSchema } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
@@ -83,6 +86,16 @@ export const ProjectCommand = () => {
     mutate(values);
   });
 
+  useHotkeys([
+    [
+      "mod + enter",
+      (e) => {
+        e.preventDefault();
+        void onSubmit();
+      },
+    ],
+  ]);
+
   return (
     <Dialog open={opened} onOpenChange={onOpenChange}>
       <DialogContent className="top-[45%]">
@@ -95,8 +108,6 @@ export const ProjectCommand = () => {
 
         <Form {...form}>
           <form className="mt-2 flex h-full flex-col gap-5" onSubmit={onSubmit}>
-            <ClientsCombobox />
-
             <div className="flex gap-2">
               <FormField
                 control={form.control}
@@ -125,6 +136,8 @@ export const ProjectCommand = () => {
                 )}
               />
             </div>
+
+            <ClientsCombobox />
 
             <FormField
               control={form.control}
@@ -214,10 +227,20 @@ export const ProjectCommand = () => {
               />
             </div>
 
-            <Button className="mt-2" disabled={isLoading}>
-              <PiFloppyDisk size={16} />
-              Create
-            </Button>
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button className="mt-2 w-max self-end" disabled={isLoading}>
+                    <PiFloppyDisk size={16} />
+                    Create
+                  </Button>
+                </TooltipTrigger>
+
+                <TooltipContent>
+                  Save <KBD>⌘</KBD> + <KBD>Enter</KBD>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </form>
         </Form>
       </DialogContent>

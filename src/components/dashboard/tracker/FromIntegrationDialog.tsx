@@ -149,7 +149,7 @@ export const FromIntegrationDialog = () => {
                 href={routes.integrations({ slug: workspace?.slug ?? "./settings/integrations" })}
                 className="text-indigo-500 transition-all hover:underline"
               >
-                connect one
+                connect or activate one
               </Link>{" "}
               to get started.
             </p>
