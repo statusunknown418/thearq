@@ -9,8 +9,7 @@ import {
   PiArrowRight,
   PiDotsThreeVertical,
   PiFloppyDisk,
-  PiPaperPlaneRightDuotone,
-  PiSquaresFourDuotone,
+  PiPaperPlane,
   PiTrashDuotone,
 } from "react-icons/pi";
 import { toast } from "sonner";
@@ -22,7 +21,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "~/components/ui/form";
@@ -38,6 +36,7 @@ import { useHotkeys } from "~/lib/use-hotkeys";
 import { type CustomEvent } from "~/server/api/routers/entries";
 import { timeEntrySchema, type NewTimeEntry } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
+import { ProjectsCombobox } from "../projects/ProjectsCombobox";
 import { FromIntegrationDialog } from "./FromIntegrationDialog";
 
 const DynamicDateTimeInput = dynamic(
@@ -273,30 +272,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
             </section>
 
             <div className="flex items-center gap-2">
-              <FormField
-                control={form.control}
-                name="projectId"
-                render={({ field }) => (
-                  <FormItem>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant={"secondary"}>
-                          <PiSquaresFourDuotone size={16} />
-                          Project
-                        </Button>
-                      </DropdownMenuTrigger>
-
-                      <DropdownMenuContent align="start">
-                        <DropdownMenuGroup>
-                          <DropdownMenuLabel>Available projects</DropdownMenuLabel>
-
-                          <DropdownMenuItem>the arq</DropdownMenuItem>
-                        </DropdownMenuGroup>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </FormItem>
-                )}
-              />
+              <ProjectsCombobox />
 
               <FormField
                 control={form.control}
@@ -367,11 +343,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button>
-                      {isEditing ? (
-                        <PiFloppyDisk size={16} />
-                      ) : (
-                        <PiPaperPlaneRightDuotone size={16} />
-                      )}
+                      {isEditing ? <PiFloppyDisk size={16} /> : <PiPaperPlane />}
                       {isEditing ? "Save" : "Add"}
                     </Button>
                   </TooltipTrigger>

@@ -146,7 +146,9 @@ export const FromIntegrationDialog = () => {
                   e.stopPropagation();
                   closeModals();
                 }}
-                href={routes.integrations({ slug: workspace?.slug ?? "./settings/integrations" })}
+                href={routes.integrations({
+                  slug: workspace?.slug ?? "./settings/integrations",
+                })}
                 className="text-indigo-500 transition-all hover:underline"
               >
                 connect or activate one

@@ -2,23 +2,10 @@
 
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useForm } from "react-hook-form";
-import {
-  PiPlayDuotone,
-  PiSquaresFourDuotone,
-  PiStopDuotone,
-  PiWarningCircleDuotone,
-} from "react-icons/pi";
+import { PiPlayDuotone, PiStopDuotone, PiWarningCircleDuotone } from "react-icons/pi";
 import { toast } from "sonner";
 import { omit } from "valibot";
 import { Button } from "~/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
 import { Form, FormControl, FormField, FormItem } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { KBD } from "~/components/ui/kbd";
@@ -30,6 +17,7 @@ import { cn } from "~/lib/utils";
 import { timeEntrySchema, type NewTimeEntry } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
+import { ProjectsCombobox } from "../../projects/ProjectsCombobox";
 import { RealtimeCounter } from "../date-view/RealtimeCounter";
 
 export const StartLiveEntry = ({
@@ -79,7 +67,10 @@ export const StartLiveEntry = ({
 
   const { mutate: stop, isLoading: stopping } = api.tracker.stop.useMutation({
     onSuccess: async () => {
-      form.reset({ start: new Date() }, { keepDirtyValues: false });
+      form.reset(
+        { start: new Date(), projectId: null, description: "" },
+        { keepDirtyValues: false, keepValues: false },
+      );
       toast.success("Timer stopped");
       await Promise.all([
         utils.entries.getByMonth.invalidate(),
@@ -129,8 +120,7 @@ export const StartLiveEntry = ({
   useHotkeys([
     [
       "s",
-      async (e) => {
-        e.preventDefault();
+      async () => {
         await handleSubmit();
       },
     ],
@@ -140,7 +130,7 @@ export const StartLiveEntry = ({
     <Form {...form}>
       <form
         onSubmit={handleSubmit}
-        className="ml-auto flex items-center gap-2 self-center rounded-2xl bg-muted p-2 shadow"
+        className="ml-auto flex items-center gap-2 self-center rounded-2xl bg-muted p-2 shadow dark:border"
       >
         <TooltipProvider delayDuration={0}>
           <Tooltip>
@@ -217,29 +207,15 @@ export const StartLiveEntry = ({
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="projectId"
-          render={({ field }) => (
-            <FormItem>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant={"secondary"} size={"lg"}>
-                    <PiSquaresFourDuotone size={16} />
-                    Project
-                  </Button>
-                </DropdownMenuTrigger>
+        <ProjectsCombobox
+          onSelect={() => {
+            if (!entryExists) return;
 
-                <DropdownMenuContent align="start">
-                  <DropdownMenuGroup>
-                    <DropdownMenuLabel>Available projects</DropdownMenuLabel>
-
-                    <DropdownMenuItem>the arq</DropdownMenuItem>
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </FormItem>
-          )}
+            inlineEdit({
+              ...data,
+              projectId: form.getValues("projectId"),
+            });
+          }}
         />
 
         {data?.start ? (
