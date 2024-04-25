@@ -26,6 +26,7 @@ const config = {
         click: `0px 4px 0px ${utils.colors.indigo[500]}`,
       }),
       colors: {
+        "border-contrast": "hsl(var(--border-contrast))",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
