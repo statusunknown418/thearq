@@ -12,16 +12,21 @@ const badgeVariants = cva(
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border/80",
         destructive:
-          "text-red-700 bg-red-100 hover:bg-red-100/90 border border-red-400 hover:border-red-600",
+          "text-red-700 bg-red-100 hover:bg-red-100/90 border border-red-400 hover:border-red-600 dark:bg-red-950 dark:border-red-700 dark:text-red-200",
         outline: "text-foreground",
         primary:
           "text-white dark:text-foreground bg-indigo-600 hover:bg-indigo-600/90 border border-indigo-700 hover:border-indigo-500",
         success:
-          "text-emerald-700 bg-emerald-100 hover:bg-emerald-100/90 border border-emerald-400 hover:border-emerald-600",
+          "text-emerald-700 bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-600 hover:bg-emerald-100/90 border border-emerald-400 hover:border-emerald-600",
+      },
+      size: {
+        sm: "h-4 max-h-4 px-2 py-0.5",
+        default: "h-6 max-h-6 px-2.5 py-0.5 text-xs",
       },
     },
     defaultVariants: {
       variant: "default",
+      size: "default",
     },
   },
 );
