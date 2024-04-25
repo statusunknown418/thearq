@@ -93,4 +93,3 @@ export const has = (permission: UserPermissions) => {
   const { permissions } = useAuthStore.getState();
   return permissions.includes(permission);
 };
-

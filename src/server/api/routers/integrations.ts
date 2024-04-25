@@ -106,6 +106,7 @@ export const integrationsRouter = createTRPCRouter({
                 access_token: data.access_token,
                 providerAccountId: viewer.id,
                 scope: data.scope,
+                enabled: true,
               })
               .where(
                 and(
@@ -122,6 +123,7 @@ export const integrationsRouter = createTRPCRouter({
               userId: ctx.session.user.id,
               workspaceId: Number(workspaceId),
               scope: data.scope,
+              enabled: true,
             });
           }
         });
@@ -314,7 +316,7 @@ export const integrationsRouter = createTRPCRouter({
             eq(integrations.workspaceId, Number(workspaceId)),
             eq(integrations.provider, input.provider as Integration),
           ),
-      )
+        )
         .returning();
 
       if (!data) {

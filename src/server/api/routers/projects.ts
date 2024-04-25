@@ -38,7 +38,11 @@ export const projectsRouter = createTRPCRouter({
         where: (t, { eq, and }) =>
           and(eq(t.projectShareableUrl, input.shareableUrl), eq(t.userId, ctx.session.user.id)),
         with: {
-          project: true,
+          project: {
+            with: {
+              client: true,
+            },
+          },
         },
       });
 
@@ -76,7 +80,7 @@ export const projectsRouter = createTRPCRouter({
             startsAt: true,
             endsAt: true,
             shareableUrl: true,
-          }
+          },
         },
       },
     });

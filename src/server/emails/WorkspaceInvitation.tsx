@@ -115,4 +115,3 @@ WorkspaceInvitationEmail.PreviewProps = {
   teamImage: `https://fastly.picsum.photos/id/635/200/200.jpg?hmac=Vm8Tavc31Qax01634w3MOPpNCCfasJG8wnBamSi87T4`,
   inviteLink: "https://vercel.com/teams/invite/foo",
 } as VercelInviteUserEmailProps;
-

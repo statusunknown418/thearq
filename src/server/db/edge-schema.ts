@@ -15,7 +15,7 @@ import {
   object,
   omit,
   string,
-  type Output
+  type Output,
 } from "valibot";
 import { type Integration } from "~/lib/constants";
 import { memberPermissions } from "~/lib/stores/auth-store";
@@ -133,7 +133,10 @@ export const workspaceInvitationRelations = relations(workspaceInvitations, ({ o
     fields: [workspaceInvitations.workspaceId],
     references: [workspaces.id],
   }),
-  invitedBy: one(users, { fields: [workspaceInvitations.invitedById], references: [users.id] }),
+  invitedBy: one(users, {
+    fields: [workspaceInvitations.invitedById],
+    references: [users.id],
+  }),
 }));
 
 export const sendInviteSchema = object({
@@ -345,9 +348,7 @@ export const projects = sqliteTable(
     workspaceId: int("workspaceId")
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
-    shareableUrl: text("shareableUrl")
-      .notNull()
-      .unique(),
+    shareableUrl: text("shareableUrl").notNull().unique(),
     name: text("name").notNull(),
     description: text("description"),
     color: text("color").notNull().default("#000000"),
@@ -359,9 +360,9 @@ export const projects = sqliteTable(
     startsAt: integer("startsAt", { mode: "timestamp" }),
     endsAt: integer("endsAt", { mode: "timestamp" }),
     paymentSchedule: text("paymentSchedule", { enum: projectPaymentSchedule }).default("monthly"),
-    entriesLockingSchedule: text("entriesLockingSchedule", { enum: lockingSchedules }).default(
-      "monthly",
-    ),
+    entriesLockingSchedule: text("entriesLockingSchedule", {
+      enum: lockingSchedules,
+    }).default("monthly"),
     clientId: int("clientId").references(() => clients.id, { onDelete: "set null" }),
     createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
   },
@@ -374,20 +375,24 @@ export const projects = sqliteTable(
   }),
 );
 
-export const projectsSchema = omit(createInsertSchema(projects, {
-  name: string([minLength(3, 'Name must be at least 3 characters long')]),
-}), ["workspaceId", 'shareableUrl', 'ownerId'], [
-  forward(
-    custom((input) => {
-      if (input.startsAt && input.endsAt) {
-        return input.startsAt < input.endsAt;
-      }
+export const projectsSchema = omit(
+  createInsertSchema(projects, {
+    name: string([minLength(3, "Name must be at least 3 characters long")]),
+  }),
+  ["workspaceId", "shareableUrl", "ownerId"],
+  [
+    forward(
+      custom((input) => {
+        if (input.startsAt && input.endsAt) {
+          return input.startsAt < input.endsAt;
+        }
 
-      return true;
-    }, 'The end date must be after the start date'),
-    ["endsAt"],
-  )
-]);
+        return true;
+      }, "The end date must be after the start date"),
+      ["endsAt"],
+    ),
+  ],
+);
 export type ProjectSchema = Output<typeof projectsSchema>;
 
 export const projectRelations = relations(projects, ({ one, many }) => ({
@@ -438,7 +443,9 @@ export const usersOnProjects = sqliteTable(
     projectId: int("projectId", { mode: "number" })
       .notNull()
       .references(() => projects.id, { onDelete: "cascade" }),
-    projectShareableUrl: text("projectShareableUrl").notNull().references(() => projects.shareableUrl),
+    projectShareableUrl: text("projectShareableUrl")
+      .notNull()
+      .references(() => projects.shareableUrl),
     workspaceId: int("workspaceId")
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
