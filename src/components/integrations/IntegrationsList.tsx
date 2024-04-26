@@ -11,26 +11,32 @@ import { Switch } from "../ui/switch";
 export const IntegrationsList = ({
   initialData,
 }: {
-  initialData: RouterOutputs["viewer"]["getIntegrations"];
+  initialData: RouterOutputs["viewer"]["getAvailableIntegrations"];
   slug: string;
 }) => {
   const utils = api.useUtils();
 
-  const { data } = api.viewer.getIntegrations.useQuery(undefined, {
+  const { data } = api.viewer.getAvailableIntegrations.useQuery(undefined, {
     initialData,
   });
 
   const disconnect = api.integrations.disconnect.useMutation({
     onSuccess: async () => {
       toast.success("Integration disconnected");
-      return utils.viewer.getIntegrations.invalidate();
+      return Promise.all([
+        utils.viewer.getAvailableIntegrations.invalidate(),
+        utils.viewer.getIntegrations.invalidate(),
+      ]);
     },
   });
 
   const reconnect = api.integrations.reconnect.useMutation({
     onSuccess: async () => {
       toast.success("Integration reconnected");
-      return utils.viewer.getIntegrations.invalidate();
+      return Promise.all([
+        utils.viewer.getAvailableIntegrations.invalidate(),
+        utils.viewer.getIntegrations.invalidate(),
+      ]);
     },
   });
 
@@ -99,7 +105,6 @@ export const IntegrationsList = ({
           </li>
         ))}
       </ul>
-
     </div>
   );
 };

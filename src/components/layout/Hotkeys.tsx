@@ -6,9 +6,9 @@ import { useCommandsStore } from "~/lib/stores/commands-store";
 import { useEventsStore } from "~/lib/stores/events-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 import { useHotkeys } from "~/lib/use-hotkeys";
-import { NewClientCommand } from "../dashboard/clients/NewClientCommand";
-import { ProjectCommand } from "../dashboard/projects/ProjectCommand";
-import { TrackerCommand } from "../dashboard/tracker/TrackerCommand";
+import { NewClientCommand } from "../clients/NewClientCommand";
+import { ProjectCommand } from "../projects/ProjectCommand";
+import { TrackerCommand } from "../tracker/TrackerCommand";
 
 export const Hotkeys = () => {
   const router = useRouter();
