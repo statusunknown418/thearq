@@ -7,7 +7,7 @@ import {
   useReactTable,
   type ColumnDef,
 } from "@tanstack/react-table";
-import { addDays, formatDate, formatDistanceToNow } from "date-fns";
+import { addDays, format, formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { PiCalendarX, PiInfo, PiMapTrifold, PiXCircle, PiXSquare } from "react-icons/pi";
 import { Badge } from "~/components/ui/badge";
@@ -125,7 +125,7 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
         )}
       >
         {!!row.getValue("startsAt") ? (
-          formatDate(row.getValue("startsAt"), "PPP")
+          format(row.getValue("startsAt"), "PPP")
         ) : (
           <span className="flex items-center gap-1">
             <PiCalendarX size={16} />
@@ -161,7 +161,7 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
             </Tooltip>
           </TooltipProvider>
 
-          {formatDate(row.getValue("endsAt"), "PPP")}
+          {format(row.getValue("endsAt"), "PPP")}
         </span>
       ) : (
         <span className="flex items-center gap-1">
