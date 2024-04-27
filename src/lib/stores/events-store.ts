@@ -1,5 +1,5 @@
 import { createId } from "@paralleldrive/cuid2";
-import { formatDate } from "date-fns";
+import { format } from "date-fns";
 import { type User } from "next-auth";
 import { type stringOrDate } from "react-big-calendar";
 import { create } from "zustand";
@@ -71,8 +71,8 @@ export const createFakeEvent = (
       },
       description: "",
       userId: user.id ?? createId(),
-      monthDate: formatDate(new Date(), "yyyy/MM"),
-      trackedAt: formatDate(new Date(), "yyyy/MM/dd"),
+      monthDate: dateToMonthDate(new Date()),
+      trackedAt: new Date(),
       duration,
       project: null,
     } satisfies CustomEvent;
@@ -127,3 +127,16 @@ export const convertTime = (seconds = 0, options?: ConvertTimeOptions) => {
 
   return `${hDisplay}:${mDisplay}${!!options?.includeSeconds ? `:${sDisplay}` : ""}`;
 };
+
+export const secondsToHoursDecimal = (seconds: number) => {
+  return (seconds / 3600)
+}
+
+/**
+ * Standard way to turn the date format to `yyyy/MM`
+ * @param date 
+ * @returns 
+ */
+export const dateToMonthDate = (date: Date) => {
+  return format(date, "yyyy/MM");
+}

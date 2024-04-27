@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { type RouterOutputs } from "~/trpc/shared";
+import { receiveAmount } from "../parsers";
 
 export type DetailsSheetsStore = {
   open: boolean;
@@ -13,7 +14,15 @@ export const useDetailsSheetStore = create<DetailsSheetsStore>((set) => ({
   open: false,
   openChange: (state: boolean) => set({ open: state }),
   details: null,
-  setDetails: (details) => set({ details, open: true }),
+  setDetails: (details) =>
+    set({
+      details: {
+        ...details,
+        defaultBillableRate: receiveAmount(details.defaultBillableRate),
+        internalCost: receiveAmount(details.internalCost),
+      },
+      open: true,
+    }),
   clear: () => set({ details: null, open: false }),
 }));
 

@@ -1,6 +1,7 @@
 import { addDays, format, getDaysInMonth } from "date-fns";
 import { createParser, useQueryState } from "nuqs";
 import { create } from "zustand";
+import { dateToMonthDate } from "./events-store";
 
 export type DynamicDatesStore = {
   selectedDate: Date | null;
@@ -90,5 +91,5 @@ export const toPrevMonthDate = (base: Date) => {
 };
 
 export const toGenericMonth = (base: Date) => {
-  return format(base, "yyyy/MM");
+  return dateToMonthDate(base);
 };
