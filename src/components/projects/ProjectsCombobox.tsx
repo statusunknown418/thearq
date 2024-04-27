@@ -72,6 +72,8 @@ export const ProjectsCombobox = ({
                     {data?.map((relation) => (
                       <CommandItem
                         key={relation.projectId}
+                        id={relation.projectId.toString()}
+                        value={relation.projectId.toString()}
                         onSelect={() => {
                           if (field.value === relation.projectId) {
                             field.onChange(null);

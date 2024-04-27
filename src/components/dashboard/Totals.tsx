@@ -1,7 +1,6 @@
 "use client";
 
-import { formatDate } from "date-fns";
-import { secondsToHoursDecimal } from "~/lib/stores/events-store";
+import { dateToMonthDate, secondsToHoursDecimal } from "~/lib/stores/events-store";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 
@@ -17,7 +16,7 @@ export const Totals = ({
   const { data } = api.entries.getTotals.useQuery(
     {
       workspaceId,
-      monthDate: formatDate(now, "yyyy/MM"),
+      monthDate: dateToMonthDate(now),
     },
     {
       initialData,

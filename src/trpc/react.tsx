@@ -45,7 +45,11 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
   return (
     <PersistQueryClientProvider
       client={queryClient}
-      persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 4, buster: "persisted-indexed-db" }}
+      persistOptions={{
+        persister,
+        maxAge: 1000 * 60 * 60 * 4,
+        buster: "persisted-indexed-db",
+      }}
     >
       <api.Provider client={trpcClient} queryClient={queryClient}>
         {props.children}

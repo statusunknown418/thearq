@@ -1,5 +1,5 @@
 import { valibotResolver } from "@hookform/resolvers/valibot";
-import { addHours, format } from "date-fns";
+import { addHours } from "date-fns";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
@@ -30,7 +30,7 @@ import { Textarea } from "~/components/ui/textarea";
 import { Toggle } from "~/components/ui/toggle";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import { useCommandsStore } from "~/lib/stores/commands-store";
-import { createFakeEvent, useEventsStore } from "~/lib/stores/events-store";
+import { createFakeEvent, dateToMonthDate, useEventsStore } from "~/lib/stores/events-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 import { useHotkeys } from "~/lib/use-hotkeys";
 import { type CustomEvent } from "~/server/api/routers/entries";
@@ -54,7 +54,7 @@ const baseDefaultValues = {
   projectId: null,
   temp: true,
   integrationUrl: "",
-  monthDate: format(new Date(), "yyyy/MM"),
+  monthDate: dateToMonthDate(new Date()),
   trackedAt: new Date(),
   weekNumber: null,
 };
@@ -101,7 +101,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
 
   const { mutate: deleteEntry } = api.tracker.delete.useMutation({
     onMutate: async (entry) => {
-      const monthDate = format(new Date(), "yyyy/MM");
+      const monthDate = dateToMonthDate(new Date());
 
       if (!workspaceId) return;
 
@@ -141,7 +141,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
 
   const { mutate: manualTrack } = api.tracker.manual.useMutation({
     onMutate: async (input) => {
-      const monthDate = format(new Date(), "yyyy/MM");
+      const monthDate = dateToMonthDate(new Date());
 
       if (!workspaceId) return;
 
@@ -225,7 +225,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
                         cacheMeasurements
                         minRows={2}
                         maxRows={10}
-                        className="max-w-full resize-none rounded-none border-none bg-transparent p-0 text-sm shadow-none focus:outline-none focus:ring-0 focus-visible:ring-0"
+                        className="max-w-full resize-none rounded-none !border-none !bg-transparent p-0 text-sm shadow-none focus:!outline-none focus:!ring-0 focus-visible:!ring-0"
                         placeholder="Add a description..."
                         {...field}
                       />

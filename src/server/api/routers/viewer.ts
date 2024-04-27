@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { cookies } from "next/headers";
 import { object, z } from "zod";
 import { INTEGRATIONS, RECENT_W_ID_KEY } from "~/lib/constants";
+import { secondsToHoursDecimal } from "~/lib/stores/events-store";
 import { redis } from "~/server/upstash";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { type IntegrationCachingKey } from "./integrations";
@@ -168,4 +169,132 @@ export const viewerRouter = createTRPCRouter({
       },
     });
   }),
+
+  getAnalyticsMetrics: protectedProcedure
+    .input(
+      object({
+        workspaceId: z.number(),
+        monthDate: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+      if (!workspaceId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No workspace found",
+        });
+      }
+
+      const summary = await ctx.db.query.timeEntries.findMany({
+        where: (t, op) => {
+          return op.and(
+            op.eq(t.workspaceId, input.workspaceId),
+            op.eq(t.monthDate, input.monthDate),
+            op.eq(t.userId, ctx.session.user.id),
+          );
+        },
+        with: {
+          project: {
+            columns: {
+              color: true,
+              name: true,
+              identifier: true,
+              id: true,
+            },
+            with: {
+              users: {
+                columns: {
+                  billableRate: true,
+                  weekCapacity: true,
+                  userId: true,
+                },
+                where: (t, op) => op.eq(t.userId, ctx.session.user.id),
+              },
+            },
+          },
+          workspace: {
+            with: {
+              users: {
+                columns: {
+                  defaultBillableRate: true,
+                  defaultWeekCapacity: true,
+                  active: true,
+                  userId: true,
+                },
+                where: (t, op) => op.eq(t.userId, ctx.session.user.id),
+              },
+            },
+          },
+        },
+      });
+
+      const totalHours = summary.reduce((acc, curr) => acc + curr.duration, 0);
+      const user = summary.at(0)?.workspace.users.find((u) => u.userId === ctx.session.user.id);
+
+      // Compute total earnings for user based on its billable rate
+      const totalEarnings = summary.reduce((acc, curr) => {
+        const project = curr.project;
+        const userProject = project?.users.find((u) => u.userId === ctx.session.user.id);
+
+        if (!user) {
+          return acc;
+        }
+
+        if (!project || !userProject) {
+          return acc + secondsToHoursDecimal(curr.duration) * user.defaultBillableRate;
+        }
+
+        const billableRate = userProject.billableRate;
+        const duration = secondsToHoursDecimal(curr.duration);
+
+        return acc + duration * billableRate;
+      }, 0);
+
+      const orderProjectsByHours = summary
+        .sort((a, b) => {
+          if (!a.project) {
+            return 1;
+          }
+
+          if (!b.project) {
+            return -1;
+          }
+
+          return b.duration - a.duration;
+        })
+        .map((entry) => {
+          return {
+            project: entry.project,
+            duration: entry.duration,
+          };
+        });
+
+      const overtime = summary.reduce((acc, curr) => {
+        const project = curr.project;
+        const userProject = project?.users.find((u) => u.userId === ctx.session.user.id);
+
+        if (!user) {
+          return acc;
+        }
+
+        if (!project || !userProject) {
+          return acc;
+        }
+
+        const weekCapacity = userProject.weekCapacity ?? user.defaultWeekCapacity;
+        const duration = secondsToHoursDecimal(curr.duration);
+
+        return acc + Math.max(duration - (weekCapacity ?? 0), 0);
+      }, 0);
+
+      return {
+        totalHours,
+        totalEarnings,
+        summary,
+        orderProjectsByHours,
+        overtime,
+      };
+    }),
 });

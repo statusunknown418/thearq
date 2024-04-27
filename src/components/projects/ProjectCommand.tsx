@@ -7,7 +7,7 @@ import {
   addMonths,
   addQuarters,
   addWeeks,
-  formatDate,
+  format,
   startOfMonth,
   startOfWeek,
 } from "date-fns";
@@ -198,7 +198,7 @@ export const ProjectCommand = () => {
                             <span>Tomorrow</span>
 
                             <span className="ml-auto text-muted-foreground">
-                              {formatDate(addDays(new Date(), 1), "do MMMM")}
+                              {format(addDays(new Date(), 1), "do MMMM")}
                             </span>
                           </DropdownMenuItem>
 
@@ -208,7 +208,7 @@ export const ProjectCommand = () => {
                             <PiCalendarBlankDuotone size={15} />
                             <span>Next week</span>
                             <span className="ml-auto text-muted-foreground">
-                              {formatDate(startOfWeek(addDays(new Date(), 7)), "do MMMM")}
+                              {format(startOfWeek(addDays(new Date(), 7)), "do MMMM")}
                             </span>
                           </DropdownMenuItem>
 
@@ -219,7 +219,7 @@ export const ProjectCommand = () => {
                             <span>Next month</span>
 
                             <span className="ml-auto text-muted-foreground">
-                              {formatDate(startOfMonth(addMonths(new Date(), 1)), "do MMMM")}
+                              {format(startOfMonth(addMonths(new Date(), 1)), "do MMMM")}
                             </span>
                           </DropdownMenuItem>
 
@@ -233,7 +233,7 @@ export const ProjectCommand = () => {
                             <span>Next quarter</span>
 
                             <span className="ml-auto text-muted-foreground">
-                              {formatDate(startOfMonth(addQuarters(new Date(), 1)), "do MMMM")}
+                              {format(startOfMonth(addQuarters(new Date(), 1)), "do MMMM")}
                             </span>
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -243,7 +243,7 @@ export const ProjectCommand = () => {
                         <PopoverTrigger asChild>
                           <Button variant={field.value ? "primary" : "secondary"}>
                             <CalendarIcon className={cn("h-4 w-4")} />
-                            {field.value ? formatDate(field.value, "PPP") : "Select a start date"}
+                            {field.value ? format(field.value, "PPP") : "Select a start date"}
                           </Button>
                         </PopoverTrigger>
 
@@ -292,7 +292,7 @@ export const ProjectCommand = () => {
                             <span>In 2 weeks</span>
 
                             <span className="ml-auto text-muted-foreground">
-                              {formatDate(addWeeks(new Date(), 2), "do MMMM")}
+                              {format(addWeeks(new Date(), 2), "do MMMM")}
                             </span>
                           </DropdownMenuItem>
 
@@ -302,7 +302,7 @@ export const ProjectCommand = () => {
                             <PiCalendarBlankDuotone size={15} />
                             <span>In 1 month</span>
                             <span className="ml-auto text-muted-foreground">
-                              {formatDate(startOfMonth(addMonths(new Date(), 1)), "do MMMM")}
+                              {format(startOfMonth(addMonths(new Date(), 1)), "do MMMM")}
                             </span>
                           </DropdownMenuItem>
 
@@ -313,7 +313,7 @@ export const ProjectCommand = () => {
                             <span>In 3 months</span>
 
                             <span className="ml-auto text-muted-foreground">
-                              {formatDate(startOfMonth(addMonths(new Date(), 3)), "do MMMM")}
+                              {format(startOfMonth(addMonths(new Date(), 3)), "do MMMM")}
                             </span>
                           </DropdownMenuItem>
 
@@ -325,7 +325,7 @@ export const ProjectCommand = () => {
                             <span>Next quarter</span>
 
                             <span className="ml-auto text-muted-foreground">
-                              {formatDate(startOfWeek(addQuarters(new Date(), 1)), "do MMMM")}
+                              {format(startOfWeek(addQuarters(new Date(), 1)), "do MMMM")}
                             </span>
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -335,7 +335,7 @@ export const ProjectCommand = () => {
                         <PopoverTrigger asChild>
                           <Button variant={field.value ? "primary" : "secondary"}>
                             <CalendarIcon className={cn("h-4 w-4")} />
-                            {field.value ? formatDate(field.value, "PPP") : "Select an end date"}
+                            {field.value ? format(field.value, "PPP") : "Select an end date"}
                           </Button>
                         </PopoverTrigger>
 

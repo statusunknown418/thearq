@@ -6,7 +6,7 @@
   :root {
     --spinner-animation-speed: 4s;
 
-    --background: 0 0% 99%;
+    --background: 0 0% 98.5%;
     --foreground: 240 10% 3.9%;
     --secondary-background: 240 4% 97.5%;
 
@@ -22,7 +22,7 @@
     --secondary: 240 4.8% 94.9%;
     --secondary-foreground: 240 5.9% 10%;
 
-    --muted: 240 4.8% 96.9%;
+    --muted: 240 4.8% 96.5%;
     --muted-foreground: 240 3.8% 46.1%;
 
     --accent: 240 4.8% 93.9%;
@@ -32,6 +32,7 @@
     --destructive-foreground: 0 0% 98%;
 
     --border: 240 5.9% 88%;
+    --border-contrast: 240 5.9% 83%;
     --input: 240 5.9% 90%;
     --ring: 240 10% 3.9%;
 
@@ -39,33 +40,34 @@
   }
 
   .dark {
-    --background: 240 14% 8.5%;
+    --background: 244 10% 8.5%;
     --foreground: 0 0% 95%;
-    --secondary-background: 240 13% 9.5%;
+    --secondary-background: 244 10% 9.5%;
 
-    --card: 240 10% 3.9%;
+    --card: 244 10% 3.9%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 240 14% 13%;
+    --popover: 244 10% 9%;
     --popover-foreground: 0 10% 90%;
 
     --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
+    --primary-foreground: 244 5.9% 10%;
 
-    --secondary: 240 14% 15%;
+    --secondary: 244 10% 15%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 240 14% 11%;
-    --muted-foreground: 240 8% 56.9%;
+    --muted: 244 7% 13%;
+    --muted-foreground: 244 8% 66.9%;
 
-    --accent: 240 14% 20%;
+    --accent: 244 10% 20%;
     --accent-foreground: 0 0% 98%;
 
     --destructive: 0 55% 45%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 14% 20%;
-    --input: 244 14% 8%;
+    --border: 244 10% 20%;
+    --border-contrast: 244 10% 27%;
+    --input: 244 10% 8%;
     --ring: 244 45% 70%;
   }
 }
@@ -74,6 +76,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply overscroll-y-none bg-background text-foreground;
   }
@@ -106,41 +109,51 @@
 }
 
 .rbc-time-content {
-  @apply !border-l-0 !border-t-0
+  @apply !border-l-0 !border-t-0;
 }
 
 .rbc-time-slot {
-  @apply !text-muted-foreground !border-border
+  @apply !border-border !text-muted-foreground;
 }
 
 .rbc-timeslot-group {
-  @apply !border-l-0 !border-y-0
+  @apply !border-y-0 !border-l-0;
 }
 
 .rbc-time-view {
-  @apply !border-border rounded-lg overflow-hidden
+  @apply overflow-hidden rounded-lg !border-border;
 }
 
 .rbc-time-view > * {
-  @apply !border-border
+  @apply !border-border;
 }
 
 .rbc-today {
   @apply !bg-indigo-100/30;
   background-size: 10px 10px;
-  background-image: repeating-linear-gradient(45deg, #e9eaff 0, #e9eaff 1px, #f5f5ff 0, #f5f5ff 50%);
+  background-image: repeating-linear-gradient(
+    45deg,
+    #e9eaff 0,
+    #e9eaff 1px,
+    #f5f5ff 0,
+    #f5f5ff 50%
+  );
 }
 
-@media(prefers-color-scheme: dark) {
-  .rbc-today {
-    @apply !bg-indigo-900/30;
-    background-size: 10px 10px;
-    background-image: repeating-linear-gradient(45deg, #323 0, #323  1px, hsl(240, 13%, 9.5%) 0, hsl(240, 13%, 9.5%) 50%);
-  }
+.dark .rbc-today {
+  @apply !bg-indigo-900/30;
+  background-size: 10px 10px;
+  background-image: repeating-linear-gradient(
+    45deg,
+    #323 0,
+    #323 1px,
+    hsl(240, 13%, 9.5%) 0,
+    hsl(240, 13%, 9.5%) 50%
+  );
 }
 
 .rbc-addons-dnd .rbc-addons-dnd-resize-ns-anchor .rbc-addons-dnd-resize-ns-icon {
-  @apply !border-primary
+  @apply !border-primary;
 }
 
 .rbc-time-view > * {
@@ -148,18 +161,17 @@
 }
 
 .rbc-event {
-  @apply !bg-transparent !p-0 !border-none !outline-none focus:!ring 
+  @apply !border-none !bg-transparent !p-0 !outline-none focus:!ring;
 }
 
 .rbc-event-content {
-  @apply !overflow-visible
-} 
+  @apply !overflow-visible;
+}
 
 .rbc-event-label {
-  @apply !hidden
+  @apply !hidden;
 }
 
 .rbc-current-time-indicator {
-  @apply !bg-red-500 !h-0.5 !rounded-lg
+  @apply !h-0.5 !rounded-lg !bg-red-500;
 }
-

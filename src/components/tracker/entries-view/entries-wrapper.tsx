@@ -1,6 +1,6 @@
-import { formatDate } from "date-fns";
 import { cookies } from "next/headers";
 import { RECENT_W_ID_KEY } from "~/lib/constants";
+import { dateToMonthDate } from "~/lib/stores/events-store";
 import { api } from "~/trpc/server";
 import { EntriesViews } from "./EntriesView";
 
@@ -10,7 +10,7 @@ export const CalendarWrapperRSC = async () => {
 
   const data = await api.entries.getSummary.query({
     workspaceId: Number(workspaceId),
-    monthDate: formatDate(today, "yyyy/MM"),
+    monthDate: dateToMonthDate(today),
   });
 
   return <EntriesViews workspaceId={Number(workspaceId)} initialData={data} />;

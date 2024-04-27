@@ -22,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { parseCurrency } from "~/lib/parsers";
 import { useDetailsSheetStore } from "~/lib/stores/sheets-store";
 import { type Roles } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
@@ -98,7 +99,7 @@ export const columns: ColumnDef<TeamTableColumn>[] = [
     cell: ({ row }) => (
       <span className="font-mono tabular-nums">
         <Badge variant={"secondary"} className="text-sm">
-          $ {row.getValue("defaultBillableRate")}
+          {parseCurrency(row.getValue("defaultBillableRate"))}
         </Badge>
       </span>
     ),
@@ -109,9 +110,16 @@ export const columns: ColumnDef<TeamTableColumn>[] = [
     size: 200,
     minSize: 180,
     cell: ({ row }) => (
-      <span className="font-mono  tabular-nums">
-        <Badge variant={"secondary"} className="text-sm">
-          $ {row.getValue("internalCost")}
+      <span className="font-mono tabular-nums">
+        <Badge
+          className="text-sm"
+          variant={
+            row.original.defaultBillableRate < row.original.internalCost
+              ? "destructive"
+              : "secondary"
+          }
+        >
+          {parseCurrency(row.getValue("internalCost"))}
         </Badge>
       </span>
     ),

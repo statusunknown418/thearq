@@ -4,7 +4,7 @@ import { and } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { number, object, string } from "zod";
 import { LIVE_ENTRY_DURATION, RECENT_W_ID_KEY } from "~/lib/constants";
-import { computeDuration } from "~/lib/stores/events-store";
+import { computeDuration, secondsToHoursDecimal } from "~/lib/stores/events-store";
 import { type TimeEntry } from "~/server/db/edge-schema";
 import { type RouterOutputs } from "~/trpc/shared";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
@@ -141,6 +141,70 @@ export const entriesRouter = createTRPCRouter({
 
     return null;
   }),
+
+  getTotals: protectedProcedure
+    .input(
+      object({
+        workspaceId: number(),
+        monthDate: string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const summary = await ctx.db.query.timeEntries.findMany({
+        where: (t, op) =>
+          and(op.eq(t.workspaceId, input.workspaceId), op.eq(t.monthDate, input.monthDate)),
+        with: {
+          project: {
+            columns: {
+              color: true,
+              name: true,
+              identifier: true,
+            },
+            with: {
+              users: true,
+            },
+          },
+          workspace: {
+            with: {
+              users: true,
+            },
+          },
+        },
+      });
+
+      const totalTime = summary.reduce((acc, entry) => {
+        acc += entry.duration;
+        return acc;
+      }, 0);
+
+      const totalEarnings = summary.reduce((acc, entry) => {
+        const user = entry.workspace.users.find((u) => u.userId === entry.userId);
+
+        if (!user) {
+          return acc;
+        }
+
+        if (!acc) {
+          acc = 0;
+        }
+
+        if (!!entry.projectId && !!entry.project) {
+          const projectUser = entry.project?.users.find((u) => u.userId === entry.userId);
+
+          acc += secondsToHoursDecimal(entry.duration) * (projectUser?.billableRate ?? 1);
+          return acc;
+        }
+
+        acc += secondsToHoursDecimal(entry.duration) * user.defaultBillableRate;
+        return acc;
+      }, 0);
+
+      return {
+        totalTime,
+        totalEarnings,
+        summary,
+      };
+    }),
 });
 
 interface DurationData {

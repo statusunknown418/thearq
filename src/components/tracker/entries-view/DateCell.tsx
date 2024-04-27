@@ -1,4 +1,4 @@
-import { formatDate } from "date-fns";
+import { format } from "date-fns";
 import { PiCircleDashed } from "react-icons/pi";
 import { toNow, useQueryDateState } from "~/lib/stores/dynamic-dates-store";
 import { secondsToHoursDecimal } from "~/lib/stores/events-store";
@@ -17,22 +17,22 @@ export const DateCell = ({ date, entryData }: { date: Date; entryData?: number }
     <button
       className={cn("group/container h-full border-t p-1.5 focus:outline-none focus:ring-0")}
       onClick={() => {
-        if (formatDate(date, "yyyy/MM/dd") === toNow()) {
+        if (format(date, "yyyy/MM/dd") === toNow()) {
           return setQueryDate(null);
         }
 
-        void setQueryDate(formatDate(date, "yyyy/MM/dd"));
+        void setQueryDate(format(date, "yyyy/MM/dd"));
       }}
     >
       <section
         className={cn(
           "group flex h-full flex-col items-center justify-center rounded-lg border border-transparent p-2 transition-all hover:border-primary hover:bg-secondary",
           "group-focus/container:ring group-focus/container:ring-ring group-focus/container:ring-offset-2",
-          queryDate === formatDate(date, "yyyy/MM/dd") && "border-primary bg-secondary",
-          formatDate(date, "yyyy/MM/dd") === toNow() && "border-dashed border-primary bg-muted",
+          queryDate === format(date, "yyyy/MM/dd") && "border-primary bg-secondary",
+          format(date, "yyyy/MM/dd") === toNow() && "border-dashed border-primary bg-muted",
         )}
       >
-        <p className="text-xs text-muted-foreground">{formatDate(date, "do")}</p>
+        <p className="text-xs text-muted-foreground">{format(date, "do")}</p>
 
         <section className="mt-auto flex h-full flex-col items-center justify-center gap-1">
           <div className="h-9 text-2xl font-bold">

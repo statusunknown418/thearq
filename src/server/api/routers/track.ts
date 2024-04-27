@@ -1,9 +1,9 @@
 import { TRPCError } from "@trpc/server";
-import { formatDate } from "date-fns";
 import { and, eq, isNull } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { date, minValue, number, object, omit, parse } from "valibot";
 import { RECENT_W_ID_KEY, type Integration } from "~/lib/constants";
+import { dateToMonthDate } from "~/lib/stores/events-store";
 import { timeEntries, timeEntrySchema, timeEntrySelect } from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
@@ -135,8 +135,7 @@ export const trackerRouter = createTRPCRouter({
           duration: Number(input.duration),
           start: new Date(input.start),
           end: new Date(input.end),
-          monthDate: formatDate(new Date(input.start), "yyyy/MM"),
-          trackedAt: formatDate(new Date(), "yyyy/MM/dd"),
+          monthDate: dateToMonthDate(new Date(input.start)),
           workspaceId: Number(workspaceId),
         })
         .returning();

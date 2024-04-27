@@ -1,4 +1,3 @@
-import { formatDate } from "date-fns";
 import { relations } from "drizzle-orm";
 import { index, int, integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-valibot";
@@ -19,6 +18,7 @@ import {
 } from "valibot";
 import { type Integration } from "~/lib/constants";
 import { memberPermissions } from "~/lib/stores/auth-store";
+import { dateToMonthDate } from "~/lib/stores/events-store";
 
 export const users = sqliteTable("user", {
   id: text("id").notNull().primaryKey(),
@@ -98,6 +98,8 @@ export const integrations = sqliteTable(
   (t) => ({
     compoundKey: primaryKey({ columns: [t.userId, t.providerAccountId] }),
     workspaceIdIdx: index("integrations_workspaceId_idx").on(t.workspaceId),
+    userIdIdx: index("integrations_userId_idx").on(t.userId),
+    providerAccountIdIdx: index("integrations_providerAccountId_idx").on(t.providerAccountId),
   }),
 );
 
@@ -149,6 +151,7 @@ export const sendInviteSchema = object({
   workspaceSlug: string(),
 });
 
+const globalPaymentSchedule = ["monthly", "weekly", "bi-weekly"] as const;
 export const lockingSchedules = ["monthly", "weekly", "bi-weekly"] as const;
 
 export const workspaces = sqliteTable(
@@ -167,6 +170,7 @@ export const workspaces = sqliteTable(
     globalLockingSchedule: text("lockingSchedule", { enum: lockingSchedules })
       .notNull()
       .default("monthly"),
+    globalPaymentSchedule: text("paymentSchedule", { enum: globalPaymentSchedule }),
     /**
      * Default for times will be integer(4) similar to this
      */
@@ -218,7 +222,7 @@ export const usersOnWorkspaces = sqliteTable(
       .references(() => workspaces.id, { onDelete: "cascade" }),
     owner: integer("owner", { mode: "boolean" }).default(false),
     role: text("role", { enum: roles }).notNull().default("member"),
-    active: integer("active", { mode: "boolean" }).default(true),
+    active: integer("active", { mode: "boolean" }).notNull().default(true),
     defaultBillableRate: int("defaultBillableRate").notNull().default(0),
     internalCost: int("internalCost").notNull().default(0),
     defaultWeekCapacity: int("defaultWeekCapacity").default(40),
@@ -231,6 +235,7 @@ export const usersOnWorkspaces = sqliteTable(
     compoundKey: primaryKey({ columns: [t.userId, t.workspaceId] }),
     workspaceIdIdx: index("usersOnWorkspaces_workspaceId_idx").on(t.workspaceId),
     ownerIdx: index("usersOnWorkspaces_owner_idx").on(t.owner),
+    userIdIdx: index("usersOnWorkspaces_userId_idx").on(t.userId),
   }),
 );
 
@@ -277,16 +282,16 @@ export const timeEntries = sqliteTable(
     end: integer("end", { mode: "timestamp" }),
     monthDate: text("monthDate")
       .notNull()
-      .$defaultFn(() => formatDate(new Date(), "yyyy/MM")),
+      .$defaultFn(() => dateToMonthDate(new Date())),
     integrationUrl: text("integrationUrl"),
     integrationProvider: text("integrationProvider").$type<Integration>(),
     duration: integer("duration").notNull(),
     description: text("description").notNull().default(""),
     locked: integer("locked", { mode: "boolean" }).default(false),
     billable: integer("billable", { mode: "boolean" }).default(true),
-    trackedAt: text("trackedAt")
+    trackedAt: integer("trackedAt", { mode: "timestamp" })
       .notNull()
-      .$defaultFn(() => formatDate(new Date(), "yyyy/MM/dd")),
+      .$defaultFn(() => new Date()),
   },
   (t) => ({
     userIdIdx: index("timeEntries_userId_idx").on(t.userId),
@@ -295,6 +300,8 @@ export const timeEntries = sqliteTable(
     trackedAtIdx: index("timeEntries_trackedAt_idx").on(t.trackedAt),
     monthDateIdx: index("timeEntries_monthDate_idx").on(t.monthDate),
     endIdx: index("timeEntries_end_idx").on(t.end),
+    projectIdIdx: index("timeEntries_projectId_idx").on(t.projectId),
+    lockedIdx: index("timeEntries_locked_idx").on(t.locked),
   }),
 );
 
@@ -339,8 +346,6 @@ export const timeEntriesRelations = relations(timeEntries, ({ one }) => ({
 export const projectTypes = ["fixed", "project-hourly", "hourly", "non-billable"] as const;
 export type ProjectTypes = (typeof projectTypes)[number];
 
-const projectPaymentSchedule = ["monthly", "weekly", "bi-weekly"] as const;
-
 export const projects = sqliteTable(
   "project",
   {
@@ -359,7 +364,7 @@ export const projects = sqliteTable(
     ownerId: text("ownerId").notNull(),
     startsAt: integer("startsAt", { mode: "timestamp" }),
     endsAt: integer("endsAt", { mode: "timestamp" }),
-    paymentSchedule: text("paymentSchedule", { enum: projectPaymentSchedule }).default("monthly"),
+    paymentSchedule: text("paymentSchedule", { enum: globalPaymentSchedule }).default("monthly"),
     entriesLockingSchedule: text("entriesLockingSchedule", {
       enum: lockingSchedules,
     }).default("monthly"),

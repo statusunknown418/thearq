@@ -28,6 +28,7 @@ import {
   computeDuration,
   convertTime,
   createFakeEvent,
+  dateToMonthDate,
   useEventsStore,
 } from "~/lib/stores/events-store";
 import { useHotkeys } from "~/lib/use-hotkeys";
@@ -38,7 +39,7 @@ import { type RouterOutputs } from "~/trpc/shared";
 import { RealtimeCounter } from "./RealtimeCounter";
 
 const now = new Date();
-const monthDate = format(now, "yyyy/MM");
+const monthDate = dateToMonthDate(now);
 
 const locales = {
   en: enUS,
@@ -90,7 +91,7 @@ export const DynamicDateView = ({
 
   const utils = api.useUtils();
   const { data: events } = api.entries.getByMonth.useQuery(
-    { workspaceId, monthDate: format(month, "yyyy/MM") },
+    { workspaceId, monthDate: dateToMonthDate(month) },
     {
       initialData,
       refetchOnWindowFocus: false,
@@ -410,7 +411,7 @@ export const DynamicDateView = ({
           }}
           scrollToTime={now}
           timeslots={2}
-          step={10}
+          step={15}
           events={events.concat(temporalEvents)}
           date={date ? new Date(date) : now}
           titleAccessor={(e) => e.description}

@@ -13,6 +13,7 @@ import {
   toPrevMonthDate,
   useDynamicMonthStore,
 } from "~/lib/stores/dynamic-dates-store";
+import { dateToMonthDate } from "~/lib/stores/events-store";
 import { useHotkeys } from "~/lib/use-hotkeys";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
@@ -40,7 +41,7 @@ export const EntriesViews = ({
   const { data, isLoading, ...items } = api.entries.getSummary.useQuery(
     {
       workspaceId,
-      monthDate: format(month, "yyyy/MM"),
+      monthDate: dateToMonthDate(month),
     },
     {
       initialData,

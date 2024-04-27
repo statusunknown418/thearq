@@ -129,14 +129,14 @@ export const convertTime = (seconds = 0, options?: ConvertTimeOptions) => {
 };
 
 export const secondsToHoursDecimal = (seconds: number) => {
-  return (seconds / 3600)
-}
+  return seconds / 3600;
+};
 
 /**
  * Standard way to turn the date format to `yyyy/MM`
- * @param date 
- * @returns 
+ * @param date
+ * @returns
  */
 export const dateToMonthDate = (date: Date) => {
   return format(date, "yyyy/MM");
-}
+};

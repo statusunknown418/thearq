@@ -31,6 +31,7 @@ import {
   SheetTitle,
 } from "~/components/ui/sheet";
 import { Switch } from "~/components/ui/switch";
+import { sendAmount } from "~/lib/parsers";
 import { useDetailsSheetStore } from "~/lib/stores/sheets-store";
 import { usersOnWorkspacesSchema, type UsersOnWorkspacesSchema } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
@@ -44,14 +45,13 @@ export const PersonDetailsSheet = () => {
   const update = api.workspaces.updateMemberDetails.useMutation({
     onSuccess: async () => {
       change(false);
-      return await utils.teams.getByWorkspace.invalidate();
+      await utils.teams.getByWorkspace.invalidate();
     },
   });
+
   const form = useForm<UsersOnWorkspacesSchema>({
     resolver: valibotResolver(usersOnWorkspacesSchema),
-    defaultValues: {
-      ...details,
-    },
+    defaultValues: details ?? {},
   });
 
   const onSubmit = form.handleSubmit((input) => {
@@ -60,6 +60,8 @@ export const PersonDetailsSheet = () => {
         ...input,
         defaultWeekCapacity:
           input.defaultWeekCapacity === Infinity ? null : input.defaultWeekCapacity,
+        defaultBillableRate: sendAmount(input.defaultBillableRate ?? 0),
+        internalCost: sendAmount(input.internalCost ?? 0),
       }),
       {
         loading: "Saving...",

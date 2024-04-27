@@ -31,6 +31,7 @@ export const ProjectHeader = ({
     },
     onSettled: () => {
       void utils.projects.invalidate();
+      void utils.viewer.getAssignedProjects.invalidate();
     },
   });
 

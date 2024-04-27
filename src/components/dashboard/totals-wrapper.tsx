@@ -1,6 +1,6 @@
-import { formatDate } from "date-fns";
 import { cookies } from "next/headers";
 import { RECENT_W_ID_KEY } from "~/lib/constants";
+import { dateToMonthDate } from "~/lib/stores/events-store";
 import { api } from "~/trpc/server";
 import { Totals } from "./Totals";
 
@@ -10,7 +10,7 @@ export const TotalsWrapperRSC = async () => {
 
   const data = await api.entries.getTotals.query({
     workspaceId: Number(workspaceId),
-    monthDate: formatDate(today, "yyyy/MM"),
+    monthDate: dateToMonthDate(today),
   });
 
   return <Totals initialData={data} workspaceId={Number(workspaceId)} />;

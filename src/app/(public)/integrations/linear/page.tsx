@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { ClientRedirect } from "~/components/ClientRedirect";
+import { Main } from "~/components/layout/Main";
 import { Button } from "~/components/ui/button";
 import { env } from "~/env";
 import { RECENT_WORKSPACE_KEY } from "~/lib/constants";
@@ -39,15 +40,13 @@ export default async function LinearIntegration({
 
   if (done.error) {
     return (
-      <div>
-        <p>Something went wrong</p>
+      <Main>
+        <h2>Something went wrong</h2>
 
         <p>{JSON.stringify(done.error, null, 2)}</p>
 
-        <Link href="/" className="btn">
-          Go back
-        </Link>
-      </div>
+        <Button>Go back</Button>
+      </Main>
     );
   }
 }
