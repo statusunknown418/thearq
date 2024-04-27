@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import colors from "tailwindcss/colors";
 
 const config = {
   darkMode: ["class"],
@@ -7,6 +8,8 @@ const config = {
     "./components/**/*.{ts,tsx}",
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
+    // Path to Tremor module
+    "./node_modules/@tremor/**/*.{js,ts,jsx,tsx}",
   ],
   prefix: "",
   theme: {
@@ -26,6 +29,66 @@ const config = {
         click: `0px 4px 0px ${utils.colors.indigo[500]}`,
       }),
       colors: {
+        // light mode
+        tremor: {
+          brand: {
+            faint: colors.indigo[100],
+            muted: colors.indigo[200],
+            subtle: colors.indigo[400],
+            DEFAULT: colors.indigo[500],
+            emphasis: colors.indigo[700],
+            inverted: colors.white,
+          },
+          background: {
+            muted: "hsl(var(--muted))",
+            subtle: colors.gray[100],
+            DEFAULT: colors.white,
+            emphasis: colors.gray[700],
+          },
+          border: {
+            DEFAULT: "hsl(var(--border))",
+          },
+          ring: {
+            DEFAULT: "hsl(var(--border))",
+          },
+          content: {
+            subtle: colors.gray[400],
+            DEFAULT: colors.gray[500],
+            emphasis: colors.gray[700],
+            strong: colors.gray[900],
+            inverted: colors.white,
+          },
+        },
+        // dark mode
+        "dark-tremor": {
+          brand: {
+            faint: "#0B1229",
+            muted: colors.blue[950],
+            subtle: colors.blue[800],
+            DEFAULT: colors.blue[500],
+            emphasis: colors.blue[400],
+            inverted: colors.blue[950],
+          },
+          background: {
+            muted: "#131A2B",
+            subtle: colors.gray[800],
+            DEFAULT: colors.gray[900],
+            emphasis: colors.gray[300],
+          },
+          border: {
+            DEFAULT: "hsl(var(--border))",
+          },
+          ring: {
+            DEFAULT: "hsl(var(--border))",
+          },
+          content: {
+            subtle: colors.gray[600],
+            DEFAULT: colors.gray[500],
+            emphasis: colors.gray[200],
+            strong: colors.gray[50],
+            inverted: colors.gray[950],
+          },
+        },
         "border-contrast": "hsl(var(--border-contrast))",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -66,6 +129,16 @@ const config = {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        "tremor-small": "calc(var(--radius) - 4px)",
+        "tremor-default": "calc(var(--radius) + 2px)",
+        "tremor-full": "9999px",
+      },
+      // how can I customize this
+      fontSize: {
+        "tremor-label": ["0.75rem", { lineHeight: "1rem" }],
+        "tremor-default": ["0.875rem", { lineHeight: "1.25rem" }],
+        "tremor-title": ["1.125rem", { lineHeight: "1.75rem" }],
+        "tremor-metric": ["1.875rem", { lineHeight: "2.25rem" }],
       },
       keyframes: {
         "accordion-down": {
@@ -83,7 +156,40 @@ const config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  safelist: [
+    {
+      pattern:
+        /^(bg-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(?:50|100|200|300|400|500|600|700|800|900|950))$/,
+      variants: ["hover", "ui-selected"],
+    },
+    {
+      pattern:
+        /^(text-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(?:50|100|200|300|400|500|600|700|800|900|950))$/,
+      variants: ["hover", "ui-selected"],
+    },
+    {
+      pattern:
+        /^(border-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(?:50|100|200|300|400|500|600|700|800|900|950))$/,
+      variants: ["hover", "ui-selected"],
+    },
+    {
+      pattern:
+        /^(ring-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(?:50|100|200|300|400|500|600|700|800|900|950))$/,
+    },
+    {
+      pattern:
+        /^(stroke-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(?:50|100|200|300|400|500|600|700|800|900|950))$/,
+    },
+    {
+      pattern:
+        /^(fill-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(?:50|100|200|300|400|500|600|700|800|900|950))$/,
+    },
+  ],
+  plugins: [
+    require("tailwindcss-animate"),
+    require("@headlessui/tailwindcss"),
+    require("@tailwindcss/forms"),
+  ],
 } satisfies Config;
 
 export default config;
