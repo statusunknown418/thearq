@@ -1,13 +1,13 @@
 import { type Metadata } from "next";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
-import { TrackerTrigger } from "~/components/dashboard/tracker/TrackerTrigger";
+import { Main } from "~/components/layout/Main";
+import { PageHeader } from "~/components/layout/PageHeader";
+import { TrackerTrigger } from "~/components/tracker/TrackerTrigger";
 import {
   LiveEntryWrapperLoading,
   LiveEntryWrapperRSC,
-} from "~/components/dashboard/tracker/live-entry/live-entry-wrapper";
-import { Main } from "~/components/layout/Main";
-import { PageHeader } from "~/components/layout/PageHeader";
+} from "~/components/tracker/live-entry/live-entry-wrapper";
 import { Loader } from "~/components/ui/loader";
 
 export const metadata: Metadata = {
@@ -15,15 +15,11 @@ export const metadata: Metadata = {
 };
 
 const LazyDynamicDateViewWrapperRSC = dynamic(() =>
-  import("~/components/dashboard/tracker/date-view/date-view-wrapper").then(
-    (mod) => mod.DateViewWrapperRSC,
-  ),
+  import("~/components/tracker/date-view/date-view-wrapper").then((mod) => mod.DateViewWrapperRSC),
 );
 
 const LazCalendarWrapperRSC = dynamic(() =>
-  import("~/components/dashboard/tracker/entries-view/entries-wrapper").then(
-    (mod) => mod.CalendarWrapperRSC,
-  ),
+  import("~/components/tracker/entries-view/entries-wrapper").then((mod) => mod.CalendarWrapperRSC),
 );
 
 export default function WorkspaceTrackerPage() {

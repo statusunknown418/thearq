@@ -1,11 +1,8 @@
 import { Suspense } from "react";
-import { ProjectTrigger } from "~/components/dashboard/projects/ProjectTrigger";
-import {
-  ProjectsListLoading,
-  ProjectsListRSC,
-} from "~/components/dashboard/projects/projects-list";
 import { Main } from "~/components/layout/Main";
 import { PageHeader } from "~/components/layout/PageHeader";
+import { ProjectTrigger } from "~/components/projects/ProjectTrigger";
+import { ProjectsListLoading, ProjectsListRSC } from "~/components/projects/projects-list";
 
 export default function WorkspaceProjectsPage() {
   return (

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { WorkspacesList } from "~/components/dashboard/workspaces-list";
+import { WorkspacesList } from "~/components/common/workspaces-list";
 import { UserDropdown } from "~/components/layout/UserDropdown";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
@@ -9,7 +9,7 @@ import { routes } from "~/lib/navigation";
 
 export default function AllWorkspacesPage() {
   return (
-    <main className="grid h-screen grid-cols-1 place-items-center from-muted bg-gradient-to-br">
+    <main className="grid h-screen grid-cols-1 place-items-center bg-gradient-to-br from-muted">
       <section className="grid w-[600px] grid-cols-1 gap-8 rounded-3xl border bg-muted p-8 shadow-2xl shadow-black/60">
         <header className="flex justify-between gap-4">
           <div>

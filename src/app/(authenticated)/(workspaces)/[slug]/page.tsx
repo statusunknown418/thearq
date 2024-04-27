@@ -1,32 +1,35 @@
-import { cookies } from "next/headers";
-import { Updater } from "~/components/Updater";
+import { Suspense } from "react";
+import { UpdaterWrapperRSC } from "~/components/common/updater-wrapper";
+import { TotalsWrapperRSC } from "~/components/dashboard/totals-wrapper";
 import { Main } from "~/components/layout/Main";
-import { RECENT_W_ID_KEY } from "~/lib/constants";
-import { api } from "~/trpc/server";
+import { PageHeader } from "~/components/layout/PageHeader";
+import { Loader } from "~/components/ui/loader";
 
-export default async function WorkspaceDashboardPage({
+export default function WorkspaceDashboardPage({
   params,
 }: {
   params: {
     slug: string;
   };
 }) {
-  const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
-
-  const workspace = await api.workspaces.getBySlug.query({
-    slug: params.slug,
-    id: Number(workspaceId),
-  });
-
   return (
     <Main>
-      <nav></nav>
+      <PageHeader>
+        <div>
+          <h1 className="text-xl font-bold">Workspace Dashboard</h1>
+          <p className="text-muted-foreground">
+            The most important metrics for your workspace, all in one place, at a glance.
+          </p>
+        </div>
+      </PageHeader>
 
-      <div className="h-96 w-max rounded-2xl border bg-muted p-6 text-muted-foreground">
-        This is a test to see how the background colors behave
-      </div>
+      <Suspense fallback={<Loader />}>
+        <TotalsWrapperRSC />
+      </Suspense>
 
-      <Updater workspace={workspace} />
+      <Suspense>
+        <UpdaterWrapperRSC slug={params.slug} />
+      </Suspense>
     </Main>
   );
 }

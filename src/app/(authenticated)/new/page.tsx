@@ -1,6 +1,6 @@
 import { GoBack } from "~/components/layout/GoBack";
 import { Main } from "~/components/layout/Main";
-import { NewWorkspace } from "../../../components/dashboard/NewWorkspace";
+import { NewWorkspace } from "../../../components/common/NewWorkspace";
 
 export const dynamic = "force-static";
 
