@@ -1,51 +1,55 @@
 "use client";
 
-import { BarChart } from "@tremor/react";
-import { secondsToHoursDecimal } from "~/lib/stores/events-store";
+import { BarChart, Card } from "@tremor/react";
+import { api } from "~/trpc/react";
+import { type RouterOutputs } from "~/trpc/shared";
 
-const chartData = [
-  {
-    date: "11/03/2024",
-    time: 4588,
-  },
-  {
-    date: "12/03/2024",
-    time: 14045,
-  },
-  {
-    date: "13/03/2024",
-    time: 0,
-  },
-  {
-    date: "14/03/2024",
-    time: 74300,
-  },
-  {
-    date: "15/03/2024",
-    time: 28100,
-  },
-  {
-    date: "16/03/2024",
-    time: 21000,
-  },
-  {
-    date: "18/03/2024",
-    time: 36000,
-  },
-];
+export const DetailedCharts = ({
+  initialData,
+  workspaceId,
+}: {
+  workspaceId: number;
+  initialData: RouterOutputs["viewer"]["getAnalyticsCharts"];
+}) => {
+  const { data } = api.viewer.getAnalyticsCharts.useQuery(
+    {
+      workspaceId,
+      startDate: "2024-04-01",
+      endDate: "2024-04-30",
+    },
+    {
+      enabled: !!workspaceId,
+      initialData,
+    },
+  );
 
-export const DetailedCharts = () => {
+  if (!data) return;
+
   return (
-    <section>
-      <BarChart
-        stack
-        data={chartData}
-        index="date"
-        categories={["time"]}
-        colors={["blue"]}
-        valueFormatter={(v) => secondsToHoursDecimal(v).toFixed(2)}
-        yAxisWidth={48}
-      />
-    </section>
+    <>
+      <Card>
+        <h3 className="text-base font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
+          Tracked time for period
+        </h3>
+
+        <BarChart
+          allowDecimals
+          showAnimation
+          animationDuration={700}
+          data={data}
+          index={"date"}
+          categories={["time"]}
+          colors={["indigo"]}
+          valueFormatter={(v) => `${v}h`}
+          yAxisWidth={48}
+          noDataText="No entries for this period."
+          tickGap={2}
+        />
+      </Card>
+
+      <p className="text-xs text-muted-foreground">
+        Hover over the bars to see more details about that day.
+      </p>
+    </>
   );
 };

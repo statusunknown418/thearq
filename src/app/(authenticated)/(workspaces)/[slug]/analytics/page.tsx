@@ -7,6 +7,7 @@ import { Main } from "~/components/layout/Main";
 import { PageHeader } from "~/components/layout/PageHeader";
 import { Button } from "~/components/ui/button";
 import { Loader } from "~/components/ui/loader";
+import { DatePickerWithRange } from "~/components/ui/range-picker";
 
 export default function AnalyticsPage() {
   return (
@@ -20,6 +21,8 @@ export default function AnalyticsPage() {
           <h1 className="text-xl font-bold">Analytics</h1>
           <p className="text-muted-foreground">Get insights on your personal activity</p>
         </div>
+
+        <DatePickerWithRange />
       </PageHeader>
 
       <Suspense fallback={<Loader />}>

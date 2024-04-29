@@ -1,10 +1,19 @@
 import { createId } from "@paralleldrive/cuid2";
-import { format } from "date-fns";
+import {
+  addBusinessDays,
+  addMonths,
+  addWeeks,
+  differenceInDays,
+  format,
+  formatDistance,
+  startOfMonth,
+  startOfWeek,
+} from "date-fns";
 import { type User } from "next-auth";
 import { type stringOrDate } from "react-big-calendar";
 import { create } from "zustand";
 import { type CustomEvent } from "~/server/api/routers/entries";
-import { type NewTimeEntry } from "~/server/db/edge-schema";
+import { type GlobalPaymentSchedule, type NewTimeEntry } from "~/server/db/edge-schema";
 
 export type EventsStore = {
   temporalEvents: CustomEvent[];
@@ -139,4 +148,35 @@ export const secondsToHoursDecimal = (seconds: number) => {
  */
 export const dateToMonthDate = (date: Date) => {
   return format(date, "yyyy/MM");
+};
+
+/**
+ * @description Utility function to convert the payment schedule to a human readable date
+ * @param schedule
+ * @returns
+ */
+export const paymentScheduleToDate = (schedule: GlobalPaymentSchedule) => {
+  if (schedule === "monthly") {
+    const date = new Date();
+    const toNextMonth = startOfMonth(addMonths(date, 1));
+    const difference = differenceInDays(toNextMonth, date);
+    return { format: formatDistance(toNextMonth, date), difference };
+  }
+
+  if (schedule === "weekly") {
+    const weekDate = new Date();
+    const toNextWeek = startOfWeek(addWeeks(weekDate, 1));
+    const difference = differenceInDays(toNextWeek, weekDate);
+    return { format: formatDistance(toNextWeek, weekDate), difference };
+  }
+
+  if (schedule === "bi-monthly") {
+    // Needs fix
+    const biMonthDate = new Date();
+    const toNextBiMonth = addBusinessDays(biMonthDate, 10);
+    const difference = differenceInDays(toNextBiMonth, biMonthDate);
+    return { format: formatDistance(toNextBiMonth, biMonthDate), difference };
+  }
+
+  return { format: "Unknown", difference: 0 };
 };
