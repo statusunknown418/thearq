@@ -151,8 +151,10 @@ export const sendInviteSchema = object({
   workspaceSlug: string(),
 });
 
-const globalPaymentSchedule = ["monthly", "weekly", "bi-weekly"] as const;
-export const lockingSchedules = ["monthly", "weekly", "bi-weekly"] as const;
+const globalPaymentSchedule = ["monthly", "weekly", "bi-monthly"] as const;
+export type GlobalPaymentSchedule = (typeof globalPaymentSchedule)[number];
+export const lockingSchedules = ["monthly", "weekly", "bi-monthly"] as const;
+export type LockingSchedules = (typeof lockingSchedules)[number];
 
 export const workspaces = sqliteTable(
   "workspace",
