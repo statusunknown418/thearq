@@ -72,7 +72,7 @@ const config = {
           background: {
             muted: "#131A2B",
             subtle: colors.gray[800],
-            DEFAULT: colors.gray[900],
+            DEFAULT: "hsl(var(--secondary-background))",
             emphasis: colors.gray[300],
           },
           border: {
