@@ -40,7 +40,7 @@ export const DetailedCharts = ({
           index={"date"}
           categories={["time"]}
           colors={["indigo"]}
-          valueFormatter={(v) => `${v}h`}
+          valueFormatter={(v) => `${v.toFixed(2)}h`}
           yAxisWidth={48}
           noDataText="No entries for this period."
           tickGap={2}

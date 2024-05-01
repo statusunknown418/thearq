@@ -38,10 +38,10 @@ export const ProjectsCombobox = ({
         render={({ field }) => (
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant={"secondary"} size={size} className="w-max">
+              <Button variant={"secondary"} size={size} className="w-max bg-muted shadow">
                 <PiSquaresFourDuotone size={15} />
 
-                <span className="max-w-[20ch] justify-between overflow-hidden text-ellipsis whitespace-nowrap">
+                <span className="max-w-[10ch] justify-between overflow-hidden text-ellipsis whitespace-nowrap">
                   {field.value
                     ? data?.find((c) => c.projectId === field.value)?.project.name
                     : "Project"}
@@ -92,6 +92,12 @@ export const ProjectsCombobox = ({
                         />
 
                         <div className="flex items-center gap-2">
+                          <div
+                            className={cn("h-3 w-3 rounded-full bg-gray-600")}
+                            style={{
+                              backgroundColor: relation.project.color,
+                            }}
+                          />
                           <span>{relation.project.name}</span>
                         </div>
                       </CommandItem>

@@ -368,7 +368,7 @@ export const DynamicDateView = ({
                   {event.project?.name && (
                     <div
                       className={cn("flex items-center gap-1 rounded-full border px-1.5 py-0.5", {
-                        "border-primary": !event.project.color,
+                        "border-primary dark:border-border-contrast": !event.project.color,
                       })}
                       style={{
                         borderColor: event.project.color,
@@ -376,14 +376,14 @@ export const DynamicDateView = ({
                     >
                       <div
                         className={cn("h-3 w-3 rounded-full border", {
-                          "bg-gray-500": !event.project.color,
+                          "bg-gray-600": !event.project.color,
                         })}
                         style={{ backgroundColor: event.project.color }}
                       />
 
                       <span
                         className={cn({
-                          "text-gray-500": !event.project.color,
+                          "text-muted-foreground": !event.project.color,
                         })}
                         style={{
                           color: event.project.color,

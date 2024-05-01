@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Main } from "~/components/layout/Main";
 import { PageHeader } from "~/components/layout/PageHeader";
+import { ThemeSwitcher } from "~/components/theme-switcher";
 import { Input } from "~/components/ui/input";
 import { Separator } from "~/components/ui/separator";
 import { auth } from "~/server/auth";
@@ -13,7 +14,7 @@ export default async function AccountSettingsPage() {
       <PageHeader>
         <section className="flex flex-grow gap-2">
           <div className="flex flex-col gap-0.5">
-            <h1 className="text-lg font-bold">My account</h1>
+            <h1 className="text-lg font-bold">Personal settings</h1>
 
             <p className="text-muted-foreground">
               Manage your personal settings, like your email, picture and notifications.
@@ -22,7 +23,7 @@ export default async function AccountSettingsPage() {
         </section>
       </PageHeader>
 
-      <section className="flex max-w-xl flex-col rounded-lg border">
+      <section className="mx-auto flex w-full max-w-xl flex-col rounded-lg border">
         <div className="flex justify-center border-b bg-secondary p-8">
           {session?.user.image && (
             <Image
@@ -49,6 +50,10 @@ export default async function AccountSettingsPage() {
 
             <Input defaultValue={session?.user.email ?? ""} className="w-52" disabled />
           </div>
+
+          <Separator />
+
+          <ThemeSwitcher />
         </section>
       </section>
     </Main>

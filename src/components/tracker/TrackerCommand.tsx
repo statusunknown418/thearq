@@ -7,9 +7,10 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import {
   PiArrowRight,
+  PiCurrencyDollarBold,
   PiDotsThreeVertical,
   PiFloppyDisk,
-  PiPaperPlane,
+  PiPaperPlaneTilt,
   PiTrashDuotone,
 } from "react-icons/pi";
 import { toast } from "sonner";
@@ -199,7 +200,18 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
     }
   }, [form, workspaceId]);
 
-  useHotkeys([["Meta+Enter", () => onSubmit()]], ["textarea", "input"]);
+  useHotkeys(
+    [
+      ["Meta+Enter", () => onSubmit()],
+      [
+        "Shift+B",
+        () => {
+          form.setValue("billable", !form.getValues("billable"));
+        },
+      ],
+    ],
+    ["textarea", "input"],
+  );
 
   return (
     <Dialog open={open} onOpenChange={onCancelTrack}>
@@ -237,6 +249,42 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
 
             <section className="mt-2 flex items-center gap-2">
               <div className="relative flex items-center gap-2">
+                <ProjectsCombobox />
+
+                <FormField
+                  control={form.control}
+                  name="billable"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <TooltipProvider delayDuration={0}>
+                          <Tooltip>
+                            <Toggle
+                              asChild
+                              variant={"outline"}
+                              type="button"
+                              pressed={!!field.value}
+                              onPressedChange={field.onChange}
+                              onBlur={field.onBlur}
+                              className="h-8 w-8 p-0"
+                            >
+                              <TooltipTrigger>
+                                <PiCurrencyDollarBold size={16} />
+                              </TooltipTrigger>
+                            </Toggle>
+
+                            <TooltipContent>
+                              Mark entry as billable <KBD>Shift</KBD> + <KBD>B</KBD>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <Separator orientation="vertical" />
+
                 <DynamicDateTimeInput selector="start" />
 
                 <PiArrowRight size={15} />
@@ -273,31 +321,6 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
                 )}
               /> */}
             </section>
-
-            <div className="flex items-center gap-2">
-              <ProjectsCombobox />
-
-              <FormField
-                control={form.control}
-                name="billable"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Toggle
-                        size={"sm"}
-                        variant={"outline"}
-                        type="button"
-                        pressed={!!field.value}
-                        onPressedChange={field.onChange}
-                        onBlur={field.onBlur}
-                      >
-                        $ Billable
-                      </Toggle>
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
 
             <Separator className="-ml-6 mb-1 mt-4 w-[670px]" />
 
@@ -346,7 +369,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button>
-                      {isEditing ? <PiFloppyDisk size={16} /> : <PiPaperPlane />}
+                      {isEditing ? <PiFloppyDisk size={16} /> : <PiPaperPlaneTilt />}
                       {isEditing ? "Save" : "Add"}
                     </Button>
                   </TooltipTrigger>
