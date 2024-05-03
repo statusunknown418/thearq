@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { computeDuration, convertTime } from "~/lib/stores/events-store";
+import { computeDuration, convertTime } from "~/lib/dates";
 import { cn } from "~/lib/utils";
 
 export const RealtimeCounter = ({

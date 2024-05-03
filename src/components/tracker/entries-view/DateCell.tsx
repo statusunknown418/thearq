@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { PiCircleDashed } from "react-icons/pi";
+import { secondsToHoursDecimal } from "~/lib/dates";
 import { toNow, useQueryDateState } from "~/lib/stores/dynamic-dates-store";
-import { secondsToHoursDecimal } from "~/lib/stores/events-store";
 import { cn } from "~/lib/utils";
 
 /**

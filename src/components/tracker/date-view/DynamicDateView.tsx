@@ -24,22 +24,16 @@ import {
   useDynamicMonthStore,
   useQueryDateState,
 } from "~/lib/stores/dynamic-dates-store";
-import {
-  computeDuration,
-  convertTime,
-  createFakeEvent,
-  dateToMonthDate,
-  useEventsStore,
-} from "~/lib/stores/events-store";
+import { createFakeEvent, useEventsStore } from "~/lib/stores/events-store";
 import { useHotkeys } from "~/lib/use-hotkeys";
 import { cn } from "~/lib/utils";
 import { type CustomEvent } from "~/server/api/routers/entries";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 import { RealtimeCounter } from "./RealtimeCounter";
+import { NOW, computeDuration, convertTime, dateToMonthDate } from "~/lib/dates";
 
-const now = new Date();
-const monthDate = dateToMonthDate(now);
+const monthDate = dateToMonthDate(NOW);
 
 const locales = {
   en: enUS,
@@ -76,13 +70,13 @@ export const DynamicDateView = ({
   const setTemporalEvents = useEventsStore((s) => s.setTemporalEvents);
 
   const updateDay = (newDate: Date) => {
-    const isToday = format(newDate, "yyyy/MM/dd") === format(now, "yyy/MM/dd");
+    const isToday = format(newDate, "yyyy/MM/dd") === format(NOW, "yyy/MM/dd");
 
     if (isToday) {
       return update(null);
     }
 
-    if (getMonth(newDate) !== getMonth(now)) {
+    if (getMonth(newDate) !== getMonth(NOW)) {
       setMonth(newDate);
     }
 
@@ -229,18 +223,18 @@ export const DynamicDateView = ({
     [
       "T",
       () => {
-        setMonth(now);
+        setMonth(NOW);
         void update(null);
       },
     ],
   ]);
 
   useEffect(() => {
-    setMonth(new Date(date ?? now));
+    setMonth(new Date(date ?? NOW));
   }, [date, setMonth]);
 
   const percentageChange = useMemo(() => {
-    const today = fromZonedTime(new Date(date ?? now), "America/Lima");
+    const today = fromZonedTime(new Date(date ?? NOW), "America/Lima");
     const start = fromZonedTime(startOfDay(today), "America/Lima");
     const endOfToday = fromZonedTime(addHours(start, 24), "America/Lima");
 
@@ -304,7 +298,7 @@ export const DynamicDateView = ({
                             }}
                             className={cn("min-w-24")}
                           >
-                            {format(date, "yyyy/MM/dd") === format(now, "yyyy/MM/dd")
+                            {format(date, "yyyy/MM/dd") === format(NOW, "yyyy/MM/dd")
                               ? localizer.messages.today
                               : label}
                           </Button>
@@ -409,11 +403,11 @@ export const DynamicDateView = ({
               );
             },
           }}
-          scrollToTime={now}
+          scrollToTime={NOW}
           timeslots={2}
           step={15}
           events={events.concat(temporalEvents)}
-          date={date ? new Date(date) : now}
+          date={date ? new Date(date) : NOW}
           titleAccessor={(e) => e.description}
           startAccessor={(e) => e.start}
           endAccessor={(e) => e.end ?? new Date()}
@@ -421,7 +415,7 @@ export const DynamicDateView = ({
           onNavigate={updateDay}
           onEventDrop={onEventDrop}
           onEventResize={onEventResize}
-          min={addHours(startOfDay(now), 6)}
+          min={addHours(startOfDay(NOW), 6)}
           onSelectSlot={onDragFromSlot}
           onSelecting={onSelectingTimeSlots}
           onSelectEvent={onSelectEvent}

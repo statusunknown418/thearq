@@ -31,7 +31,7 @@ import { Textarea } from "~/components/ui/textarea";
 import { Toggle } from "~/components/ui/toggle";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import { useCommandsStore } from "~/lib/stores/commands-store";
-import { createFakeEvent, dateToMonthDate, useEventsStore } from "~/lib/stores/events-store";
+import { createFakeEvent, useEventsStore } from "~/lib/stores/events-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 import { useHotkeys } from "~/lib/use-hotkeys";
 import { type CustomEvent } from "~/server/api/routers/entries";
@@ -39,6 +39,7 @@ import { timeEntrySchema, type NewTimeEntry } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 import { ProjectsCombobox } from "../projects/ProjectsCombobox";
 import { FromIntegrationDialog } from "./FromIntegrationDialog";
+import { dateToMonthDate } from "~/lib/dates";
 
 const DynamicDateTimeInput = dynamic(
   () => import("~/components/ui/date-time-input").then((mod) => mod.DateTimeInput),
@@ -115,10 +116,11 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
       return utils.entries.getByMonth.setData({ workspaceId, monthDate }, (oldData) => {
         if (!oldData) return [];
 
-        return oldData.filter((e) => e.id !== entry.id);
+        return prev.filter((e) => e.id !== entry.id);
       });
     },
     onSettled: async () => {
+      await utils.entries.getByMonth.invalidate();
       return await utils.entries.getSummary.invalidate();
     },
   });
@@ -126,6 +128,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
   const { mutate: updateEntry } = api.tracker.update.useMutation({
     onSettled: async () => {
       clearEvents();
+      void utils.entries.getSummary.invalidate();
       return await utils.entries.getByMonth.invalidate();
     },
     onSuccess: async () => {

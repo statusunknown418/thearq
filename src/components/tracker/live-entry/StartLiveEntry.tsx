@@ -11,7 +11,6 @@ import { Input } from "~/components/ui/input";
 import { KBD } from "~/components/ui/kbd";
 import { Toggle } from "~/components/ui/toggle";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
-import { computeDuration } from "~/lib/stores/events-store";
 import { useHotkeys } from "~/lib/use-hotkeys";
 import { cn } from "~/lib/utils";
 import { timeEntrySchema, type NewTimeEntry } from "~/server/db/edge-schema";
@@ -19,6 +18,7 @@ import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 import { ProjectsCombobox } from "../../projects/ProjectsCombobox";
 import { RealtimeCounter } from "../date-view/RealtimeCounter";
+import { computeDuration } from "~/lib/dates";
 
 export const StartLiveEntry = ({
   initialData,

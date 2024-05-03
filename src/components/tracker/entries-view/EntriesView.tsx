@@ -13,12 +13,12 @@ import {
   toPrevMonthDate,
   useDynamicMonthStore,
 } from "~/lib/stores/dynamic-dates-store";
-import { dateToMonthDate } from "~/lib/stores/events-store";
 import { useHotkeys } from "~/lib/use-hotkeys";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 import { DateCell } from "./DateCell";
+import { dateToMonthDate } from "~/lib/dates";
 
 export const EntriesViews = ({
   workspaceId,
@@ -38,7 +38,7 @@ export const EntriesViews = ({
 
   const computedMonthGrid = useMemo(() => computeMonthDays(month), [month]);
 
-  const { data, isLoading, ...items } = api.entries.getSummary.useQuery(
+  const { data, isLoading } = api.entries.getSummary.useQuery(
     {
       workspaceId,
       monthDate: dateToMonthDate(month),
@@ -53,8 +53,6 @@ export const EntriesViews = ({
     ["K", () => setMonth(toPrevMonthDate(month))],
     ["J", () => setMonth(toNextMonthDate(month))],
   ]);
-
-  console.log(items);
 
   if (isLoading) {
     return <Loader />;

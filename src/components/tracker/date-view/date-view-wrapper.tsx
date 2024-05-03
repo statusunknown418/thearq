@@ -1,8 +1,8 @@
 import { cookies } from "next/headers";
 import { RECENT_W_ID_KEY } from "~/lib/constants";
-import { dateToMonthDate } from "~/lib/stores/events-store";
 import { api } from "~/trpc/server";
 import { DynamicDateView } from "./DynamicDateView";
+import { dateToMonthDate } from "~/lib/dates";
 
 export const DateViewWrapperRSC = async () => {
   const now = new Date();
