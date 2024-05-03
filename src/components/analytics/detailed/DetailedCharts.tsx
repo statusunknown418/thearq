@@ -1,6 +1,8 @@
 "use client";
 
 import { BarChart, Card } from "@tremor/react";
+import { Skeleton } from "~/components/ui/skeleton";
+import { useAnalyticsQS } from "~/lib/stores/analytics-store";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 
@@ -11,19 +13,25 @@ export const DetailedCharts = ({
   workspaceId: number;
   initialData: RouterOutputs["viewer"]["getAnalyticsCharts"];
 }) => {
-  const { data } = api.viewer.getAnalyticsCharts.useQuery(
+  const [state] = useAnalyticsQS();
+
+  const { data, isRefetching } = api.viewer.getAnalyticsCharts.useQuery(
     {
       workspaceId,
-      startDate: "2024-04-01",
-      endDate: "2024-04-30",
+      startDate: state.from,
+      endDate: state.to,
     },
     {
       enabled: !!workspaceId,
       initialData,
+      refetchOnReconnect: false,
+      refetchOnWindowFocus: false,
     },
   );
 
-  if (!data) return;
+  if (isRefetching) {
+    return <Skeleton className="h-52 w-full" />;
+  }
 
   return (
     <>

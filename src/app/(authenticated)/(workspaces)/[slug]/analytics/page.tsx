@@ -2,14 +2,24 @@ import { Divider } from "@tremor/react";
 import { Suspense } from "react";
 import { PiChartLineUp } from "react-icons/pi";
 import { DetailedChartsWrapperRSC } from "~/components/analytics/detailed/detailed-charts-wrapper";
-import { AnalyticsSummaryWrapperRSC } from "~/components/analytics/summary/analytics-summary-wrapper";
+import { AnalyticsSummaryLoading } from "~/components/analytics/summary/AnalyticsSummary";
+import {
+  AnalyticsSummaryWrapperRSC,
+  analyticsParamsCache,
+} from "~/components/analytics/summary/analytics-summary-wrapper";
 import { Main } from "~/components/layout/Main";
 import { PageHeader } from "~/components/layout/PageHeader";
 import { Button } from "~/components/ui/button";
 import { Loader } from "~/components/ui/loader";
 import { DatePickerWithRange } from "~/components/ui/range-picker";
 
-export default function AnalyticsPage() {
+export default function AnalyticsPage({
+  searchParams,
+}: {
+  searchParams: { start: string; end: string };
+}) {
+  const { from, to } = analyticsParamsCache.parse(searchParams);
+
   return (
     <Main>
       <PageHeader>
@@ -25,8 +35,8 @@ export default function AnalyticsPage() {
         <DatePickerWithRange />
       </PageHeader>
 
-      <Suspense fallback={<Loader />}>
-        <AnalyticsSummaryWrapperRSC />
+      <Suspense fallback={<AnalyticsSummaryLoading />}>
+        <AnalyticsSummaryWrapperRSC start={from} end={to} />
       </Suspense>
 
       <Divider className="my-1 text-xs">Detailed chart</Divider>

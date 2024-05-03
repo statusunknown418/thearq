@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Main } from "~/components/layout/Main";
 import { ProjectHeaderWrapperRSC } from "~/components/projects/[projectId]/project-header-wrapper";
+import { Skeleton } from "~/components/ui/skeleton";
 import { routes } from "~/lib/navigation";
 
 export default function ProjectIdPage({ params }: { params: unknown }) {
@@ -8,7 +9,7 @@ export default function ProjectIdPage({ params }: { params: unknown }) {
 
   return (
     <Main>
-      <Suspense>
+      <Suspense fallback={<Skeleton className="h-24 w-[800px]" />}>
         <ProjectHeaderWrapperRSC id={parsed.id} slug={parsed.slug} />
       </Suspense>
 
