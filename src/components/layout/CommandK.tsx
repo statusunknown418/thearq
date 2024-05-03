@@ -30,7 +30,7 @@ export const CommandK = () => {
 
   return (
     <>
-      <Button variant={"secondary"} onClick={() => setSearch(null)}>
+      <Button variant={"secondary"} onClick={() => setSearch(search ? null : "search")}>
         <PiMagnifyingGlassDuotone size={16} />
         Search
         <kbd className="flex items-center text-muted-foreground">

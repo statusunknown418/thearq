@@ -1,8 +1,8 @@
 import { cookies } from "next/headers";
 import { RECENT_W_ID_KEY } from "~/lib/constants";
-import { dateToMonthDate } from "~/lib/stores/events-store";
 import { api } from "~/trpc/server";
 import { Totals } from "./Totals";
+import { dateToMonthDate } from "~/lib/dates";
 
 export const TotalsWrapperRSC = async () => {
   const today = new Date();

@@ -141,18 +141,28 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
     accessorFn: (row) => row.project.endsAt,
     cell: ({ row }) =>
       !!row.getValue("endsAt") ? (
-        <span className={cn("flex items-center gap-1 font-medium text-foreground")}>
+        <span
+          className={cn(
+            "flex items-center gap-1 font-medium",
+            (row.original.project.endsAt ?? new Date()) < new Date()
+              ? "text-orange-500"
+              : "text-muted-foreground",
+          )}
+        >
           <TooltipProvider delayDuration={0}>
             <Tooltip>
-              <TooltipTrigger>
+              <TooltipTrigger className="flex items-center gap-1">
                 <PiInfo
                   size={16}
                   className={cn(
                     !!row.original.project.endsAt &&
-                      addDays(new Date(), 7) >= row.original.project.endsAt &&
-                      "text-orange-500",
+                      addDays(new Date(), 7) >= row.original.project.endsAt
+                      ? "text-orange-500"
+                      : "text-blue-500",
                   )}
                 />
+
+                {format(row.getValue("endsAt"), "PPP")}
               </TooltipTrigger>
 
               <TooltipContent>
@@ -160,8 +170,6 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-
-          {format(row.getValue("endsAt"), "PPP")}
         </span>
       ) : (
         <span className="flex items-center gap-1">
@@ -199,7 +207,7 @@ export const ProjectsTable = ({
   }
 
   return (
-    <section className="flex flex-col gap-4 rounded-xl border bg-muted p-5">
+    <section className="flex flex-col gap-4 rounded-xl border bg-secondary-background p-5">
       <div>
         <FormItem>
           <Label>Search</Label>

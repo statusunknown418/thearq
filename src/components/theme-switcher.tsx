@@ -25,7 +25,7 @@ export const ThemeSwitcher = () => {
     <div className="flex items-center justify-center gap-1 py-2">
       <div className="flex w-full max-w-md justify-between py-2">
         <Label htmlFor="theme" className="text-muted-foreground">
-          App theme
+          Color theme
         </Label>
 
         <div className="flex items-center gap-2">

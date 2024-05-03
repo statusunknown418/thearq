@@ -1,4 +1,4 @@
-import { format, startOfMonth } from "date-fns";
+import { endOfWeek, format, startOfWeek } from "date-fns";
 import { parseAsString, useQueryStates } from "nuqs";
 import { create } from "zustand";
 import { NOW } from "../dates";
@@ -18,8 +18,15 @@ export const useAnalyticsStore = create<AnalyticsStore>((set) => ({
 export const useAnalyticsQS = () => {
   return useQueryStates(
     {
-      from: parseAsString.withDefault(format(startOfMonth(NOW), "yyyy-MM-dd")),
-      to: parseAsString.withDefault(format(NOW, "yyyy-MM-dd")),
+      from: parseAsString.withDefault(
+        format(
+          startOfWeek(NOW, {
+            weekStartsOn: 1,
+          }),
+          "yyyy-MM-dd",
+        ),
+      ),
+      to: parseAsString.withDefault(format(endOfWeek(NOW, { weekStartsOn: 1 }), "yyyy-MM-dd")),
     },
     {
       clearOnDefault: true,

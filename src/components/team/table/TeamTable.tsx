@@ -146,7 +146,7 @@ export const TeamTable = ({ data }: { data: TeamTableData }) => {
   });
 
   return (
-    <div className="grid grid-cols-1 gap-4 rounded-xl border bg-muted p-5">
+    <div className="grid grid-cols-1 gap-4 rounded-xl border bg-secondary-background p-5">
       <FormItem>
         <Label>Search</Label>
         <Input

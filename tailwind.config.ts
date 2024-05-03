@@ -83,7 +83,7 @@ const config = {
           },
           content: {
             subtle: colors.gray[600],
-            DEFAULT: colors.gray[500],
+            DEFAULT: "hsl(var(--muted-foreground))",
             emphasis: colors.gray[200],
             strong: colors.gray[50],
             inverted: colors.gray[950],

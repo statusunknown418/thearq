@@ -103,21 +103,6 @@ export const ProjectHeader = ({
             />
           </section>
 
-          {/* <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <Textarea
-                variant={"ghost"}
-                className="max-w-3xl resize-none py-1 text-muted-foreground"
-                {...field}
-                value={field.value ?? "No description"}
-                onBlur={onSubmit}
-                rows={2}
-                maxRows={4}
-              />
-            )}
-          /> */}
 
           <input type="submit" className="hidden" />
         </form>

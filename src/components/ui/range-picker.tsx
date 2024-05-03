@@ -1,40 +1,107 @@
 "use client";
 
 import { CalendarIcon } from "@radix-ui/react-icons";
-import { format } from "date-fns";
+import { addDays, format, startOfMonth } from "date-fns";
 import * as React from "react";
 import { type DateRange } from "react-day-picker";
-
-import { PiCalendarBlank } from "react-icons/pi";
 import { Button } from "~/components/ui/button";
 import { Calendar } from "~/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import { cn } from "~/lib/utils";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
+import { useAnalyticsQS } from "~/lib/stores/analytics-store";
+import { NOW } from "~/lib/dates";
 
 export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivElement>) {
+  const [open, change] = React.useState(false);
+  const [state, updateState] = useAnalyticsQS();
+
   const [date, setDate] = React.useState<DateRange | undefined>({
-    from: undefined,
-    to: undefined,
+    from: new Date(state.from),
+    to: new Date(state.to),
   });
 
+  const [quickSelect, setQuickSelect] = React.useState<string | undefined>(undefined);
+
+  const onOpenChange = (v: boolean) => {
+    if (!v) {
+      void onBlurOrSelect();
+    }
+
+    change(v);
+  };
+
+  const onBlurOrSelect = async () => {
+    if (!date?.from && !date?.to) {
+      return;
+    }
+
+    const start = date.from ? format(date.from, "yyyy-MM-dd") : undefined;
+    const end = date.to ? format(date.to, "yyyy-MM-dd") : undefined;
+
+    void updateState({
+      from: start,
+      to: end,
+    });
+  };
+
+  const onQuickSelect = (v: string) => {
+    let start: Date | undefined;
+    let end: Date | undefined;
+
+    if (v === "month-to-date") {
+      start = startOfMonth(NOW);
+      end = NOW;
+
+      void updateState({
+        from: format(start, "yyyy-MM-dd"),
+        to: format(end, "yyyy-MM-dd"),
+      });
+    }
+
+    if (v === "last-7-days") {
+      start = addDays(NOW, -7);
+      end = NOW;
+
+      void updateState({
+        from: format(start, "yyyy-MM-dd"),
+        to: format(end, "yyyy-MM-dd"),
+      });
+    }
+
+    if (v === "last-14-days") {
+      start = addDays(NOW, -14);
+      end = NOW;
+
+      void updateState({
+        from: format(start, "yyyy-MM-dd"),
+        to: format(end, "yyyy-MM-dd"),
+      });
+    }
+
+    if (v === "last-30-days") {
+      start = addDays(NOW, -30);
+      end = NOW;
+
+      void updateState({
+        from: format(start, "yyyy-MM-dd"),
+        to: format(end, "yyyy-MM-dd"),
+      });
+    }
+
+    setDate({ from: start, to: end });
+  };
+
   return (
-    <div
-      className={cn("ml-auto flex items-center gap-0 self-start bg-tremor-background", className)}
-    >
-      <Popover>
+    <div className={cn("ml-auto flex items-center gap-0 self-start", className)}>
+      <Popover open={open} onOpenChange={onOpenChange}>
         <PopoverTrigger asChild>
           <Button
             id="date"
             variant={"outline"}
             size={"lg"}
             className={cn(
-              "w-[280px] justify-start rounded-r-none text-left font-normal",
+              "w-[300px] justify-start rounded-r-none bg-tremor-background  text-left font-normal dark:bg-dark-tremor-background",
               !date && "text-muted-foreground",
             )}
           >
@@ -59,38 +126,27 @@ export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivE
             mode="range"
             defaultMonth={date?.from}
             selected={date}
-            onSelect={setDate}
+            onSelect={(d) => {
+              setDate(d);
+              setQuickSelect(undefined);
+            }}
             numberOfMonths={2}
           />
         </PopoverContent>
       </Popover>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant={"outline"} size={"lg"} className="w-[120px] rounded-l-none border-l-0">
-            Select
-          </Button>
-        </DropdownMenuTrigger>
+      <Select value={quickSelect} onValueChange={onQuickSelect}>
+        <SelectTrigger className="w-40 rounded-l-none border-l-0">
+          <SelectValue placeholder="Select a range" />
+        </SelectTrigger>
 
-        <DropdownMenuContent>
-          <DropdownMenuItem>
-            <PiCalendarBlank />
-            Last 7 days
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <PiCalendarBlank />
-            Last 2 weeks
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <PiCalendarBlank />
-            Last 30 days
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <PiCalendarBlank />
-            Month to date
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        <SelectContent>
+          <SelectItem value="last-7-days">Last 7 days</SelectItem>
+          <SelectItem value="last-14-days">Last 2 weeks</SelectItem>
+          <SelectItem value="last-30-days">Last 30 days</SelectItem>
+          <SelectItem value="month-to-date">Month to date</SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   );
 }

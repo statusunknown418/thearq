@@ -189,7 +189,7 @@ export const viewerRouter = createTRPCRouter({
         });
       }
 
-      const [summary, workspace] = await ctx.db.transaction(async (trx) => {
+      const [summary, workspace, user] = await ctx.db.transaction(async (trx) => {
         const workspace = await trx.query.workspaces.findFirst({
           where: (t, op) => op.and(op.eq(t.id, input.workspaceId)),
         });
@@ -222,48 +222,42 @@ export const viewerRouter = createTRPCRouter({
                 },
               },
             },
-            workspace: {
-              with: {
-                users: {
-                  columns: {
-                    defaultBillableRate: true,
-                    defaultWeekCapacity: true,
-                    active: true,
-                    userId: true,
-                  },
-                  where: (t, op) => op.eq(t.userId, ctx.session.user.id),
-                },
-              },
-            },
           },
         });
 
-        return [data, workspace];
+        const user = await trx.query.usersOnWorkspaces.findFirst({
+          where: (t, op) => {
+            return op.and(
+              op.eq(t.userId, ctx.session.user.id),
+              op.eq(t.workspaceId, input.workspaceId),
+            );
+          },
+        });
+
+        return [data, workspace, user];
       });
 
-      const totalHours = summary.reduce(
-        (acc, curr) => acc + secondsToHoursDecimal(curr.duration),
-        0,
-      );
-      const user = summary.at(0)?.workspace.users.find((u) => u.userId === ctx.session.user.id);
+      const totalHours = summary.reduce((acc, curr) => acc + curr.duration, 0);
+
+      if (!user) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No user found",
+        });
+      }
 
       // Compute total earnings for user based on its billable rate
       const totalEarnings = summary.reduce((acc, curr) => {
         const project = curr.project;
         const userProject = project?.users.find((u) => u.userId === ctx.session.user.id);
-
-        if (!user) {
-          return acc;
-        }
-
-        if (!project || !userProject) {
-          return acc + secondsToHoursDecimal(curr.duration) * user.defaultBillableRate;
-        }
-
-        const billableRate = userProject.billableRate;
         const duration = secondsToHoursDecimal(curr.duration);
 
-        return acc + duration * billableRate;
+        if (project && userProject && userProject.billableRate > 0) {
+          const billableRate = userProject.billableRate;
+          return acc + duration * billableRate;
+        }
+
+        return acc + duration * user.defaultBillableRate;
       }, 0);
 
       const projectsByHoursCompound = summary.reduce(
@@ -336,13 +330,17 @@ export const viewerRouter = createTRPCRouter({
 
       const payDate = workspace?.globalPaymentSchedule;
 
+      const regularEarnings = (user?.defaultWeekCapacity ?? 0) * (user?.defaultBillableRate ?? 1);
+
       return {
-        totalHours,
+        totalHours: secondsToHoursDecimal(totalHours),
+        summary,
         totalEarnings,
         projectsByHours,
         overtime,
         capacity: user?.defaultWeekCapacity,
         payDate,
+        regularEarnings,
       };
     }),
 

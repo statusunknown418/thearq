@@ -78,7 +78,7 @@ export const SettingsNav = ({ role }: { role: Roles }) => {
                 "border-border bg-popover text-foreground",
             )}
           >
-            <Link href={routes.account({ slug: workspace?.slug ?? "" })}>Personal</Link>
+            <Link href={routes.account({ slug: workspace?.slug ?? "" })}>Preferences</Link>
           </Button>
 
           <Button

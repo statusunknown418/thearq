@@ -1,6 +1,6 @@
 "use client";
 
-import { dateToMonthDate, secondsToHoursDecimal } from "~/lib/stores/events-store";
+import { dateToMonthDate, secondsToHoursDecimal } from "~/lib/dates";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 
