@@ -17,8 +17,8 @@ import {
   type Output,
 } from "valibot";
 import { type Integration } from "~/lib/constants";
+import { dateToMonthDate } from "~/lib/dates";
 import { memberPermissions } from "~/lib/stores/auth-store";
-import { dateToMonthDate } from "~/lib/stores/events-store";
 
 export const users = sqliteTable("user", {
   id: text("id").notNull().primaryKey(),

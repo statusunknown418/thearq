@@ -4,10 +4,10 @@ import { and } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { number, object, string } from "zod";
 import { LIVE_ENTRY_DURATION, RECENT_W_ID_KEY } from "~/lib/constants";
-import { computeDuration, secondsToHoursDecimal } from "~/lib/stores/events-store";
 import { type TimeEntry } from "~/server/db/edge-schema";
 import { type RouterOutputs } from "~/trpc/shared";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { computeDuration, secondsToHoursDecimal } from "~/lib/dates";
 
 export type CustomEvent = RouterOutputs["entries"]["getByMonth"][number] & {
   temp?: boolean;

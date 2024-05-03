@@ -5,10 +5,10 @@ import { addDays, differenceInDays, format } from "date-fns";
 import { cookies } from "next/headers";
 import { object, z } from "zod";
 import { INTEGRATIONS, RECENT_W_ID_KEY } from "~/lib/constants";
-import { secondsToHoursDecimal } from "~/lib/stores/events-store";
 import { redis } from "~/server/upstash";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { type IntegrationCachingKey } from "./integrations";
+import { secondsToHoursDecimal } from "~/lib/dates";
 
 export const viewerRouter = createTRPCRouter({
   getIntegrations: protectedProcedure.query(({ ctx }) => {
@@ -175,7 +175,8 @@ export const viewerRouter = createTRPCRouter({
     .input(
       object({
         workspaceId: z.number(),
-        monthDate: z.string(),
+        from: z.string().optional(),
+        to: z.string().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -197,8 +198,9 @@ export const viewerRouter = createTRPCRouter({
           where: (t, op) => {
             return op.and(
               op.eq(t.workspaceId, input.workspaceId),
-              op.eq(t.monthDate, input.monthDate),
               op.eq(t.userId, ctx.session.user.id),
+              input.from ? op.gte(t.trackedAt, new Date(input.from)) : undefined,
+              input.to ? op.lte(t.trackedAt, new Date(input.to)) : undefined,
             );
           },
           with: {

@@ -3,9 +3,9 @@ import { and, eq, isNull } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { date, minValue, number, object, omit, parse } from "valibot";
 import { RECENT_W_ID_KEY, type Integration } from "~/lib/constants";
-import { dateToMonthDate } from "~/lib/stores/events-store";
 import { timeEntries, timeEntrySchema, timeEntrySelect } from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { dateToMonthDate } from "~/lib/dates";
 
 export const autoTrackerSchema = omit(timeEntrySchema, ["duration", "end", "workspaceId"]);
 export const manualTrackerSchema = omit(timeEntrySchema, ["workspaceId"]);
