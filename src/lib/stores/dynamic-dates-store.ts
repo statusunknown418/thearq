@@ -1,7 +1,7 @@
 import { addDays, format, getDaysInMonth } from "date-fns";
 import { createParser, useQueryState } from "nuqs";
 import { create } from "zustand";
-import { dateToMonthDate } from "./events-store";
+import { dateToMonthDate } from "../dates";
 
 export type DynamicDatesStore = {
   selectedDate: Date | null;
