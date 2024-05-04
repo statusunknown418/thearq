@@ -9,7 +9,6 @@ export const AnalyticsSummaryWrapperRSC = async () => {
   const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
 
   const requestTZ = headers().get("x-vercel-ip-timezone");
-  console.log("requestTZ", requestTZ);
 
   const data = await api.viewer.getAnalyticsMetrics.query({
     workspaceId: Number(workspaceId),
@@ -17,5 +16,7 @@ export const AnalyticsSummaryWrapperRSC = async () => {
     to,
   });
 
-  return <AnalyticsSummary initialData={data} workspaceId={Number(workspaceId)} />;
+  return (
+    <AnalyticsSummary initialData={data} workspaceId={Number(workspaceId)} location={requestTZ} />
+  );
 };
