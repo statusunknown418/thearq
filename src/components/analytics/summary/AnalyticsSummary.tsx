@@ -23,14 +23,11 @@ export const AnalyticsSummaryLoading = () => {
 export const AnalyticsSummary = ({
   initialData,
   workspaceId,
-  location,
 }: {
   initialData: RouterOutputs["viewer"]["getAnalyticsMetrics"];
   workspaceId: number;
-  location: string;
 }) => {
   const [state] = useAnalyticsQS();
-  console.log({ location });
 
   const { data, isRefetching, isLoading } = api.viewer.getAnalyticsMetrics.useQuery(
     {

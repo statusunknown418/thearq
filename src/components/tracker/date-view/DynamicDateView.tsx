@@ -1,7 +1,8 @@
 "use client";
+
 import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons";
 import { addHours, getDay, getMonth, parse, startOfDay, startOfWeek } from "date-fns";
-import { format } from "date-fns-tz";
+import { format, fromZonedTime } from "date-fns-tz";
 import { enUS } from "date-fns/locale";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Calendar, dateFnsLocalizer, type SlotInfo } from "react-big-calendar";
@@ -32,6 +33,7 @@ import { api } from "~/trpc/react";
 import { RealtimeCounter } from "./RealtimeCounter";
 import { NOW, computeDuration, convertTime, dateToMonthDate } from "~/lib/dates";
 import { Skeleton } from "~/components/ui/skeleton";
+import { type RouterOutputs } from "~/trpc/shared";
 
 const locales = {
   en: enUS,
@@ -50,10 +52,15 @@ const DnDCalendar = withDragAndDrop<CustomEvent>(Calendar);
 export const DynamicDateView = ({
   workspaceId,
   monthDate,
+  initialData,
+  location,
 }: {
   workspaceId: number;
   monthDate: string;
+  initialData: RouterOutputs["entries"]["getByMonth"];
+  location: string;
 }) => {
+  console.log({ location });
   const auth = useAuthStore((s) => s.user);
   const [date, update] = useQueryDateState();
 
@@ -88,6 +95,7 @@ export const DynamicDateView = ({
     {
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
+      initialData,
     },
   );
 
@@ -180,8 +188,8 @@ export const DynamicDateView = ({
     /** Mutation */
     mutate({
       id: prevEvent.id,
-      start: new Date(data.start),
-      end: new Date(data.end),
+      start: fromZonedTime(data.start, location),
+      end: fromZonedTime(data.end, location),
       duration,
     });
   };
@@ -193,8 +201,8 @@ export const DynamicDateView = ({
     /** Mutation */
     mutate({
       id: prevEvent.id,
-      start: new Date(data.start),
-      end: new Date(data.end),
+      start: fromZonedTime(data.start, location),
+      end: fromZonedTime(data.end, location),
       duration,
     });
   };
@@ -234,12 +242,12 @@ export const DynamicDateView = ({
   }, [date, setMonth]);
 
   const percentageChange = useMemo(() => {
-    const today = new Date(date ?? NOW);
-    const start = startOfDay(today);
-    const endOfToday = addHours(start, 24);
+    const today = fromZonedTime(new Date(date ?? NOW), location);
+    const start = fromZonedTime(startOfDay(today), location);
+    const endOfToday = fromZonedTime(addHours(start, 24), location);
 
-    const yesterday = addHours(start, -24);
-    const end = startOfDay(yesterday);
+    const yesterday = fromZonedTime(addHours(start, -24), location);
+    const end = fromZonedTime(startOfDay(yesterday), location);
 
     const totalForToday = events
       ?.filter((e) => e.start >= start && e.start < endOfToday)
@@ -253,8 +261,8 @@ export const DynamicDateView = ({
 
     if (!totalForYesterday) return 100;
 
-    return (((totalForToday ?? 0) - totalForYesterday) / totalForYesterday) * 100;
-  }, [events, date]);
+    return ((totalForToday - totalForYesterday) / totalForYesterday) * 100;
+  }, [date, location, events]);
 
   if (!events) {
     return (

@@ -13,16 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { useAnalyticsQS } from "~/lib/stores/analytics-store";
 import { NOW } from "~/lib/dates";
 
-export function DatePickerWithRange({
-  className,
-  location,
-}: {
-  className?: string;
-  location: string;
-}) {
+export function DatePickerWithRange({ className }: { className?: string; location: string }) {
   const [open, change] = React.useState(false);
   const [state, updateState] = useAnalyticsQS();
-  console.log(state, location);
 
   const [date, setDate] = React.useState<DateRange | undefined>({
     from: toDate(state.from),
