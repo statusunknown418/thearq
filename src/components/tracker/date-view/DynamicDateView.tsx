@@ -33,7 +33,6 @@ import { api } from "~/trpc/react";
 import { RealtimeCounter } from "./RealtimeCounter";
 import { NOW, computeDuration, convertTime, dateToMonthDate } from "~/lib/dates";
 import { Skeleton } from "~/components/ui/skeleton";
-import { type RouterOutputs } from "~/trpc/shared";
 
 const locales = {
   en: enUS,
@@ -44,12 +43,10 @@ const DnDCalendar = withDragAndDrop<CustomEvent>(Calendar);
 export const DynamicDateView = ({
   workspaceId,
   monthDate,
-  initialData,
   location,
 }: {
   workspaceId: number;
   monthDate: string;
-  initialData: RouterOutputs["entries"]["getByMonth"];
   location: string;
 }) => {
   const localizer = dateFnsLocalizer({
@@ -94,7 +91,6 @@ export const DynamicDateView = ({
     {
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
-      initialData,
     },
   );
 
@@ -260,7 +256,7 @@ export const DynamicDateView = ({
 
     if (!totalForYesterday) return 100;
 
-    return ((totalForToday - totalForYesterday) / totalForYesterday) * 100;
+    return (((totalForToday ?? 0) - totalForYesterday) / totalForYesterday) * 100;
   }, [date, location, events]);
 
   if (!events) {
