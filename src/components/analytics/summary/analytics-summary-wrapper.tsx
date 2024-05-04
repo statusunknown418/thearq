@@ -17,6 +17,10 @@ export const AnalyticsSummaryWrapperRSC = async () => {
   });
 
   return (
-    <AnalyticsSummary initialData={data} workspaceId={Number(workspaceId)} location={requestTZ} />
+    <AnalyticsSummary
+      initialData={data}
+      workspaceId={Number(workspaceId)}
+      location={requestTZ ?? ""}
+    />
   );
 };
