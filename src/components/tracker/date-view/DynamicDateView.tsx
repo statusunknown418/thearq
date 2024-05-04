@@ -39,14 +39,6 @@ const locales = {
   en: enUS,
 };
 
-const localizer = dateFnsLocalizer({
-  format,
-  parse,
-  startOfWeek,
-  getDay,
-  locales,
-});
-
 const DnDCalendar = withDragAndDrop<CustomEvent>(Calendar);
 
 export const DynamicDateView = ({
@@ -60,7 +52,14 @@ export const DynamicDateView = ({
   initialData: RouterOutputs["entries"]["getByMonth"];
   location: string;
 }) => {
-  console.log({ location });
+  const localizer = dateFnsLocalizer({
+    format,
+    parse,
+    startOfWeek,
+    getDay,
+    locales,
+  });
+
   const auth = useAuthStore((s) => s.user);
   const [date, update] = useQueryDateState();
 

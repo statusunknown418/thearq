@@ -33,7 +33,7 @@ export default function AnalyticsPage({
           <p className="text-muted-foreground">Get insights on your personal activity</p>
         </div>
 
-        <DatePickerWithRange location={location ?? "NO LOCATION PROVIDED"} />
+        <DatePickerWithRange location={location ?? "America/Lima"} />
       </PageHeader>
 
       <Suspense fallback={<AnalyticsSummaryLoading />}>

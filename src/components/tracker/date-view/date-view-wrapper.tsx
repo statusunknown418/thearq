@@ -20,7 +20,7 @@ export const DateViewWrapperRSC = async () => {
       workspaceId={workspaceId}
       monthDate={monthDate}
       initialData={data}
-      location={location ?? "NO_LOCATION_ERROR"}
+      location={location ?? "America/Lima"}
     />
   );
 };

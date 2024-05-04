@@ -9,6 +9,7 @@ import {
   LiveEntryWrapperRSC,
 } from "~/components/tracker/live-entry/live-entry-wrapper";
 import { Loader } from "~/components/ui/loader";
+import { Skeleton } from "~/components/ui/skeleton";
 
 export const metadata: Metadata = {
   title: "Tracker",
@@ -44,7 +45,15 @@ export default function WorkspaceTrackerPage() {
       </PageHeader>
 
       <div className="flex w-full gap-2">
-        <Suspense fallback={<Loader />}>
+        <Suspense
+          fallback={
+            <div className="h-h-[calc(100vh-150px)] flex min-w-[340px] flex-col  gap-4">
+              <Skeleton className="h-10 w-full" />
+
+              <Skeleton className="h-full w-full flex-grow" />
+            </div>
+          }
+        >
           <LazyDynamicDateViewWrapperRSC />
         </Suspense>
 
