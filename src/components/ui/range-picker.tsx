@@ -123,6 +123,7 @@ export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivE
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
             initialFocus
+            showOutsideDays={false}
             mode="range"
             defaultMonth={date?.from}
             selected={date}
