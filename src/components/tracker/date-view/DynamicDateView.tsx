@@ -1,7 +1,7 @@
 "use client";
 import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons";
-import { addHours, format, getDay, getMonth, parse, startOfDay, startOfWeek } from "date-fns";
-import { fromZonedTime } from "date-fns-tz";
+import { addHours, getDay, getMonth, parse, startOfDay, startOfWeek } from "date-fns";
+import { format } from "date-fns-tz";
 import { enUS } from "date-fns/locale";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Calendar, dateFnsLocalizer, type SlotInfo } from "react-big-calendar";
@@ -29,11 +29,9 @@ import { useHotkeys } from "~/lib/use-hotkeys";
 import { cn } from "~/lib/utils";
 import { type CustomEvent } from "~/server/api/routers/entries";
 import { api } from "~/trpc/react";
-import { type RouterOutputs } from "~/trpc/shared";
 import { RealtimeCounter } from "./RealtimeCounter";
 import { NOW, computeDuration, convertTime, dateToMonthDate } from "~/lib/dates";
-
-const monthDate = dateToMonthDate(NOW);
+import { Skeleton } from "~/components/ui/skeleton";
 
 const locales = {
   en: enUS,
@@ -46,14 +44,15 @@ const localizer = dateFnsLocalizer({
   getDay,
   locales,
 });
+
 const DnDCalendar = withDragAndDrop<CustomEvent>(Calendar);
 
 export const DynamicDateView = ({
-  initialData,
   workspaceId,
+  monthDate,
 }: {
-  initialData: RouterOutputs["entries"]["getByMonth"];
   workspaceId: number;
+  monthDate: string;
 }) => {
   const auth = useAuthStore((s) => s.user);
   const [date, update] = useQueryDateState();
@@ -87,7 +86,6 @@ export const DynamicDateView = ({
   const { data: events } = api.entries.getByMonth.useQuery(
     { workspaceId, monthDate: dateToMonthDate(month) },
     {
-      initialData,
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
     },
@@ -177,11 +175,13 @@ export const DynamicDateView = ({
     const prevEvent = data.event;
     const duration = computeDuration({ start: data.start, end: data.end });
 
+    if (!data.start || !data.end) return;
+
     /** Mutation */
     mutate({
       id: prevEvent.id,
-      start: fromZonedTime(data.start, "America/Lima"),
-      end: fromZonedTime(data.end, "America/Lima"),
+      start: new Date(data.start),
+      end: new Date(data.end),
       duration,
     });
   };
@@ -234,27 +234,31 @@ export const DynamicDateView = ({
   }, [date, setMonth]);
 
   const percentageChange = useMemo(() => {
-    const today = fromZonedTime(new Date(date ?? NOW), "America/Lima");
-    const start = fromZonedTime(startOfDay(today), "America/Lima");
-    const endOfToday = fromZonedTime(addHours(start, 24), "America/Lima");
+    const today = new Date(date ?? NOW);
+    const start = startOfDay(today);
+    const endOfToday = addHours(start, 24);
 
-    const yesterday = fromZonedTime(addHours(start, -24), "America/Lima");
-    const end = fromZonedTime(startOfDay(yesterday), "America/Lima");
+    const yesterday = addHours(start, -24);
+    const end = startOfDay(yesterday);
 
     const totalForToday = events
-      .filter((e) => e.start >= start && e.start < endOfToday)
+      ?.filter((e) => e.start >= start && e.start < endOfToday)
       .reduce((acc, curr) => acc + computeDuration({ start: curr.start, end: curr.end }), 0);
 
     const totalForYesterday = events
-      .filter((e) => e.start >= end && e.start < start)
+      ?.filter((e) => e.start >= end && e.start < start)
       .reduce((acc, curr) => acc + computeDuration({ start: curr.start, end: curr.end }), 0);
 
     if (!totalForToday && !totalForYesterday) return null;
 
     if (!totalForYesterday) return 100;
 
-    return ((totalForToday - totalForYesterday) / totalForYesterday) * 100;
+    return (((totalForToday ?? 0) - totalForYesterday) / totalForYesterday) * 100;
   }, [events, date]);
+
+  if (!events) {
+    return <Skeleton className="h-full min-w-[340px]" />;
+  }
 
   return (
     <section className="rounded-xl">
@@ -401,6 +405,11 @@ export const DynamicDateView = ({
                   )}
                 </section>
               );
+            },
+          }}
+          formats={{
+            eventTimeRangeFormat: () => {
+              return "";
             },
           }}
           scrollToTime={NOW}

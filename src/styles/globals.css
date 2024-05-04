@@ -169,7 +169,7 @@
 }
 
 .rbc-event-label {
-  @apply !hidden;
+  @apply !sr-only !hidden;
 }
 
 .rbc-current-time-indicator {

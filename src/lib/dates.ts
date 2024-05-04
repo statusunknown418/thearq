@@ -13,6 +13,8 @@ import { type GlobalPaymentSchedule } from "~/server/db/edge-schema";
 
 export const NOW = new Date();
 
+console.log({ NOW });
+
 /**
  * @description Simple function to calculate the duration of an event
  * @param start Range start

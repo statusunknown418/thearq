@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { RECENT_W_ID_KEY } from "~/lib/constants";
 import { api } from "~/trpc/server";
 import { AnalyticsSummary } from "./AnalyticsSummary";
@@ -8,7 +8,8 @@ export const AnalyticsSummaryWrapperRSC = async () => {
   const { from, to } = analyticsParamsCache.all();
   const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
 
-  console.log({ from, to });
+  const requestTZ = headers().get("x-vercel-ip-timezone");
+  console.log("requestTZ", requestTZ);
 
   const data = await api.viewer.getAnalyticsMetrics.query({
     workspaceId: Number(workspaceId),
