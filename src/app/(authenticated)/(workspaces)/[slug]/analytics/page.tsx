@@ -3,10 +3,8 @@ import { Suspense } from "react";
 import { PiChartLineUp } from "react-icons/pi";
 import { DetailedChartsWrapperRSC } from "~/components/analytics/detailed/detailed-charts-wrapper";
 import { AnalyticsSummaryLoading } from "~/components/analytics/summary/AnalyticsSummary";
-import {
-  AnalyticsSummaryWrapperRSC,
-  analyticsParamsCache,
-} from "~/components/analytics/summary/analytics-summary-wrapper";
+import { AnalyticsSummaryWrapperRSC } from "~/components/analytics/summary/analytics-summary-wrapper";
+import { analyticsParamsCache } from "~/components/analytics/summary/params-cache";
 import { Main } from "~/components/layout/Main";
 import { PageHeader } from "~/components/layout/PageHeader";
 import { Button } from "~/components/ui/button";
@@ -18,7 +16,7 @@ export default function AnalyticsPage({
 }: {
   searchParams: { start: string; end: string };
 }) {
-  const { from, to } = analyticsParamsCache.parse(searchParams);
+  analyticsParamsCache.parse(searchParams);
 
   return (
     <Main>
@@ -36,7 +34,7 @@ export default function AnalyticsPage({
       </PageHeader>
 
       <Suspense fallback={<AnalyticsSummaryLoading />}>
-        <AnalyticsSummaryWrapperRSC start={from} end={to} />
+        <AnalyticsSummaryWrapperRSC />
       </Suspense>
 
       <Divider className="my-1 text-xs">Detailed chart</Divider>

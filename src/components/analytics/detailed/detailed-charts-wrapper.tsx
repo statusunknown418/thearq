@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { RECENT_W_ID_KEY } from "~/lib/constants";
 import { api } from "~/trpc/server";
 import { DetailedCharts } from "./DetailedCharts";
-import { analyticsParamsCache } from "../summary/analytics-summary-wrapper";
+import { analyticsParamsCache } from "../summary/params-cache";
 
 export const DetailedChartsWrapperRSC = async () => {
   const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;

@@ -1,7 +1,6 @@
-import { endOfWeek, format, startOfWeek } from "date-fns";
-import { parseAsString, useQueryStates } from "nuqs";
+import { useQueryStates } from "nuqs";
 import { create } from "zustand";
-import { NOW } from "../dates";
+import { analyticsParsers } from "~/components/analytics/summary/params-cache";
 
 export type AnalyticsStore = {
   start: string | undefined;
@@ -16,20 +15,7 @@ export const useAnalyticsStore = create<AnalyticsStore>((set) => ({
 }));
 
 export const useAnalyticsQS = () => {
-  return useQueryStates(
-    {
-      from: parseAsString.withDefault(
-        format(
-          startOfWeek(NOW, {
-            weekStartsOn: 1,
-          }),
-          "yyyy-MM-dd",
-        ),
-      ),
-      to: parseAsString.withDefault(format(endOfWeek(NOW, { weekStartsOn: 1 }), "yyyy-MM-dd")),
-    },
-    {
-      clearOnDefault: true,
-    },
-  );
+  return useQueryStates(analyticsParsers, {
+    clearOnDefault: true,
+  });
 };
