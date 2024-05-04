@@ -1,4 +1,5 @@
 import { Divider } from "@tremor/react";
+import { headers } from "next/headers";
 import { Suspense } from "react";
 import { PiChartLineUp } from "react-icons/pi";
 import { DetailedChartsWrapperRSC } from "~/components/analytics/detailed/detailed-charts-wrapper";
@@ -10,6 +11,7 @@ import { PageHeader } from "~/components/layout/PageHeader";
 import { Button } from "~/components/ui/button";
 import { Loader } from "~/components/ui/loader";
 import { DatePickerWithRange } from "~/components/ui/range-picker";
+import { VERCEL_REQUEST_LOCATION } from "~/lib/constants";
 
 export default function AnalyticsPage({
   searchParams,
@@ -17,6 +19,7 @@ export default function AnalyticsPage({
   searchParams: { start: string; end: string };
 }) {
   analyticsParamsCache.parse(searchParams);
+  const location = headers().get(VERCEL_REQUEST_LOCATION);
 
   return (
     <Main>
@@ -30,7 +33,7 @@ export default function AnalyticsPage({
           <p className="text-muted-foreground">Get insights on your personal activity</p>
         </div>
 
-        <DatePickerWithRange />
+        <DatePickerWithRange location={location ?? "NO LOCATION PROVIDED"} />
       </PageHeader>
 
       <Suspense fallback={<AnalyticsSummaryLoading />}>

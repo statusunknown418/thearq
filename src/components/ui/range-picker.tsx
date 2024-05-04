@@ -2,7 +2,7 @@
 
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { addDays, startOfMonth } from "date-fns";
-import { format } from "date-fns-tz";
+import { format, toDate } from "date-fns-tz";
 import * as React from "react";
 import { type DateRange } from "react-day-picker";
 import { Button } from "~/components/ui/button";
@@ -11,19 +11,23 @@ import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover
 import { cn } from "~/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
 import { useAnalyticsQS } from "~/lib/stores/analytics-store";
+import { NOW } from "~/lib/dates";
 
-export const CLIENT_NOW = new Date();
-
-export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivElement>) {
+export function DatePickerWithRange({
+  className,
+  location,
+}: {
+  className?: string;
+  location: string;
+}) {
   const [open, change] = React.useState(false);
   const [state, updateState] = useAnalyticsQS();
+  console.log(state, location);
 
   const [date, setDate] = React.useState<DateRange | undefined>({
-    from: new Date(state.from),
-    to: new Date(state.to),
+    from: toDate(state.from),
+    to: toDate(state.to),
   });
-
-  console.log(state);
 
   const [quickSelect, setQuickSelect] = React.useState<string | undefined>(undefined);
 
@@ -54,8 +58,8 @@ export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivE
     let end: Date | undefined;
 
     if (v === "month-to-date") {
-      start = startOfMonth(CLIENT_NOW);
-      end = CLIENT_NOW;
+      start = startOfMonth(NOW);
+      end = NOW;
 
       void updateState({
         from: format(start, "yyyy-MM-dd"),
@@ -64,8 +68,8 @@ export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivE
     }
 
     if (v === "last-7-days") {
-      start = addDays(CLIENT_NOW, -7);
-      end = CLIENT_NOW;
+      start = addDays(NOW, -7);
+      end = NOW;
 
       void updateState({
         from: format(start, "yyyy-MM-dd"),
@@ -74,8 +78,8 @@ export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivE
     }
 
     if (v === "last-14-days") {
-      start = addDays(CLIENT_NOW, -14);
-      end = CLIENT_NOW;
+      start = addDays(NOW, -14);
+      end = NOW;
 
       void updateState({
         from: format(start, "yyyy-MM-dd"),
@@ -84,8 +88,8 @@ export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivE
     }
 
     if (v === "last-30-days") {
-      start = addDays(CLIENT_NOW, -30);
-      end = CLIENT_NOW;
+      start = addDays(NOW, -30);
+      end = NOW;
 
       void updateState({
         from: format(start, "yyyy-MM-dd"),

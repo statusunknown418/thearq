@@ -30,3 +30,5 @@ export const USER_WORKSPACE_PERMISSIONS = "user-workspace-permissions";
 export const USER_WORKSPACE_ROLE = "user-workspace-role";
 
 export const LIVE_ENTRY_DURATION = -1;
+
+export const VERCEL_REQUEST_LOCATION = "x-vercel-ip-timezone";
