@@ -13,6 +13,7 @@ import {
   PiGithubLogo,
   PiGithubLogoDuotone,
   PiLink,
+  PiTrashDuotone,
 } from "react-icons/pi";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
@@ -117,6 +118,38 @@ export const FromIntegrationDialog = () => {
   };
 
   const hasIntegrationUrl = form.watch("integrationUrl");
+
+  const addIntegrationLinkToDescriptionIfNotPresent = (
+    {
+      title,
+      identifier,
+    }: {
+      title: string;
+      identifier: string;
+    },
+    provider: Integration,
+  ) => {
+    const description = form.watch("description");
+
+    if (!description || description === "") {
+      form.setValue(
+        "description",
+        `[${provider === "github" ? "Github" : "Linear"}]: ${identifier} - ${title}`,
+      );
+      return;
+    }
+
+    if (
+      description?.includes(
+        `[${provider === "github" ? "Github" : "Linear"}]: ${identifier} - ${title}`,
+      )
+    ) {
+      return;
+    }
+
+    const newDescription = `${description}\n[${provider === "github" ? "Github" : "Linear"}]: ${identifier} - ${title}`;
+    form.setValue("description", newDescription);
+  };
 
   if (data.length === 0) {
     return (
@@ -225,8 +258,13 @@ export const FromIntegrationDialog = () => {
             )}
 
             {(!!hasIntegrationUrl || !!selectedProvider) && (
-              <Button variant="secondary" className="h-full" onClick={handleClearSelection}>
-                Clear
+              <Button
+                variant="secondary"
+                subSize={"iconMd"}
+                size={"icon"}
+                onClick={handleClearSelection}
+              >
+                <PiTrashDuotone size={15} />
               </Button>
             )}
           </section>
@@ -249,7 +287,9 @@ export const FromIntegrationDialog = () => {
                 className="max-w-[20ch] text-xs font-medium"
               >
                 Selected:{" "}
-                <span className="text-indigo-600 dark:text-indigo-500">{hasIntegrationUrl}</span>
+                <span className="text-indigo-600 underline-offset-2 hover:underline dark:text-indigo-400">
+                  {hasIntegrationUrl}
+                </span>
               </Link>
             </div>
           )}
@@ -288,7 +328,13 @@ export const FromIntegrationDialog = () => {
                 githubIssues?.map((issue) => <GithubIssue key={issue.id} issue={issue} />)}
 
               {selectedProvider === "linear" &&
-                linearIssues?.map((issue) => <LinearIssue key={issue.id} issue={issue} />)}
+                linearIssues?.map((issue) => (
+                  <LinearIssue
+                    onSelect={(d) => addIntegrationLinkToDescriptionIfNotPresent(d, "linear")}
+                    key={issue.id}
+                    issue={issue}
+                  />
+                ))}
             </RadioGroup>
           </div>
         </SheetContent>
@@ -339,7 +385,9 @@ export const FromIntegrationDialog = () => {
             <TooltipContent>
               Links to
               <PiArrowRight />
-              <span className="text-indigo-500">{hasIntegrationUrl}</span>
+              <span className="text-indigo-500 hover:underline hover:underline-offset-1 dark:text-indigo-400">
+                {hasIntegrationUrl}
+              </span>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -348,7 +396,13 @@ export const FromIntegrationDialog = () => {
   );
 };
 
-const LinearIssue = ({ issue }: { issue: Issue }) => {
+const LinearIssue = ({
+  issue,
+  onSelect,
+}: {
+  issue: Issue;
+  onSelect: ({ title, identifier }: { title: string; identifier: string }) => void;
+}) => {
   const form = useFormContext<NewTimeEntry>();
   const url = form.watch("integrationUrl");
 
@@ -356,11 +410,15 @@ const LinearIssue = ({ issue }: { issue: Issue }) => {
 
   return (
     <Label
-      onClick={() => closeOuter(false)}
+      onClick={() => {
+        closeOuter(false);
+        onSelect({ title: issue.title, identifier: issue.identifier });
+      }}
       htmlFor={issue.url}
       className={cn(
-        "group flex items-center gap-2 rounded-md border p-2.5 hover:bg-secondary",
-        url === issue.url && "border-indigo-500 bg-indigo-50 hover:bg-indigo-50",
+        "group group flex items-center gap-2 rounded-md border p-2.5 text-muted-foreground hover:bg-secondary",
+        url === issue.url &&
+          "border-indigo-500 bg-indigo-50 text-indigo-600 hover:bg-indigo-50 dark:bg-indigo-950/10 dark:text-indigo-400",
       )}
     >
       <RadioGroupItem id={issue.url} value={issue.url} />
@@ -372,7 +430,7 @@ const LinearIssue = ({ issue }: { issue: Issue }) => {
       <Link
         href={issue.url}
         target="_blank"
-        className="max-w-[30ch] items-center gap-1 overflow-hidden text-ellipsis whitespace-nowrap text-indigo-600 dark:text-indigo-500"
+        className="max-w-[30ch] items-center gap-1 overflow-hidden text-ellipsis whitespace-nowrap group-hover:underline group-hover:underline-offset-1"
       >
         {issue.title}
       </Link>
@@ -396,7 +454,8 @@ const GithubIssue = ({ issue }: { issue: RouterOutputs["viewer"]["getGithubIssue
       htmlFor={issue.url}
       className={cn(
         "group flex items-center gap-2 rounded-md border p-2.5 hover:bg-secondary",
-        url === issue.html_url && "border-indigo-500 bg-indigo-50 hover:bg-indigo-50",
+        url === issue.html_url &&
+          "border-indigo-500 bg-indigo-50 text-indigo-600 hover:bg-indigo-50 dark:bg-indigo-950/10 dark:text-indigo-400",
       )}
     >
       <RadioGroupItem id={issue.url} value={issue.html_url} />
@@ -408,7 +467,7 @@ const GithubIssue = ({ issue }: { issue: RouterOutputs["viewer"]["getGithubIssue
       <Link
         href={issue.url}
         target="_blank"
-        className="max-w-[30ch] items-center gap-1 overflow-hidden text-ellipsis whitespace-nowrap text-indigo-600 dark:text-indigo-500"
+        className="max-w-[30ch] items-center gap-1 overflow-hidden text-ellipsis whitespace-nowrap group-hover:underline group-hover:underline-offset-1"
       >
         {issue.title}
       </Link>
