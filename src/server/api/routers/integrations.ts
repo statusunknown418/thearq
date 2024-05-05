@@ -18,7 +18,6 @@ export const buildConnectionURL = (integration: Integration) => {
   switch (integration) {
     case "linear":
       return `${INTEGRATIONS.linear.requestAuth}?response_type=code&client_id=${env.LINEAR_CLIENT_ID}&redirect_uri=${redirect}&state=${env.INTEGRATIONS_STATE}&scope=read`;
-
     case "github":
       return `${INTEGRATIONS.github.requestAuth}?client_id=${env.GITHUB_CLIENT_ID}`;
     default:
