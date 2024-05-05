@@ -1,7 +1,7 @@
 "use client";
 
 import { CalendarIcon } from "@radix-ui/react-icons";
-import { addDays, startOfMonth } from "date-fns";
+import { addDays, endOfWeek, startOfMonth, startOfWeek } from "date-fns";
 import { format, toDate } from "date-fns-tz";
 import * as React from "react";
 import { type DateRange } from "react-day-picker";
@@ -12,14 +12,16 @@ import { cn } from "~/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
 import { useAnalyticsQS } from "~/lib/stores/analytics-store";
 import { NOW } from "~/lib/dates";
+import { toast } from "sonner";
+import { PiArrowLeft, PiArrowRight } from "react-icons/pi";
 
 export function DatePickerWithRange({ className }: { className?: string; location: string }) {
   const [open, change] = React.useState(false);
   const [state, updateState] = useAnalyticsQS();
 
   const [date, setDate] = React.useState<DateRange | undefined>({
-    from: toDate(state.from),
-    to: toDate(state.to),
+    from: state.from ? toDate(state.from) : undefined,
+    to: state.to ? toDate(state.to) : undefined,
   });
 
   const [quickSelect, setQuickSelect] = React.useState<string | undefined>(undefined);
@@ -35,6 +37,10 @@ export function DatePickerWithRange({ className }: { className?: string; locatio
   const onBlurOrSelect = async () => {
     if (!date?.from && !date?.to) {
       return;
+    }
+
+    if (date.from && !date.to) {
+      return toast.error("Please select a date range");
     }
 
     const start = date.from ? format(date.from, "yyyy-MM-dd") : undefined;
@@ -61,8 +67,8 @@ export function DatePickerWithRange({ className }: { className?: string; locatio
     }
 
     if (v === "last-7-days") {
-      start = addDays(NOW, -7);
-      end = NOW;
+      start = startOfWeek(toDate(NOW));
+      end = endOfWeek(toDate(NOW));
 
       void updateState({
         from: format(start, "yyyy-MM-dd"),
@@ -93,8 +99,59 @@ export function DatePickerWithRange({ className }: { className?: string; locatio
     setDate({ from: start, to: end });
   };
 
+  const toPrevWeek = () => {
+    const start = addDays(toDate(state?.from ?? NOW), -7);
+    const end = addDays(toDate(state?.to ?? NOW), -7);
+
+    setQuickSelect(undefined);
+    void updateState({
+      from: format(start, "yyyy-MM-dd"),
+      to: format(end, "yyyy-MM-dd"),
+    });
+  };
+
+  const toNextWeek = () => {
+    const start = addDays(toDate(state?.from ?? NOW), 7);
+    const end = addDays(toDate(state?.to ?? NOW), 7);
+
+    setQuickSelect(undefined);
+    void updateState({
+      from: format(start, "yyyy-MM-dd"),
+      to: format(end, "yyyy-MM-dd"),
+    });
+  };
+
+  React.useEffect(() => {
+    if (state.from && state.to) {
+      setDate({
+        from: toDate(state.from),
+        to: toDate(state.to),
+      });
+    }
+  }, [state.from, state.to]);
+
   return (
     <div className={cn("ml-auto flex items-center gap-0 self-start", className)}>
+      <Button
+        variant="outline"
+        size={"icon"}
+        className="rounded-r-none dark:bg-dark-tremor-background"
+        subSize={"iconMd"}
+        onClick={toPrevWeek}
+      >
+        <PiArrowLeft size={14} />
+      </Button>
+
+      <Button
+        variant="outline"
+        size={"icon"}
+        subSize={"iconMd"}
+        className="mr-2 rounded-l-none border-l-0 dark:bg-dark-tremor-background"
+        onClick={toNextWeek}
+      >
+        <PiArrowRight size={14} />
+      </Button>
+
       <Popover open={open} onOpenChange={onOpenChange}>
         <PopoverTrigger asChild>
           <Button
@@ -102,7 +159,7 @@ export function DatePickerWithRange({ className }: { className?: string; locatio
             variant={"outline"}
             size={"lg"}
             className={cn(
-              "w-[300px] justify-start rounded-r-none bg-tremor-background  text-left font-normal dark:bg-dark-tremor-background",
+              "w-[300px] justify-start rounded-r-none bg-tremor-background text-left font-normal dark:bg-dark-tremor-background",
               !date && "text-muted-foreground",
             )}
           >
@@ -143,7 +200,7 @@ export function DatePickerWithRange({ className }: { className?: string; locatio
         </SelectTrigger>
 
         <SelectContent>
-          <SelectItem value="last-7-days">Last 7 days</SelectItem>
+          <SelectItem value="last-7-days">This week</SelectItem>
           <SelectItem value="last-14-days">Last 2 weeks</SelectItem>
           <SelectItem value="last-30-days">Last 30 days</SelectItem>
           <SelectItem value="month-to-date">Month to date</SelectItem>

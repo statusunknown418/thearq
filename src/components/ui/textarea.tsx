@@ -25,6 +25,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       <ResizableTextarea
         className={cn(textareaVariants({ variant }), className)}
         ref={ref}
+        minRows={2}
         {...props}
       />
     );
