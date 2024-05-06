@@ -33,13 +33,13 @@ export const ProjectHeaderLoading = () => {
     <PageHeader>
       <Button asChild variant={"secondary"} size={"icon"} subSize={"iconLg"}>
         <Link href={"./"}>
-          <PiArrowLeft size={20} />
+          <PiArrowLeft size={15} />
         </Link>
       </Button>
 
       <div className="flex gap-2">
-        <div className="flex flex-col gap-0.5">
-          <Skeleton className="h-7 w-40" />
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-8 w-40" />
 
           <Skeleton className="h-6 w-80" />
         </div>
