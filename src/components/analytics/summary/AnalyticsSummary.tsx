@@ -12,7 +12,7 @@ import { type RouterOutputs } from "~/trpc/shared";
 
 export const AnalyticsSummaryLoading = () => {
   return (
-    <div className="flex min-h-[212px] w-full gap-4">
+    <div className="flex max-h-52 min-h-52 w-full gap-4">
       <Skeleton className="h-full w-full" />
       <Skeleton className="h-full w-full" />
       <Skeleton className="h-full w-full" />
@@ -54,7 +54,7 @@ export const AnalyticsSummary = ({
     <section className="flex gap-4">
       <Card className="max-w-xs" decoration="left" decorationColor="indigo">
         <h4 className="text-tremor-default text-muted-foreground">Earnings</h4>
-        <p className="text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
+        <p className="mt-1.5 text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
           {parseCurrency(data?.totalEarnings)}
         </p>
 
@@ -108,8 +108,9 @@ export const AnalyticsSummary = ({
 
       <Card className="max-w-xs">
         <h4 className="text-tremor-default text-muted-foreground">Tracked time</h4>
-        <p className="text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-          {data?.totalHours.toFixed(2)}h
+        <p className="mt-1.5 text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
+          {data?.totalHours.toFixed(2)}{" "}
+          <span className="text-base font-normal text-muted-foreground">hours</span>
         </p>
 
         <div className="mt-4 flex flex-col gap-2">

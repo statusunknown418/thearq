@@ -1,9 +1,9 @@
 import { Suspense } from "react";
 import { Main } from "~/components/layout/Main";
 import {
-  ProjectChartsLoading,
-  ProjectChartsWrapperRSC,
-} from "~/components/projects/[projectId]/project-analytics/charts-wrapper";
+  ProjectRevenueChartsLoading,
+  ProjectRevenueChartsWrapperRSC,
+} from "~/components/projects/[projectId]/project-revenue-charts/revenue-charts-wrapper";
 import { projectAnalyticsParamsCache } from "~/components/projects/[projectId]/project-cache";
 import {
   ProjectDetailsLoading,
@@ -15,6 +15,10 @@ import {
 } from "~/components/projects/[projectId]/project-header/project-header-wrapper";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { routes } from "~/lib/navigation";
+import {
+  ProjectHoursChartsLoading,
+  ProjectHoursChartsWrapperRSC,
+} from "~/components/projects/[projectId]/project-hours-charts/hours-charts-wrapper";
 
 export default function ProjectIdPage({
   params,
@@ -35,21 +39,28 @@ export default function ProjectIdPage({
         <ProjectHeaderWrapperRSC id={parsed.id} slug={parsed.slug} />
       </Suspense>
 
-      <Tabs defaultValue="analytics">
-        <TabsList className="max-w-max">
+      <Tabs defaultValue="revenue">
+        <TabsList className="sticky left-0 top-0 max-w-max">
+          <TabsTrigger value="revenue">Revenue</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="details">Details</TabsTrigger>
         </TabsList>
 
+        <TabsContent value="revenue">
+          <Suspense fallback={<ProjectRevenueChartsLoading />}>
+            <ProjectRevenueChartsWrapperRSC projectId={parsed.id} />
+          </Suspense>
+        </TabsContent>
+
         <TabsContent value="analytics">
-          <Suspense fallback={<ProjectChartsLoading />}>
-            <ProjectChartsWrapperRSC projectId={parsed.id} />
+          <Suspense fallback={<ProjectHoursChartsLoading />}>
+            <ProjectHoursChartsWrapperRSC projectId={parsed.id} />
           </Suspense>
         </TabsContent>
 
         <TabsContent value="details">
           <Suspense fallback={<ProjectDetailsLoading />}>
-            <ProjectDetailsWrapperRSC id={parsed.id} />
+            <ProjectDetailsWrapperRSC projectId={parsed.id} />
           </Suspense>
         </TabsContent>
       </Tabs>

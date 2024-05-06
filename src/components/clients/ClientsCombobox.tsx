@@ -20,7 +20,13 @@ import { cn } from "~/lib/utils";
 import { type ProjectSchema } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 
-export const ClientsCombobox = () => {
+export const ClientsCombobox = ({
+  showLabel = true,
+  onSelect,
+}: {
+  showLabel?: boolean;
+  onSelect?: () => void;
+}) => {
   const formContext = useFormContext<ProjectSchema>();
 
   const { data, refetch } = api.clients.getByWorkspace.useQuery(undefined, {});
@@ -51,7 +57,7 @@ export const ClientsCombobox = () => {
             }}
           >
             <div className="flex w-full flex-col gap-2">
-              <FormLabel>Client</FormLabel>
+              {showLabel && <FormLabel>Client</FormLabel>}
 
               <FormControl>
                 <PopoverTrigger asChild>
@@ -92,6 +98,7 @@ export const ClientsCombobox = () => {
                         onSelect={() => {
                           field.onChange(client.id);
                           setCombobox(false);
+                          onSelect?.();
                         }}
                       >
                         <CheckIcon

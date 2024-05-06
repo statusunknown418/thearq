@@ -67,7 +67,7 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
         <TooltipProvider delayDuration={0}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <p className="max-w-[20ch] justify-start overflow-hidden text-ellipsis whitespace-nowrap px-0 text-sm font-medium text-indigo-500">
+              <p className="max-w-[20ch] justify-start overflow-hidden text-ellipsis whitespace-nowrap px-0 text-sm font-medium text-indigo-500 dark:text-indigo-400 dark:text-indigo-400">
                 {row.getValue("name")}
               </p>
             </TooltipTrigger>

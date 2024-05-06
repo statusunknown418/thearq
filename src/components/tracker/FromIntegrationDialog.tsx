@@ -182,7 +182,7 @@ export const FromIntegrationDialog = () => {
                 href={routes.integrations({
                   slug: workspace?.slug ?? "./settings/integrations",
                 })}
-                className="text-indigo-500 transition-all hover:underline"
+                className="text-indigo-500 transition-all hover:underline dark:text-indigo-400"
               >
                 connect or activate one
               </Link>{" "}
@@ -347,7 +347,7 @@ export const FromIntegrationDialog = () => {
           <TooltipProvider delayDuration={0}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button asChild variant={"primary"} size={"sm"} className="w-max">
+                <Button asChild variant={"link"} size={"sm"} className="w-max">
                   <Link href={hasIntegrationUrl} target="_blank">
                     <PiGithubLogoDuotone size={16} />
                     {githubIssues?.find((issue) => issue.html_url === hasIntegrationUrl)?.title}
@@ -358,7 +358,9 @@ export const FromIntegrationDialog = () => {
               <TooltipContent>
                 Links to
                 <PiArrowRight />
-                <span className="text-indigo-500">{hasIntegrationUrl}</span>
+                <span className="text-indigo-500 underline-offset-2 hover:underline dark:text-indigo-400 dark:text-indigo-400">
+                  {hasIntegrationUrl}
+                </span>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -369,14 +371,15 @@ export const FromIntegrationDialog = () => {
         <TooltipProvider delayDuration={0}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                asChild
-                variant={"link"}
-                size={"sm"}
-                className="w-max justify-start border border-indigo-500"
-              >
+              <Button asChild variant={"link"} size={"sm"} className="w-max p-0">
                 <Link href={hasIntegrationUrl} target="_blank">
-                  <Image src={"/linear-black.svg"} width={16} height={16} alt="linear-logo" />
+                  <Image
+                    src={"/linear-icon.svg"}
+                    className="bg-primary dark:bg-transparent"
+                    width={16}
+                    height={16}
+                    alt="linear-logo"
+                  />
                   {linearIssues?.find((issue) => issue.url === hasIntegrationUrl)?.identifier}
                 </Link>
               </Button>
@@ -385,7 +388,7 @@ export const FromIntegrationDialog = () => {
             <TooltipContent>
               Links to
               <PiArrowRight />
-              <span className="text-indigo-500 hover:underline hover:underline-offset-1 dark:text-indigo-400">
+              <span className="text-indigo-500 hover:underline hover:underline-offset-2 dark:text-indigo-400 dark:text-indigo-400">
                 {hasIntegrationUrl}
               </span>
             </TooltipContent>
@@ -430,7 +433,7 @@ const LinearIssue = ({
       <Link
         href={issue.url}
         target="_blank"
-        className="max-w-[30ch] items-center gap-1 overflow-hidden text-ellipsis whitespace-nowrap group-hover:underline group-hover:underline-offset-1"
+        className="max-w-[30ch] items-center gap-1 overflow-hidden text-ellipsis whitespace-nowrap group-hover:underline group-hover:underline-offset-2"
       >
         {issue.title}
       </Link>
@@ -467,7 +470,7 @@ const GithubIssue = ({ issue }: { issue: RouterOutputs["viewer"]["getGithubIssue
       <Link
         href={issue.url}
         target="_blank"
-        className="max-w-[30ch] items-center gap-1 overflow-hidden text-ellipsis whitespace-nowrap group-hover:underline group-hover:underline-offset-1"
+        className="max-w-[30ch] items-center gap-1 overflow-hidden text-ellipsis whitespace-nowrap group-hover:underline group-hover:underline-offset-2"
       >
         {issue.title}
       </Link>

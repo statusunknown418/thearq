@@ -30,6 +30,7 @@ import { Separator } from "~/components/ui/separator";
 import { Textarea } from "~/components/ui/textarea";
 import { Toggle } from "~/components/ui/toggle";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
+import { dateToMonthDate } from "~/lib/dates";
 import { useCommandsStore } from "~/lib/stores/commands-store";
 import { createFakeEvent, useEventsStore } from "~/lib/stores/events-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
@@ -39,7 +40,6 @@ import { timeEntrySchema, type NewTimeEntry } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 import { ProjectsCombobox } from "../projects/ProjectsCombobox";
 import { FromIntegrationDialog } from "./FromIntegrationDialog";
-import { dateToMonthDate } from "~/lib/dates";
 
 const DynamicDateTimeInput = dynamic(
   () => import("~/components/ui/date-time-input").then((mod) => mod.DateTimeInput),
@@ -218,8 +218,8 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
 
   return (
     <Dialog open={open} onOpenChange={onCancelTrack}>
-      <DialogContent className="max-h-full max-w-2xl">
-        <Form {...form}>
+      <Form {...form}>
+        <DialogContent className="max-h-full max-w-2xl">
           <form className="grid grid-cols-1 gap-4" onSubmit={onSubmit}>
             <div className="flex items-center gap-2">
               <Badge className="w-max rounded-sm">{isEditing ? "Edit" : "Add new"}</Badge>
@@ -384,8 +384,8 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
               </TooltipProvider>
             </DialogFooter>
           </form>
-        </Form>
-      </DialogContent>
+        </DialogContent>
+      </Form>
     </Dialog>
   );
 };

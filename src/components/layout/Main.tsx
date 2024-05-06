@@ -9,7 +9,12 @@ import { cn } from "~/lib/utils";
  */
 export const Main = ({ children, className }: { children: ReactNode; className?: string }) => {
   return (
-    <main className={cn("flex h-full min-w-0 flex-col gap-6 px-8 pb-5", className)}>
+    <main
+      className={cn(
+        "flex h-full max-h-full min-w-0 flex-col gap-6 overflow-scroll px-8 pb-6",
+        className,
+      )}
+    >
       {children}
     </main>
   );
