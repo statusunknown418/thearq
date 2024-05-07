@@ -59,6 +59,7 @@ export const projectsRouter = createTRPCRouter({
     }),
   get: protectedProcedure.query(async ({ ctx }) => {
     const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+    const location = headers().get(VERCEL_REQUEST_LOCATION);
 
     if (!wId) {
       throw new TRPCError({
@@ -90,7 +91,16 @@ export const projectsRouter = createTRPCRouter({
       },
     });
 
-    return data;
+    return data.map((d) => {
+      return {
+        ...d,
+        project: {
+          ...d.project,
+          startsAt: d.project.startsAt ? toZonedTime(d.project.startsAt, location ?? "UTC") : null,
+          endsAt: d.project.endsAt ? toZonedTime(d.project.endsAt, location ?? "UTC") : null,
+        },
+      };
+    });
   }),
 
   create: protectedProcedure

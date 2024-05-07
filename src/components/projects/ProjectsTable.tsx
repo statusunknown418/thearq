@@ -8,6 +8,7 @@ import {
   type ColumnDef,
 } from "@tanstack/react-table";
 import { addDays, format, formatDistanceToNow } from "date-fns";
+import { toDate } from "date-fns-tz";
 import Link from "next/link";
 import { PiCalendarX, PiInfo, PiMapTrifold, PiXCircle, PiXSquare } from "react-icons/pi";
 import { Badge } from "~/components/ui/badge";
@@ -149,7 +150,7 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
         )}
       >
         {!!row.getValue("startsAt") ? (
-          format(row.getValue("startsAt"), "PPP")
+          format(toDate(row.getValue("startsAt")), "PPP")
         ) : (
           <span className="flex items-center gap-1">
             <PiCalendarX size={16} />
@@ -168,7 +169,7 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
         <span
           className={cn(
             "flex items-center gap-1 font-medium",
-            (row.original.project.endsAt ?? new Date()) < new Date()
+            (row.original.project.endsAt ?? toDate(new Date())) < toDate(new Date())
               ? "text-orange-500"
               : "text-muted-foreground",
           )}
@@ -180,7 +181,7 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
                   size={16}
                   className={cn(
                     !!row.original.project.endsAt &&
-                      addDays(new Date(), 7) >= row.original.project.endsAt
+                      addDays(toDate(new Date()), 7) >= row.original.project.endsAt
                       ? "text-orange-500"
                       : "text-blue-500",
                   )}

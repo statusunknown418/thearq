@@ -47,7 +47,7 @@ export default function WorkspaceTrackerPage() {
       <div className="flex w-full gap-2">
         <Suspense
           fallback={
-            <div className="h-h-[calc(100vh-150px)] flex min-w-[340px] flex-col  gap-4">
+            <div className="h-h-[calc(100vh-150px)] flex min-w-[340px] flex-col gap-4">
               <Skeleton className="h-10 w-full" />
 
               <Skeleton className="h-full w-full flex-grow" />
