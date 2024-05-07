@@ -432,6 +432,7 @@ export const clients = sqliteTable(
 );
 
 export const clientsSchema = omit(createInsertSchema(clients), ["workspaceId"]);
+export type ClientSchema = Output<typeof clientsSchema>;
 
 export const clientsRelations = relations(clients, ({ one, many }) => ({
   workspace: one(workspaces, {

@@ -11,7 +11,7 @@ export const Main = ({ children, className }: { children: ReactNode; className?:
   return (
     <main
       className={cn(
-        "flex h-full max-h-full min-w-0 flex-col gap-6 overflow-scroll px-8 pb-6",
+        "flex h-full max-h-full min-w-0 flex-col gap-4 overflow-scroll px-8 pb-6",
         className,
       )}
     >

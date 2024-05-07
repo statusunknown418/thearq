@@ -83,6 +83,9 @@ export const projectsRouter = createTRPCRouter({
             endsAt: true,
             shareableUrl: true,
           },
+          with: {
+            client: true,
+          },
         },
       },
     });

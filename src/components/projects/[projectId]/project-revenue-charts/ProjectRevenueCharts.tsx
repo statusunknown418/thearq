@@ -83,7 +83,7 @@ export const ProjectRevenueCharts = () => {
           </h4>
 
           <p className="mt-1.5 text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-            2 weeks <span className="text-base font-normal text-muted-foreground">remaining</span>
+            2 weeks <span className="text-sm font-normal text-muted-foreground">remaining</span>
           </p>
 
           <p className="mt-4 flex items-center justify-between text-tremor-default text-tremor-content dark:text-dark-tremor-content">

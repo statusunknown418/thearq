@@ -1,10 +1,7 @@
 "use client";
 
 import { BarChart, Card, DonutChart, Legend, ProgressBar } from "@tremor/react";
-import { PiEnvelopeDuotone } from "react-icons/pi";
-import { Button } from "~/components/ui/button";
 import { secondsToHoursDecimal } from "~/lib/dates";
-import { parseCurrency } from "~/lib/parsers";
 
 const performers = [
   {
@@ -76,9 +73,10 @@ export const ProjectHoursCharts = () => {
   return (
     <section className="grid grid-cols-1 gap-4">
       <Card className="p-4">
-        <h3 className="text-muted-foreground">Total hours</h3>
+        <h3 className="text-muted-foreground">Hours per week</h3>
         <p className="mt-1 text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-          <span>{secondsToHoursDecimal(2355440).toFixed(2)} hours</span>{" "}
+          <span>{secondsToHoursDecimal(2355440).toFixed(2)}</span>{" "}
+          <span className="text-sm font-normal text-muted-foreground">total hours &middot; </span>
           <span className="text-sm font-normal text-muted-foreground">May 2024</span>
         </p>
 
@@ -99,8 +97,7 @@ export const ProjectHoursCharts = () => {
             Budget hours (remaining)
           </h4>
           <p className="mt-1.5 text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-            {1250 - 654.29}{" "}
-            <span className="text-base font-normal text-muted-foreground">hours</span>
+            {1250 - 654.29} <span className="text-sm font-normal text-muted-foreground">hours</span>
           </p>
           <p className="mt-4 flex items-center justify-between text-tremor-default text-tremor-content dark:text-dark-tremor-content">
             <span>48% of budget</span>
@@ -125,17 +122,16 @@ export const ProjectHoursCharts = () => {
         </Card>
 
         <Card className="max-w-xs p-4 tabular-nums">
-          <h3 className="text-muted-foreground">Non-invoiced amount</h3>
+          <h3 className="text-muted-foreground">Non-billable hours</h3>
           <p className="mt-1.5 text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-            {parseCurrency(2312)}
+            {secondsToHoursDecimal(312000).toFixed(2)}{" "}
+            <span className="text-sm font-normal text-muted-foreground">hours</span>
           </p>
-          <p className="mt-2  break-words text-muted-foreground">
-            This amount is pending to be invoiced
+
+          <p className="mt-4 flex items-center justify-between text-muted-foreground">
+            <span>22% of total</span>
           </p>
-          <Button variant={"secondary"} className="mt-2">
-            <PiEnvelopeDuotone size={15} />
-            Create invoice
-          </Button>
+          <ProgressBar value={22} color="slate" className="mt-2" />
         </Card>
       </article>
     </section>

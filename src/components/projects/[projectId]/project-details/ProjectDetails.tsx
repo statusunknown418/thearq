@@ -1,24 +1,24 @@
 "use client";
 
 import { valibotResolver } from "@hookform/resolvers/valibot";
-import { Textarea } from "~/components/ui/textarea";
+import { DatePicker } from "@tremor/react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ClientsCombobox } from "~/components/clients/ClientsCombobox";
 import {
-  FormField,
-  FormItem,
   Form,
-  FormLabel,
   FormControl,
   FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
 } from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
+import { Textarea } from "~/components/ui/textarea";
 import { useSafeParams } from "~/lib/navigation";
-import { type ProjectSchema, projectsSchema } from "~/server/db/edge-schema";
+import { projectsSchema, type ProjectSchema } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
-import { Card } from "@tremor/react";
-import { Input } from "~/components/ui/input";
 
 export const ProjectDetails = ({
   initialData,
@@ -50,110 +50,116 @@ export const ProjectDetails = ({
     },
   );
 
-  const projectForm = useForm<ProjectSchema>({
+  const form = useForm<ProjectSchema>({
     resolver: valibotResolver(projectsSchema),
     defaultValues: {
       id: data?.project.id,
       description: data?.project.description,
       clientId: data?.project.clientId,
       color: data?.project.color,
+      name: data?.project.name,
     },
     mode: "onBlur",
   });
 
-  const onSubmit = projectForm.handleSubmit((values) => {
+  const onSubmit = form.handleSubmit((values) => {
     mutate(values);
   });
 
   return (
-    <section className="grid grid-cols-2 gap-4">
-      <Form {...projectForm}>
-        <form className="flex w-full flex-col gap-6" onSubmit={onSubmit}>
-          <div className="flex w-full flex-col justify-between gap-4 rounded-lg border bg-secondary-background p-4">
-            <FormField
-              control={projectForm.control}
-              name="clientId"
-              render={() => (
-                <FormItem className="grid w-full grid-cols-5 gap-2">
-                  <FormLabel>Client</FormLabel>
+    <Form {...form}>
+      <form
+        className="flex h-max w-full flex-col gap-4 rounded-lg border bg-secondary-background p-4"
+        onSubmit={onSubmit}
+      >
+        <FormField
+          name="clientId"
+          control={form.control}
+          render={() => (
+            <FormItem className="grid w-full grid-cols-5 gap-2">
+              <FormLabel>Client</FormLabel>
 
-                  <div className="col-span-4 flex flex-col gap-2">
-                    <ClientsCombobox showLabel={false} onSelect={onSubmit} />
-                  </div>
-                </FormItem>
-              )}
-            />
+              <div className="col-span-4 flex flex-col gap-2">
+                <ClientsCombobox showLabel={false} onSelect={onSubmit} />
+              </div>
+            </FormItem>
+          )}
+        />
 
-            <FormField
-              control={projectForm.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem className="grid w-full grid-cols-5 gap-2">
-                  <FormLabel>Description</FormLabel>
+        <FormField
+          name="description"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem className="grid w-full grid-cols-5 gap-2">
+              <FormLabel>Description</FormLabel>
 
-                  <div className="col-span-4 flex flex-col gap-2">
-                    <FormControl>
-                      <Textarea
-                        {...field}
-                        value={field.value ?? ""}
-                        onBlur={onSubmit}
-                        placeholder={"Add a description"}
-                      />
-                    </FormControl>
+              <div className="col-span-4 flex flex-col gap-2">
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    value={field.value ?? ""}
+                    onBlur={onSubmit}
+                    placeholder={"Add a description"}
+                  />
+                </FormControl>
 
-                    <FormDescription>Internal notes, not shared with the client</FormDescription>
-                  </div>
-                </FormItem>
-              )}
-            />
-          </div>
-        </form>
-      </Form>
+                <FormDescription>Internal notes, not shared with the client</FormDescription>
+              </div>
+            </FormItem>
+          )}
+        />
 
-      {/* <Form {...projectForm}>
-        <form className="flex w-full flex-col gap-6" onSubmit={onSubmit}>
-          <div className="flex w-full flex-col justify-between gap-4 rounded-lg border bg-secondary-background p-4">
-            <h3 className="mb-2 text-xs font-medium text-muted-foreground">Client details</h3>
+        <FormField
+          name="budgetHours"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem className="grid w-full grid-cols-5 gap-2">
+              <FormLabel>Budget hours</FormLabel>
 
-            <FormField
-              control={clientForm.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem className="grid w-full grid-cols-5 gap-2">
-                  <FormLabel>Name</FormLabel>
+              <div className="col-span-4 flex flex-col gap-2">
+                <FormControl>
+                  <Input
+                    {...field}
+                    value={field.value ?? ""}
+                    onBlur={onSubmit}
+                    placeholder={"200 hours"}
+                  />
+                </FormControl>
 
-                  <FormControl>
-                    <Input {...field} onBlur={onSubmit} className="min-w-full" />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+                <FormDescription>
+                  Amount of hours expected to complete the project (optional)
+                </FormDescription>
+              </div>
+            </FormItem>
+          )}
+        />
 
-            <FormField
-              control={clientForm.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem className="grid w-full grid-cols-5 gap-2">
-                  <FormLabel>Description</FormLabel>
+        <div className="grid grid-cols-5 items-center justify-between gap-4">
+          <FormField
+            name="startsAt"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem className="col-span-3 grid grid-cols-6 flex-row items-center">
+                <FormLabel className="col-span-2">Timeline</FormLabel>
 
-                  <div className="col-span-4 flex flex-col gap-2">
-                    <FormControl>
-                      <Textarea
-                        {...field}
-                        value={field.value ?? ""}
-                        onBlur={onSubmit}
-                        placeholder={"Add a description"}
-                      />
-                    </FormControl>
+                <div className="col-span-4 w-full">
+                  <DatePicker />
+                </div>
+              </FormItem>
+            )}
+          />
 
-                    <FormDescription>Internal notes, not shared with the client</FormDescription>
-                  </div>
-                </FormItem>
-              )}
-            />
-          </div>
-        </form>
-      </Form> */}
-    </section>
+          <FormField
+            name="endsAt"
+            control={form.control}
+            render={({ field }) => (
+              <div className="col-span-2 w-full">
+                <DatePicker />
+              </div>
+            )}
+          />
+        </div>
+      </form>
+    </Form>
   );
 };

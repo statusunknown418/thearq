@@ -67,12 +67,36 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
         <TooltipProvider delayDuration={0}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <p className="max-w-[20ch] justify-start overflow-hidden text-ellipsis whitespace-nowrap px-0 text-sm font-medium text-indigo-500 dark:text-indigo-400 dark:text-indigo-400">
+              <p className="max-w-[20ch] justify-start overflow-hidden text-ellipsis whitespace-nowrap px-0 text-sm font-medium text-indigo-500 dark:text-indigo-400">
                 {row.getValue("name")}
               </p>
             </TooltipTrigger>
 
             <TooltipContent align="start">{row.getValue("name")}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    },
+  },
+  {
+    id: "client",
+    header: "client",
+    maxSize: 200,
+    accessorFn: (row) => row.project.client?.name,
+    cell: ({ row }) => {
+      return (
+        <TooltipProvider delayDuration={0}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <p className="min-w-max max-w-[20ch] justify-start overflow-hidden text-ellipsis whitespace-nowrap px-0 text-sm font-medium text-emerald-500 dark:text-emerald-400">
+                {row.original.project.client?.name ?? "No client"}
+              </p>
+            </TooltipTrigger>
+
+            <TooltipContent align="start">
+              {row.original.project.client?.name ?? "No client"} -{" "}
+              {row.original.project.client?.email ?? "No client email"}
+            </TooltipContent>
           </Tooltip>
         </TooltipProvider>
       );
