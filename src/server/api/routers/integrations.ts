@@ -234,6 +234,7 @@ export const integrationsRouter = createTRPCRouter({
 
         return { success: true };
       } catch (error) {
+        console.log({ error });
         if (error instanceof TRPCError) {
           throw error;
         }
