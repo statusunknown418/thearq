@@ -1,5 +1,4 @@
 import { LinearClient } from "@linear/sdk";
-import { Octokit } from "@octokit/core";
 import { TRPCError } from "@trpc/server";
 import { addDays, differenceInDays, format } from "date-fns";
 import { cookies } from "next/headers";
@@ -9,6 +8,7 @@ import { redis } from "~/server/upstash";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { type IntegrationCachingKey } from "./integrations";
 import { secondsToHoursDecimal } from "~/lib/dates";
+import { Octokit } from "octokit";
 
 export const viewerRouter = createTRPCRouter({
   getIntegrations: protectedProcedure.query(({ ctx }) => {

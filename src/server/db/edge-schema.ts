@@ -451,9 +451,6 @@ export const usersOnProjects = sqliteTable(
     projectId: int("projectId", { mode: "number" })
       .notNull()
       .references(() => projects.id, { onDelete: "cascade" }),
-    projectShareableUrl: text("projectShareableUrl")
-      .notNull()
-      .references(() => projects.shareableUrl),
     workspaceId: int("workspaceId")
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),

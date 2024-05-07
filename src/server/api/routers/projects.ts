@@ -1,15 +1,17 @@
 import { createId } from "@paralleldrive/cuid2";
 import { TRPCError } from "@trpc/server";
+import { differenceInDays, startOfMonth } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 import { eq } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
 import slugify from "slugify";
 import { number, object, optional, parse, string } from "valibot";
 import { RECENT_W_ID_KEY, VERCEL_REQUEST_LOCATION } from "~/lib/constants";
+import { secondsToHoursDecimal } from "~/lib/dates";
+import { parseCurrency } from "~/lib/parsers";
 import { adminPermissions, parsePermissions, type UserPermissions } from "~/lib/stores/auth-store";
 import { projects, projectsSchema, usersOnProjects } from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { startOfMonth } from "date-fns";
-import { toZonedTime } from "date-fns-tz";
 
 export const hasServer = (perms: UserPermissions, data: string) => {
   const formatted = parsePermissions(data);
@@ -36,16 +38,31 @@ export const projectsRouter = createTRPCRouter({
         });
       }
 
-      const data = await ctx.db.query.usersOnProjects.findFirst({
-        where: (t, { eq, and }) =>
-          and(eq(t.projectShareableUrl, input.shareableUrl), eq(t.userId, ctx.session.user.id)),
-        with: {
-          project: {
-            with: {
-              client: true,
-            },
+      const data = await ctx.db.transaction(async (trx) => {
+        const project = await trx.query.projects.findFirst({
+          where: (t, { eq }) => eq(t.shareableUrl, input.shareableUrl),
+          with: {
+            client: true,
           },
-        },
+        });
+
+        if (!project) {
+          trx.rollback();
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Project not found",
+          });
+        }
+
+        const userOnProject = await trx.query.usersOnProjects.findFirst({
+          where: (t, { and, eq }) =>
+            and(eq(t.projectId, project.id), eq(t.userId, ctx.session.user.id)),
+        });
+
+        return {
+          ...userOnProject,
+          project,
+        };
       });
 
       if (!data || data.role !== "admin") {
@@ -59,7 +76,7 @@ export const projectsRouter = createTRPCRouter({
     }),
   get: protectedProcedure.query(async ({ ctx }) => {
     const wId = cookies().get(RECENT_W_ID_KEY)?.value;
-    const location = headers().get(VERCEL_REQUEST_LOCATION);
+    const location = ctx.headers.get(VERCEL_REQUEST_LOCATION);
 
     if (!wId) {
       throw new TRPCError({
@@ -91,16 +108,14 @@ export const projectsRouter = createTRPCRouter({
       },
     });
 
-    return data.map((d) => {
-      return {
-        ...d,
-        project: {
-          ...d.project,
-          startsAt: d.project.startsAt ? toZonedTime(d.project.startsAt, location ?? "UTC") : null,
-          endsAt: d.project.endsAt ? toZonedTime(d.project.endsAt, location ?? "UTC") : null,
-        },
-      };
-    });
+    return data.map((d) => ({
+      ...d,
+      project: {
+        ...d.project,
+        startsAt: d.project.startsAt ? toZonedTime(d.project.startsAt, location ?? "UTC") : null,
+        endsAt: d.project.endsAt ? toZonedTime(d.project.endsAt, location ?? "UTC") : null,
+      },
+    }));
   }),
 
   create: protectedProcedure
@@ -163,7 +178,6 @@ export const projectsRouter = createTRPCRouter({
           permissions: JSON.stringify(adminPermissions),
           billableRate: selectedWorkspace?.defaultBillableRate,
           weekCapacity: selectedWorkspace?.defaultWeekCapacity,
-          projectShareableUrl: shareableUrl,
         });
 
         return project;
@@ -233,7 +247,85 @@ export const projectsRouter = createTRPCRouter({
       return data;
     }),
 
-  getCharts: protectedProcedure
+  getRevenueCharts: protectedProcedure
+    .input((i) =>
+      parse(
+        object({
+          projectShareableId: string(),
+          start: optional(string()),
+          end: optional(string()),
+        }),
+        i,
+      ),
+    )
+    .query(async ({ ctx, input }) => {
+      const location = headers().get(VERCEL_REQUEST_LOCATION);
+      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+      const defaultRange = {
+        start: toZonedTime(startOfMonth(new Date()), location ?? "UTC"),
+        end: toZonedTime(new Date(), location ?? "UTC"),
+      };
+
+      if (!wId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No workspace selected",
+        });
+      }
+
+      const charts = await ctx.db.transaction(async (trx) => {
+        const project = await trx.query.projects.findFirst({
+          where: (t, { eq }) => eq(t.shareableUrl, input.projectShareableId),
+        });
+
+        if (!project) {
+          trx.rollback();
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Project not found",
+          });
+        }
+
+        const data = await trx.query.usersOnProjects.findMany({
+          where: (t, { eq, and }) => and(eq(t.projectId, project.id)),
+          with: {
+            user: {
+              with: {
+                timeEntries: {
+                  where: (t, { and, eq, gte, lte }) =>
+                    and(
+                      eq(t.workspaceId, Number(wId)),
+                      eq(t.projectId, project.id),
+                      gte(t.trackedAt, input.start ? new Date(input.start) : defaultRange.start),
+                      lte(t.trackedAt, input.end ? new Date(input.end) : defaultRange.end),
+                    ),
+                },
+              },
+            },
+          },
+        });
+
+        return data;
+      });
+
+      const revenue = charts.reduce((acc, curr) => {
+        return (
+          acc +
+          curr.user.timeEntries.reduce(
+            (a, c) => a + secondsToHoursDecimal(c.duration) * curr.billableRate,
+            0,
+          )
+        );
+      }, 0);
+
+      return {
+        revenue: parseCurrency(revenue),
+        charts,
+      };
+    }),
+
+  getAnalyticsCharts: protectedProcedure
     .input((i) =>
       parse(
         object({

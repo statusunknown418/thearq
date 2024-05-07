@@ -1,6 +1,5 @@
 import { LinearClient } from "@linear/sdk";
-import { Octokit } from "@octokit/core";
-import { OAuthApp } from "@octokit/oauth-app";
+import { OAuthApp, Octokit } from "octokit";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { cookies } from "next/headers";
@@ -176,7 +175,7 @@ export const integrationsRouter = createTRPCRouter({
           clientId: env.GITHUB_CLIENT_ID,
           clientSecret: env.GITHUB_CLIENT_SECRET,
           redirectUrl: redirect,
-          defaultScopes: ["issue"],
+          defaultScopes: ["issue", "repository"],
         });
 
         const { authentication } = await app.createToken({
@@ -234,7 +233,6 @@ export const integrationsRouter = createTRPCRouter({
 
         return { success: true };
       } catch (error) {
-        console.log({ error });
         if (error instanceof TRPCError) {
           throw error;
         }
