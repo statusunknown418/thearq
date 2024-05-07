@@ -1,7 +1,6 @@
 "use client";
 
 import { valibotResolver } from "@hookform/resolvers/valibot";
-import { CalendarIcon } from "@radix-ui/react-icons";
 import {
   addDays,
   addMonths,
@@ -16,7 +15,6 @@ import { useForm } from "react-hook-form";
 import { PiCalendarBlankDuotone, PiCalendarPlusDuotone, PiFloppyDisk } from "react-icons/pi";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
-import { Calendar } from "~/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -41,17 +39,17 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { KBD } from "~/components/ui/kbd";
-import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import { Textarea } from "~/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
+import { NOW } from "~/lib/dates";
 import { routes } from "~/lib/navigation";
 import { useCommandsStore } from "~/lib/stores/commands-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 import { useHotkeys } from "~/lib/use-hotkeys";
-import { cn } from "~/lib/utils";
 import { projectsSchema, type ProjectSchema } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 import { ClientsCombobox } from "../clients/ClientsCombobox";
+import { SingleDatePicker } from "../ui/single-date-picker";
 
 export const ProjectCommand = () => {
   const router = useRouter();
@@ -239,26 +237,13 @@ export const ProjectCommand = () => {
                         </DropdownMenuContent>
                       </DropdownMenu>
 
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button variant={field.value ? "primary" : "secondary"}>
-                            <CalendarIcon className={cn("h-4 w-4")} />
-                            {field.value ? format(field.value, "PPP") : "Select a start date"}
-                          </Button>
-                        </PopoverTrigger>
-
-                        <PopoverContent side="bottom" className="flex min-w-max justify-center p-0">
-                          <Calendar
-                            className="w-full"
-                            mode="single"
-                            onSelect={field.onChange}
-                            onDayBlur={field.onBlur}
-                            disabled={{ before: new Date() }}
-                            selected={field.value ?? undefined}
-                            defaultMonth={field.value ?? undefined}
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <SingleDatePicker
+                        date={field.value ?? undefined}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        disabled={{ before: NOW }}
+                        defaultMonth={NOW}
+                      />
                     </div>
 
                     <FormDescription />
@@ -331,29 +316,13 @@ export const ProjectCommand = () => {
                         </DropdownMenuContent>
                       </DropdownMenu>
 
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button variant={field.value ? "primary" : "secondary"}>
-                            <CalendarIcon className={cn("h-4 w-4")} />
-                            {field.value ? format(field.value, "PPP") : "Select an end date"}
-                          </Button>
-                        </PopoverTrigger>
-
-                        <PopoverContent
-                          side="bottom"
-                          className="flex min-w-max items-center justify-center p-0"
-                        >
-                          <Calendar
-                            className="w-full"
-                            mode="single"
-                            onSelect={field.onChange}
-                            onDayBlur={field.onBlur}
-                            selected={field.value ?? undefined}
-                            defaultMonth={field.value ?? undefined}
-                            disabled={{ before: new Date() }}
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <SingleDatePicker
+                        date={field.value ?? undefined}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        disabled={{ before: NOW }}
+                        defaultMonth={NOW}
+                      />
                     </div>
 
                     <FormMessage />

@@ -4,6 +4,9 @@ import { AreaChart, Card, CategoryBar, Legend, ProgressBar } from "@tremor/react
 import { PiEnvelopeDuotone, PiTrendUpBold } from "react-icons/pi";
 import { Button } from "~/components/ui/button";
 import { parseCurrency } from "~/lib/parsers";
+import { api } from "~/trpc/react";
+import { RouterOutputs } from "~/trpc/shared";
+import { useProjectsQS } from "../project-cache";
 
 const chartData = [
   {
@@ -48,7 +51,26 @@ const chartData = [
   },
 ];
 
-export const ProjectRevenueCharts = () => {
+export const ProjectRevenueCharts = ({
+  initialData,
+  projectId,
+}: {
+  initialData: RouterOutputs["projects"]["getRevenueCharts"];
+  projectId: string;
+}) => {
+  const [{ from, to }, update] = useProjectsQS();
+
+  const { data } = api.projects.getRevenueCharts.useQuery(
+    {
+      start: from,
+      end: to,
+      projectShareableId: projectId,
+    },
+    {
+      initialData,
+    },
+  );
+
   return (
     <section className="grid grid-cols-1 gap-4">
       <Card className="p-4">

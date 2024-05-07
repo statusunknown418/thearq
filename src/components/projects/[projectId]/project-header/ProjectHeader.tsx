@@ -14,6 +14,7 @@ import { useSafeParams } from "~/lib/navigation";
 import { projectsSchema, type ProjectSchema } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
+import { ProjectsRangeSelector } from "../ProjectsRangeSelector";
 
 export const ProjectHeader = ({
   initialData,
@@ -114,6 +115,8 @@ export const ProjectHeader = ({
 
           <input type="submit" className="hidden" />
         </form>
+
+        <ProjectsRangeSelector />
       </PageHeader>
     </Form>
   );

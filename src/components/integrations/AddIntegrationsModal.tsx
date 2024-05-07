@@ -26,7 +26,7 @@ export const AddIntegrationsModal = ({ children }: { children: ReactNode }) => {
             </DialogTrigger>
           </TooltipTrigger>
 
-          <TooltipContent>Add more integrations</TooltipContent>
+          <TooltipContent align="start">Add more integrations</TooltipContent>
         </Tooltip>
       </TooltipProvider>
 

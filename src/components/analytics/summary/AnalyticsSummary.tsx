@@ -8,10 +8,11 @@ import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { paymentScheduleToDate } from "~/lib/dates";
 import { parseCurrency } from "~/lib/parsers";
-import { useAnalyticsQS } from "~/lib/stores/analytics-store";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 import { AnalyticsFilters } from "../analytics-filters";
+import { useAnalyticsQS } from "./params-cache";
+import dynamic from "next/dynamic";
 
 export const AnalyticsSummaryLoading = () => {
   return (

@@ -2,9 +2,9 @@
 
 import { BarChart, Card } from "@tremor/react";
 import { Skeleton } from "~/components/ui/skeleton";
-import { useAnalyticsQS } from "~/lib/stores/analytics-store";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
+import { useAnalyticsQS } from "../summary/params-cache";
 
 export const DetailedCharts = ({
   initialData,

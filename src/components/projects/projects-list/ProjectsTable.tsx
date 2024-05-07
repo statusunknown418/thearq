@@ -7,8 +7,8 @@ import {
   useReactTable,
   type ColumnDef,
 } from "@tanstack/react-table";
-import { addDays, format, formatDistanceToNow } from "date-fns";
-import { toDate } from "date-fns-tz";
+import { addDays, formatDistanceToNow } from "date-fns";
+import { format, toDate } from "date-fns-tz";
 import Link from "next/link";
 import { PiCalendarX, PiInfo, PiMapTrifold, PiXCircle, PiXSquare } from "react-icons/pi";
 import { Badge } from "~/components/ui/badge";
@@ -25,6 +25,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
+import { NOW } from "~/lib/dates";
 import { routes } from "~/lib/navigation";
 import { useCommandsStore } from "~/lib/stores/commands-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
@@ -169,7 +170,7 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
         <span
           className={cn(
             "flex items-center gap-1 font-medium",
-            (row.original.project.endsAt ?? toDate(new Date())) < toDate(new Date())
+            (row.original.project.endsAt ?? toDate(NOW)) < toDate(NOW)
               ? "text-orange-500"
               : "text-muted-foreground",
           )}
@@ -215,6 +216,7 @@ export const ProjectsTable = ({
   });
 
   const workspace = useWorkspaceStore((s) => s.active);
+  const shouldSeeDetails = projects.some((p) => p.role === "admin");
 
   const table = useReactTable({
     data: projects,
@@ -275,14 +277,18 @@ export const ProjectsTable = ({
                         textOverflow: "ellipsis",
                       }}
                     >
-                      <Link
-                        href={routes.projectId({
-                          slug: workspace?.slug ?? "",
-                          id: row.original.projectShareableUrl,
-                        })}
-                      >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </Link>
+                      {shouldSeeDetails ? (
+                        <Link
+                          href={routes.projectId({
+                            slug: workspace?.slug ?? "",
+                            id: row.original.project.shareableUrl,
+                          })}
+                        >
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </Link>
+                      ) : (
+                        flexRender(cell.column.columnDef.cell, cell.getContext())
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>

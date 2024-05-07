@@ -1,6 +1,5 @@
 "use client";
 
-import { CalendarIcon } from "@radix-ui/react-icons";
 import { addDays, endOfWeek, startOfMonth, startOfWeek } from "date-fns";
 import { format, toDate } from "date-fns-tz";
 import * as React from "react";
@@ -8,16 +7,20 @@ import { type DateRange } from "react-day-picker";
 import { PiArrowLeft, PiArrowRight } from "react-icons/pi";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
-import { Calendar } from "~/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import { NOW } from "~/lib/dates";
-import { useAnalyticsQS } from "~/lib/stores/analytics-store";
-import { cn } from "~/lib/utils";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { RangePicker } from "~/components/ui/range-picker";
+import { useProjectsQS } from "./project-cache";
 
-export function AnalyticsRangePicker() {
+export function ProjectsRangeSelector() {
   const [open, change] = React.useState(false);
-  const [state, updateState] = useAnalyticsQS();
+  const [state, updateState] = useProjectsQS();
 
   const [date, setDate] = React.useState<DateRange | undefined>({
     from: state.from ? toDate(state.from) : undefined,
@@ -152,47 +155,7 @@ export function AnalyticsRangePicker() {
         <PiArrowRight size={14} />
       </Button>
 
-      <Popover open={open} onOpenChange={onOpenChange}>
-        <PopoverTrigger asChild>
-          <Button
-            id="date"
-            variant={"outline"}
-            size={"lg"}
-            className={cn(
-              "w-[300px] justify-start rounded-r-none bg-tremor-background text-left font-normal dark:bg-dark-tremor-background",
-              !date && "text-muted-foreground",
-            )}
-          >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {date?.from ? (
-              date.to ? (
-                <>
-                  {format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}
-                </>
-              ) : (
-                format(date.from, "LLL dd, y")
-              )
-            ) : (
-              <span>Pick a date</span>
-            )}
-          </Button>
-        </PopoverTrigger>
-
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            initialFocus
-            showOutsideDays={false}
-            mode="range"
-            defaultMonth={date?.from}
-            selected={date}
-            onSelect={(d) => {
-              setDate(d);
-              setQuickSelect(undefined);
-            }}
-            numberOfMonths={2}
-          />
-        </PopoverContent>
-      </Popover>
+      <RangePicker open={open} onOpenChange={onOpenChange} onDateChange={setDate} date={date} />
 
       <Select value={quickSelect} onValueChange={onQuickSelect}>
         <SelectTrigger className="w-40 rounded-l-none border-l-0">

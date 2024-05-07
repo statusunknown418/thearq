@@ -1,4 +1,5 @@
 import { endOfWeek, format, startOfWeek } from "date-fns";
+import { useQueryStates } from "nuqs";
 import { createSearchParamsCache, parseAsString } from "nuqs/server";
 import { NOW } from "~/lib/dates";
 
@@ -8,3 +9,9 @@ export const analyticsParsers = {
 };
 
 export const analyticsParamsCache = createSearchParamsCache(analyticsParsers);
+
+export const useAnalyticsQS = () => {
+  return useQueryStates(analyticsParsers, {
+    clearOnDefault: true,
+  });
+};

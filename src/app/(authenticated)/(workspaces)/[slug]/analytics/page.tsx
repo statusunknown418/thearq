@@ -1,7 +1,7 @@
 import { Divider } from "@tremor/react";
 import { Suspense } from "react";
 import { PiChartLineUp } from "react-icons/pi";
-import { AnalyticsRangePicker } from "~/components/analytics/analytics-range-picker";
+import { AnalyticsRangeSelector } from "~/components/analytics/AnalyticsRangeSelector";
 import { DetailedChartsWrapperRSC } from "~/components/analytics/detailed/detailed-charts-wrapper";
 import { AnalyticsSummaryLoading } from "~/components/analytics/summary/AnalyticsSummary";
 import { AnalyticsSummaryWrapperRSC } from "~/components/analytics/summary/analytics-summary-wrapper";
@@ -30,7 +30,7 @@ export default function AnalyticsPage({
           <p className="text-muted-foreground">Get insights on your personal activity</p>
         </div>
 
-        <AnalyticsRangePicker />
+        <AnalyticsRangeSelector />
       </PageHeader>
 
       <Suspense fallback={<AnalyticsSummaryLoading />}>
