@@ -180,6 +180,7 @@ export const integrationsRouter = createTRPCRouter({
 
         const { authentication } = await app.createToken({
           code: input.code,
+          redirectUrl: redirect,
           state: env.INTEGRATIONS_STATE,
         });
 
@@ -234,6 +235,7 @@ export const integrationsRouter = createTRPCRouter({
 
         return { success: true };
       } catch (error) {
+        console.log(error);
         if (error instanceof TRPCError) {
           throw error;
         }

@@ -36,7 +36,7 @@ export default async function GithubIntegration({
         <p>Invalid request</p>
 
         <p>
-          Missing <KBD>Code</KBD> and <KBD>state</KBD>
+          Missing <KBD>Code</KBD>
         </p>
 
         <Button asChild>
@@ -48,7 +48,6 @@ export default async function GithubIntegration({
 
   const done = await api.integrations.github.mutate({
     code: searchParams.code,
-    state: env.INTEGRATIONS_STATE,
     workspace,
   });
 
