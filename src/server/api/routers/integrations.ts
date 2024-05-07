@@ -174,6 +174,7 @@ export const integrationsRouter = createTRPCRouter({
         const app = new OAuthApp({
           clientId: env.GITHUB_CLIENT_ID,
           clientSecret: env.GITHUB_CLIENT_SECRET,
+          clientType: "oauth-app",
           defaultScopes: ["issue", "repository"],
         });
 
