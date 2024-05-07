@@ -54,6 +54,8 @@ export const workspacesRouter = createTRPCRouter({
 
           await trx.insert(usersOnWorkspaces).values({
             workspaceId: w.id,
+            active: true,
+            allowedToSeeDetails: true,
             userId: ctx.session.user.id,
             role: "admin",
             permissions: JSON.stringify(adminPermissions),

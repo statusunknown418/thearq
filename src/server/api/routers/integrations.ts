@@ -161,7 +161,7 @@ export const integrationsRouter = createTRPCRouter({
     .input((i) => parse(integrationsSchema, i))
     .mutation(async ({ ctx, input }) => {
       try {
-        const redirect = buildRedirect("github");
+        // const redirect = buildRedirect("github");
         const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
 
         if (!workspaceId) {
@@ -174,13 +174,11 @@ export const integrationsRouter = createTRPCRouter({
         const app = new OAuthApp({
           clientId: env.GITHUB_CLIENT_ID,
           clientSecret: env.GITHUB_CLIENT_SECRET,
-          redirectUrl: redirect,
           defaultScopes: ["issue", "repository"],
         });
 
         const { authentication } = await app.createToken({
           code: input.code,
-          redirectUrl: redirect,
           state: env.INTEGRATIONS_STATE,
         });
 
