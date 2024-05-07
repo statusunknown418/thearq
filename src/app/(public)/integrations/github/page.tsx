@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ClientRedirect } from "~/components/ClientRedirect";
 import { Button } from "~/components/ui/button";
 import { KBD } from "~/components/ui/kbd";
+import { env } from "~/env";
 import { RECENT_WORKSPACE_KEY } from "~/lib/constants";
 import { routes } from "~/lib/navigation";
 import { api } from "~/trpc/server";
@@ -29,7 +30,7 @@ export default async function GithubIntegration({
     );
   }
 
-  if (!searchParams.code || !searchParams.state) {
+  if (!searchParams.code) {
     return (
       <div>
         <p>Invalid request</p>
@@ -47,7 +48,7 @@ export default async function GithubIntegration({
 
   const done = await api.integrations.github.mutate({
     code: searchParams.code,
-    state: searchParams.state,
+    state: env.INTEGRATIONS_STATE,
     workspace,
   });
 

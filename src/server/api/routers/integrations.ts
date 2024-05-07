@@ -180,6 +180,7 @@ export const integrationsRouter = createTRPCRouter({
 
         const { authentication } = await app.createToken({
           code: input.code,
+          state: env.INTEGRATIONS_STATE,
         });
 
         const octokit = new Octokit({

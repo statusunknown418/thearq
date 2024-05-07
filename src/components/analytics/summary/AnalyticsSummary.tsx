@@ -12,7 +12,6 @@ import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 import { AnalyticsFilters } from "../analytics-filters";
 import { useAnalyticsQS } from "./params-cache";
-import dynamic from "next/dynamic";
 
 export const AnalyticsSummaryLoading = () => {
   return (
