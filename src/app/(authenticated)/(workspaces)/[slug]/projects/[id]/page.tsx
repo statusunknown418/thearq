@@ -1,10 +1,7 @@
 import { Suspense } from "react";
 import { Main } from "~/components/layout/Main";
-import {
-  ProjectRevenueChartsLoading,
-  ProjectRevenueChartsWrapperRSC,
-} from "~/components/projects/[projectId]/project-revenue-charts/revenue-charts-wrapper";
 import { projectAnalyticsParamsCache } from "~/components/projects/[projectId]/project-cache";
+import { ProjectClientDetailsWrapperRSC } from "~/components/projects/[projectId]/project-details/project-client/project-client-wrapper";
 import {
   ProjectDetailsLoading,
   ProjectDetailsWrapperRSC,
@@ -13,12 +10,16 @@ import {
   ProjectHeaderLoading,
   ProjectHeaderWrapperRSC,
 } from "~/components/projects/[projectId]/project-header/project-header-wrapper";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { routes } from "~/lib/navigation";
 import {
   ProjectHoursChartsLoading,
   ProjectHoursChartsWrapperRSC,
 } from "~/components/projects/[projectId]/project-hours-charts/hours-charts-wrapper";
+import {
+  ProjectRevenueChartsLoading,
+  ProjectRevenueChartsWrapperRSC,
+} from "~/components/projects/[projectId]/project-revenue-charts/revenue-charts-wrapper";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { routes } from "~/lib/navigation";
 
 export default function ProjectIdPage({
   params,
@@ -59,9 +60,15 @@ export default function ProjectIdPage({
         </TabsContent>
 
         <TabsContent value="details">
-          <Suspense fallback={<ProjectDetailsLoading />}>
-            <ProjectDetailsWrapperRSC projectId={parsed.id} />
-          </Suspense>
+          <section className="grid grid-cols-2 gap-4">
+            <Suspense fallback={<ProjectDetailsLoading />}>
+              <ProjectClientDetailsWrapperRSC projectId={parsed.id} />
+            </Suspense>
+
+            <Suspense fallback={<ProjectDetailsLoading />}>
+              <ProjectDetailsWrapperRSC projectId={parsed.id} />
+            </Suspense>
+          </section>
         </TabsContent>
       </Tabs>
     </Main>
