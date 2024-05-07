@@ -34,30 +34,24 @@ export const DetailedCharts = ({
   }
 
   return (
-    <>
-      <Card>
-        <h3 className="text-base font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
-          Tracked time for period
-        </h3>
+    <Card>
+      <h3 className="text-base font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
+        Tracked time for period
+      </h3>
 
-        <BarChart
-          allowDecimals
-          showAnimation
-          animationDuration={700}
-          data={data}
-          index={"date"}
-          categories={["time"]}
-          colors={["indigo"]}
-          valueFormatter={(v) => `${v.toFixed(2)}h`}
-          yAxisWidth={48}
-          noDataText="No entries for this period."
-          tickGap={2}
-        />
-      </Card>
-
-      <p className="text-xs text-muted-foreground">
-        Hover over the bars to see more details about that day.
-      </p>
-    </>
+      <BarChart
+        allowDecimals
+        showAnimation
+        animationDuration={700}
+        data={data}
+        index={"date"}
+        categories={["time"]}
+        colors={["indigo"]}
+        valueFormatter={(v) => `${v.toFixed(2)}h`}
+        yAxisWidth={48}
+        noDataText="No entries for this period."
+        tickGap={2}
+      />
+    </Card>
   );
 };

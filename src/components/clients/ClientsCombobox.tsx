@@ -3,7 +3,7 @@
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
-import { PiPlusCircleDuotone } from "react-icons/pi";
+import { PiPlusCircleDuotone, PiUserDuotone } from "react-icons/pi";
 import { Button } from "~/components/ui/button";
 import {
   Command,
@@ -19,6 +19,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover
 import { cn } from "~/lib/utils";
 import { type ProjectSchema } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
+import { Checkbox } from "../ui/checkbox";
 
 export const ClientsCombobox = ({
   showLabel = true,
@@ -63,9 +64,7 @@ export const ClientsCombobox = ({
                 <PopoverTrigger asChild>
                   <Button variant={"secondary"} size={"lg"} className="flex-grow justify-between">
                     <span>
-                      {field.value
-                        ? data?.find((c) => c.id === field.value)?.name
-                        : "Select a client"}
+                      {field ? data?.find((c) => c.id === field.value)?.name : "Select a client"}
                     </span>
 
                     <CaretSortIcon
@@ -97,8 +96,8 @@ export const ClientsCombobox = ({
                         key={client.id}
                         onSelect={() => {
                           field.onChange(client.id);
-                          setCombobox(false);
                           onSelect?.();
+                          setCombobox(false);
                         }}
                       >
                         <CheckIcon
@@ -161,5 +160,87 @@ export const ClientsCombobox = ({
         )}
       />
     </>
+  );
+};
+
+export const ClientsComboboxStandalone = ({
+  onSelect,
+}: {
+  showLabel?: boolean;
+  onSelect?: () => void;
+}) => {
+  const { data } = api.clients.getByWorkspace.useQuery(undefined, {});
+
+  const [combobox, setCombobox] = useState(false);
+  const [field, setField] = useState<number[]>([]);
+
+  const onFieldChange = (id: number) => {
+    if (field.includes(id)) {
+      setField(field.filter((f) => f !== id));
+    } else {
+      setField([...field, id]);
+    }
+
+    onSelect?.();
+  };
+
+  return (
+    <Popover open={combobox} onOpenChange={setCombobox}>
+      <PopoverTrigger asChild>
+        <Button
+          variant={field.length > 0 ? "default" : "secondary"}
+          className={cn("w-max justify-between")}
+        >
+          <PiUserDuotone size={15} />
+          <span> Client</span>
+          {field.length > 0 && (
+            <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full border border-primary/50 bg-primary/10 p-1 text-xs">
+              {field.length}
+            </span>
+          )}
+        </Button>
+      </PopoverTrigger>
+
+      <PopoverContent className="p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Search" />
+          <CommandEmpty>No client found</CommandEmpty>
+
+          <CommandGroup>
+            <div className="max-h-56 overflow-y-scroll">
+              {!data ||
+                (data.length === 0 && (
+                  <p className="flex flex-col items-center gap-1 p-2 text-xs text-muted-foreground">
+                    You have no clients created yet
+                  </p>
+                ))}
+
+              {data?.map((client) => (
+                <CommandItem
+                  className="group"
+                  key={client.id}
+                  value={client.id.toString()}
+                  onSelect={() => {
+                    onFieldChange(client.id);
+                  }}
+                >
+                  <Checkbox
+                    className={cn(
+                      "opacity-0 transition-all duration-150 group-hover:opacity-100",
+                      field.includes(client.id) && "opacity-100",
+                    )}
+                    checked={field.includes(client.id)}
+                  />
+
+                  <div className="flex items-center gap-2">
+                    <span>{client.name}</span>
+                  </div>
+                </CommandItem>
+              ))}
+            </div>
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 };
