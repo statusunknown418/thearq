@@ -45,7 +45,13 @@ export const PersonDetailsSheet = () => {
   const update = api.workspaces.updateMemberDetails.useMutation({
     onSuccess: async () => {
       change(false);
-      await utils.teams.getByWorkspace.invalidate();
+      await Promise.all([
+        utils.teams.getByWorkspace.invalidate(),
+        utils.viewer.getAnalyticsCharts.invalidate(),
+        utils.viewer.getAnalyticsMetrics.invalidate(),
+        utils.projects.getAnalyticsCharts.invalidate(),
+        utils.projects.getRevenueCharts.invalidate(),
+      ]);
     },
   });
 

@@ -19,7 +19,7 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/70 border border-border/70 dark:border-border-contrast/70 hover:border-primary/50 dark:hover:border-border-contrast active:border-border active:bg-secondary",
         ghost:
           "hover:bg-accent/70 hover:border-primary/60 dark:hover:border-primary/20 transition-colors border border-transparent active:border-border hover:text-accent-foreground",
-        link: "text-indigo-600 dark:text-indigo-400 underline-offset-2 hover:underline dark:hover:text-indigo-400 hover:text-indigo-500 dark:text-indigo-400",
+        link: "text-indigo-600 dark:text-indigo-400 underline-offset-1 hover:underline dark:hover:text-indigo-400 hover:text-indigo-500 dark:text-indigo-400",
         primary:
           "bg-primary text-primary-foreground shadow-sm hover:bg-primary/85 active:bg-primary/70",
       },

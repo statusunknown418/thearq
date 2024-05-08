@@ -96,6 +96,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
           ...baseDefaultValues,
           start: new Date(),
           end: addHours(new Date(), 1),
+          duration: 3600,
         },
   });
 
@@ -112,7 +113,6 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
       if (!prev || !auth?.user || !workspaceId) return;
 
       clearEvents();
-
       return utils.entries.getByMonth.setData({ workspaceId, monthDate }, (oldData) => {
         if (!oldData) return [];
 
@@ -120,23 +120,36 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
       });
     },
     onSettled: async () => {
-      await utils.entries.getByMonth.invalidate();
-      return await utils.entries.getSummary.invalidate();
+      clearEvents();
+      clear();
+      return await Promise.all([
+        utils.entries.getByMonth.invalidate(),
+        utils.entries.getSummary.invalidate(),
+        utils.viewer.getAnalyticsCharts.invalidate(),
+        utils.viewer.getAnalyticsMetrics.invalidate(),
+        utils.projects.getAnalyticsCharts.invalidate(),
+        utils.projects.getRevenueCharts.invalidate(),
+      ]);
+    },
+    onSuccess: () => {
+      toast.warning("Deleted entry");
     },
   });
 
   const { mutate: updateEntry } = api.tracker.update.useMutation({
     onSettled: async () => {
-      clearEvents();
-      void utils.entries.getSummary.invalidate();
-      return await utils.entries.getByMonth.invalidate();
+      return await Promise.all([
+        utils.entries.getByMonth.invalidate(),
+        utils.entries.getSummary.invalidate(),
+        utils.viewer.getAnalyticsCharts.invalidate(),
+        utils.viewer.getAnalyticsMetrics.invalidate(),
+        utils.projects.getAnalyticsCharts.invalidate(),
+        utils.projects.getRevenueCharts.invalidate(),
+      ]);
     },
     onSuccess: async () => {
+      clearEvents();
       toast.success("Updated entry");
-      await Promise.all([
-        utils.entries.getSummary.invalidate(),
-        utils.entries.getLiveEntry.invalidate(),
-      ]);
     },
     onError: (error) => {
       toast.error("Failed to update entry", { description: error.message });
@@ -161,18 +174,24 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
       });
 
       clearEvents();
-
       return utils.entries.getByMonth.setData({ workspaceId, monthDate }, () => [
         ...prev,
         computedEvent as CustomEvent,
       ]);
     },
     onSettled: async () => {
-      return await utils.entries.getByMonth.invalidate();
+      clearEvents();
+      return await Promise.all([
+        utils.entries.getByMonth.invalidate(),
+        utils.entries.getSummary.invalidate(),
+        utils.viewer.getAnalyticsCharts.invalidate(),
+        utils.viewer.getAnalyticsMetrics.invalidate(),
+        utils.projects.getAnalyticsCharts.invalidate(),
+        utils.projects.getRevenueCharts.invalidate(),
+      ]);
     },
     onSuccess: () => {
       toast.success("Added new entry");
-      void utils.entries.getSummary.invalidate();
     },
     onError: (error) => {
       toast.error("Failed to add new entry", { description: error.message });

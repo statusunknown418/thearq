@@ -287,7 +287,7 @@ export const FromIntegrationDialog = () => {
                 className="max-w-[20ch] text-xs font-medium"
               >
                 Selected:{" "}
-                <span className="text-indigo-600 underline-offset-2 hover:underline dark:text-indigo-400">
+                <span className="text-indigo-600 underline-offset-1 hover:underline dark:text-indigo-400">
                   {hasIntegrationUrl}
                 </span>
               </Link>
@@ -325,7 +325,13 @@ export const FromIntegrationDialog = () => {
           <div className="overflow-y-scroll">
             <RadioGroup onValueChange={handleSelectLink} value={hasIntegrationUrl ?? ""}>
               {selectedProvider === "github" &&
-                githubIssues?.map((issue) => <GithubIssue key={issue.id} issue={issue} />)}
+                githubIssues?.map((issue) => (
+                  <GithubIssue
+                    onSelect={(d) => addIntegrationLinkToDescriptionIfNotPresent(d, "github")}
+                    key={issue.id}
+                    issue={issue}
+                  />
+                ))}
 
               {selectedProvider === "linear" &&
                 linearIssues?.map((issue) => (
@@ -347,10 +353,12 @@ export const FromIntegrationDialog = () => {
           <TooltipProvider delayDuration={0}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button asChild variant={"link"} size={"sm"} className="w-max">
+                <Button asChild variant={"link"} size={"sm"} className="w-max p-0">
                   <Link href={hasIntegrationUrl} target="_blank">
                     <PiGithubLogoDuotone size={16} />
-                    {githubIssues?.find((issue) => issue.html_url === hasIntegrationUrl)?.title}
+                    <span className="max-w-[30ch] overflow-hidden text-ellipsis whitespace-nowrap">
+                      {githubIssues?.find((issue) => issue.html_url === hasIntegrationUrl)?.title}
+                    </span>
                   </Link>
                 </Button>
               </TooltipTrigger>
@@ -358,7 +366,7 @@ export const FromIntegrationDialog = () => {
               <TooltipContent>
                 Links to
                 <PiArrowRight />
-                <span className="text-indigo-500 underline-offset-2 hover:underline dark:text-indigo-400 dark:text-indigo-400">
+                <span className="text-indigo-500 underline-offset-1 hover:underline dark:text-indigo-400">
                   {hasIntegrationUrl}
                 </span>
               </TooltipContent>
@@ -380,7 +388,9 @@ export const FromIntegrationDialog = () => {
                     height={16}
                     alt="linear-logo"
                   />
-                  {linearIssues?.find((issue) => issue.url === hasIntegrationUrl)?.identifier}
+                  <span className="max-w-[30ch] overflow-hidden text-ellipsis whitespace-nowrap">
+                    {linearIssues?.find((issue) => issue.url === hasIntegrationUrl)?.identifier}
+                  </span>
                 </Link>
               </Button>
             </TooltipTrigger>
@@ -388,7 +398,7 @@ export const FromIntegrationDialog = () => {
             <TooltipContent>
               Links to
               <PiArrowRight />
-              <span className="text-indigo-500 hover:underline hover:underline-offset-2 dark:text-indigo-400 dark:text-indigo-400">
+              <span className="text-indigo-500 hover:underline hover:underline-offset-1 dark:text-indigo-400">
                 {hasIntegrationUrl}
               </span>
             </TooltipContent>
@@ -419,7 +429,7 @@ const LinearIssue = ({
       }}
       htmlFor={issue.url}
       className={cn(
-        "group group flex items-center gap-2 rounded-md border p-2.5 text-muted-foreground hover:bg-secondary",
+        "flex items-center gap-2 rounded-md border p-2.5 text-muted-foreground hover:bg-secondary",
         url === issue.url &&
           "border-indigo-500 bg-indigo-50 text-indigo-600 hover:bg-indigo-50 dark:bg-indigo-950/10 dark:text-indigo-400",
       )}
@@ -433,7 +443,7 @@ const LinearIssue = ({
       <Link
         href={issue.url}
         target="_blank"
-        className="max-w-[30ch] items-center gap-1 overflow-hidden text-ellipsis whitespace-nowrap group-hover:underline group-hover:underline-offset-2"
+        className="max-w-[30ch] items-center gap-1 overflow-hidden text-ellipsis whitespace-nowrap underline-offset-1 hover:underline"
       >
         {issue.title}
       </Link>
@@ -445,7 +455,13 @@ const LinearIssue = ({
  * @description Note that the URL is actually called `html_url` in the Github API response
  * @returns
  */
-const GithubIssue = ({ issue }: { issue: RouterOutputs["viewer"]["getGithubIssues"][number] }) => {
+const GithubIssue = ({
+  issue,
+  onSelect,
+}: {
+  issue: RouterOutputs["viewer"]["getGithubIssues"][number];
+  onSelect: (d: { title: string; identifier: string }) => void;
+}) => {
   const form = useFormContext<NewTimeEntry>();
   const url = form.watch("integrationUrl");
 
@@ -453,10 +469,13 @@ const GithubIssue = ({ issue }: { issue: RouterOutputs["viewer"]["getGithubIssue
 
   return (
     <Label
-      onClick={() => closeOuter(false)}
+      onClick={() => {
+        closeOuter(false);
+        onSelect({ title: issue.title, identifier: `#${issue.number}` });
+      }}
       htmlFor={issue.url}
       className={cn(
-        "group flex items-center gap-2 rounded-md border p-2.5 hover:bg-secondary",
+        "flex items-center gap-2 rounded-md border p-2.5 hover:bg-secondary",
         url === issue.html_url &&
           "border-indigo-500 bg-indigo-50 text-indigo-600 hover:bg-indigo-50 dark:bg-indigo-950/10 dark:text-indigo-400",
       )}
@@ -468,9 +487,9 @@ const GithubIssue = ({ issue }: { issue: RouterOutputs["viewer"]["getGithubIssue
       <PiArrowRight />
 
       <Link
-        href={issue.url}
+        href={issue.html_url}
         target="_blank"
-        className="max-w-[30ch] items-center gap-1 overflow-hidden text-ellipsis whitespace-nowrap group-hover:underline group-hover:underline-offset-2"
+        className="max-w-[30ch] items-center  gap-1 overflow-hidden text-ellipsis whitespace-nowrap text-muted-foreground hover:underline hover:underline-offset-1"
       >
         {issue.title}
       </Link>
