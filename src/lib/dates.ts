@@ -1,5 +1,6 @@
 import {
   addBusinessDays,
+  addDays,
   addMonths,
   addWeeks,
   differenceInDays,
@@ -7,6 +8,7 @@ import {
   formatDistance,
   startOfMonth,
   startOfWeek,
+  toDate,
 } from "date-fns";
 import { type stringOrDate } from "react-big-calendar";
 import { type GlobalPaymentSchedule } from "~/server/db/edge-schema";
@@ -93,4 +95,14 @@ export const paymentScheduleToDate = (schedule: GlobalPaymentSchedule) => {
   }
 
   return { format: "Unknown", difference: 0 };
+};
+
+/**
+ * Dead simple function to account for the whole previous day (inclusive date)
+ * @description SHOULD ONLY BE USED FOR END, the start is already set at 00:00:00
+ * @param date date to adjust
+ * @returns date + 1 day set to be at 00:00:00
+ */
+export const adjustEndDate = (date: stringOrDate) => {
+  return toDate(addDays(new Date(date), 1));
 };

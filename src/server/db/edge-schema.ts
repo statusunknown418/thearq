@@ -277,7 +277,7 @@ export const timeEntries = sqliteTable(
     workspaceId: int("workspaceId")
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
-    projectId: int("projectId"),
+    projectId: int("projectId").references(() => projects.id, { onDelete: "set null" }),
     start: integer("start", { mode: "timestamp" })
       .notNull()
       .$defaultFn(() => new Date()),
@@ -300,7 +300,7 @@ export const timeEntries = sqliteTable(
     workspaceIdIdx: index("timeEntries_workspaceId_idx").on(t.workspaceId),
     durationIdx: index("timeEntries_duration_idx").on(t.duration),
     trackedAtIdx: index("timeEntries_trackedAt_idx").on(t.trackedAt),
-    monthDateIdx: index("timeEntries_monthDate_idx").on(t.monthDate),
+    startIdx: index("timeEntries_start_idx").on(t.start),
     endIdx: index("timeEntries_end_idx").on(t.end),
     projectIdIdx: index("timeEntries_projectId_idx").on(t.projectId),
     lockedIdx: index("timeEntries_locked_idx").on(t.locked),
@@ -456,9 +456,11 @@ export const usersOnProjects = sqliteTable(
       .references(() => workspaces.id, { onDelete: "cascade" }),
     role: text("role", { enum: roles }).notNull().default("member"),
     billableRate: int("billableRate").notNull().default(0),
+    internalCost: int("internalCost").notNull().default(0),
     permissions: text("permissions", { mode: "text" })
       .notNull()
       .$default(() => JSON.stringify(memberPermissions)),
+    fromDefault: integer("fromDefault", { mode: "boolean" }).default(true),
     weekCapacity: int("capacity").default(40),
   },
   (t) => ({

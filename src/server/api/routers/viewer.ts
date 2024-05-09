@@ -2,13 +2,13 @@ import { LinearClient } from "@linear/sdk";
 import { TRPCError } from "@trpc/server";
 import { addDays, differenceInDays, format } from "date-fns";
 import { cookies } from "next/headers";
+import { Octokit } from "octokit";
 import { object, z } from "zod";
 import { INTEGRATIONS, RECENT_W_ID_KEY } from "~/lib/constants";
+import { adjustEndDate, secondsToHoursDecimal } from "~/lib/dates";
 import { redis } from "~/server/upstash";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { type IntegrationCachingKey } from "./integrations";
-import { secondsToHoursDecimal } from "~/lib/dates";
-import { Octokit } from "octokit";
 
 export const viewerRouter = createTRPCRouter({
   getIntegrations: protectedProcedure.query(({ ctx }) => {
@@ -189,53 +189,51 @@ export const viewerRouter = createTRPCRouter({
         });
       }
 
-      const [summary, workspace, user] = await ctx.db.transaction(async (trx) => {
-        const workspace = await trx.query.workspaces.findFirst({
-          where: (t, op) => op.and(op.eq(t.id, input.workspaceId)),
-        });
+      const workspace = await ctx.db.query.workspaces.findFirst({
+        where: (t, op) => op.and(op.eq(t.id, input.workspaceId)),
+      });
 
-        const data = await trx.query.timeEntries.findMany({
-          where: (t, op) => {
-            return op.and(
-              op.eq(t.workspaceId, input.workspaceId),
-              op.eq(t.userId, ctx.session.user.id),
-              input.from ? op.gte(t.trackedAt, new Date(input.from)) : undefined,
-              input.to ? op.lte(t.trackedAt, new Date(input.to)) : undefined,
-            );
-          },
-          with: {
-            project: {
-              columns: {
-                color: true,
-                name: true,
-                identifier: true,
-                id: true,
-              },
-              with: {
-                users: {
-                  columns: {
-                    billableRate: true,
-                    weekCapacity: true,
-                    userId: true,
-                  },
-                  where: (t, op) => op.eq(t.userId, ctx.session.user.id),
+      const summaryPromise = ctx.db.query.timeEntries.findMany({
+        where: (t, op) => {
+          return op.and(
+            op.eq(t.workspaceId, input.workspaceId),
+            op.eq(t.userId, ctx.session.user.id),
+            input.from ? op.gte(t.start, new Date(input.from)) : undefined,
+            input.to ? op.lte(t.start, adjustEndDate(input.to)) : undefined,
+          );
+        },
+        with: {
+          project: {
+            columns: {
+              color: true,
+              name: true,
+              identifier: true,
+              id: true,
+            },
+            with: {
+              users: {
+                columns: {
+                  billableRate: true,
+                  weekCapacity: true,
+                  userId: true,
                 },
+                where: (t, op) => op.eq(t.userId, ctx.session.user.id),
               },
             },
           },
-        });
-
-        const user = await trx.query.usersOnWorkspaces.findFirst({
-          where: (t, op) => {
-            return op.and(
-              op.eq(t.userId, ctx.session.user.id),
-              op.eq(t.workspaceId, input.workspaceId),
-            );
-          },
-        });
-
-        return [data, workspace, user];
+        },
       });
+
+      const userPromise = ctx.db.query.usersOnWorkspaces.findFirst({
+        where: (t, op) => {
+          return op.and(
+            op.eq(t.userId, ctx.session.user.id),
+            op.eq(t.workspaceId, input.workspaceId),
+          );
+        },
+      });
+
+      const [summary, user] = await Promise.all([summaryPromise, userPromise]);
 
       const totalHours = summary.reduce((acc, curr) => acc + curr.duration, 0);
 
@@ -367,8 +365,8 @@ export const viewerRouter = createTRPCRouter({
           return op.and(
             op.eq(t.workspaceId, input.workspaceId),
             op.eq(t.userId, ctx.session.user.id),
-            op.gte(t.trackedAt, new Date(input.startDate)),
-            op.lte(t.trackedAt, new Date(input.endDate)),
+            op.gte(t.start, new Date(input.startDate)),
+            op.lte(t.start, adjustEndDate(input.endDate)),
           );
         },
         with: {
