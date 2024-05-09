@@ -17,3 +17,7 @@ export const receiveAmount = (value: number) => {
 export const sendAmount = (value: number) => {
   return value * 100;
 };
+
+export const parseNumber = (value: number) => {
+  return Intl.NumberFormat().format(value);
+};

@@ -99,7 +99,7 @@ export const ProjectHeader = ({
 
                     <span>&middot;</span>
 
-                    <span className="underline-offset-2 hover:underline">
+                    <span className="underline-offset-1 hover:underline">
                       {process.env.NEXT_PUBLIC_APP_URL}/shared/{data.project.shareableUrl}
                     </span>
 

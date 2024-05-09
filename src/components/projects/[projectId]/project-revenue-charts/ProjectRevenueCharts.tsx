@@ -3,53 +3,13 @@
 import { AreaChart, Card, CategoryBar, Legend, ProgressBar } from "@tremor/react";
 import { PiEnvelopeDuotone, PiTrendUpBold } from "react-icons/pi";
 import { Button } from "~/components/ui/button";
-import { parseCurrency } from "~/lib/parsers";
+import { parseCurrency, parseNumber } from "~/lib/parsers";
 import { api } from "~/trpc/react";
-import { RouterOutputs } from "~/trpc/shared";
+import { type RouterOutputs } from "~/trpc/shared";
 import { useProjectsQS } from "../project-cache";
-
-const chartData = [
-  {
-    date: "1-7 April",
-    Billable: 89000,
-    Cost: 132000,
-  },
-  {
-    date: "8-15 April",
-    Billable: 189000,
-    Cost: 434000,
-  },
-  {
-    date: "15-22 April",
-    Billable: 92000,
-    Cost: 123400,
-  },
-  {
-    date: "22-29 April",
-    Billable: 459000,
-    Cost: 256000,
-  },
-  {
-    date: "1-8 May",
-    Billable: 275600,
-    Cost: 124000,
-  },
-  {
-    date: "8-15 May",
-    Billable: 332200,
-    Cost: 48000,
-  },
-  {
-    date: "15-23 May",
-    Billable: 247000,
-    Cost: 40000,
-  },
-  {
-    date: "23-30 May",
-    Billable: 547500,
-    Cost: 120000,
-  },
-];
+import { format, toDate } from "date-fns-tz";
+import { differenceInDays, formatDistanceToNow } from "date-fns";
+import { NOW } from "~/lib/dates";
 
 export const ProjectRevenueCharts = ({
   initialData,
@@ -58,7 +18,7 @@ export const ProjectRevenueCharts = ({
   initialData: RouterOutputs["projects"]["getRevenueCharts"];
   projectId: string;
 }) => {
-  const [{ from, to }, update] = useProjectsQS();
+  const [{ from, to }] = useProjectsQS();
 
   const { data } = api.projects.getRevenueCharts.useQuery(
     {
@@ -68,8 +28,18 @@ export const ProjectRevenueCharts = ({
     },
     {
       initialData,
+      refetchOnWindowFocus: false,
     },
   );
+
+  const completionPercentage =
+    data.projectEndsAt && data.projectStartsAt
+      ? Math.round(
+          (differenceInDays(toDate(data.projectStartsAt), NOW) /
+            differenceInDays(toDate(data.projectStartsAt), toDate(data.projectEndsAt))) *
+            100,
+        )
+      : undefined;
 
   return (
     <section className="grid grid-cols-1 gap-4">
@@ -79,21 +49,19 @@ export const ProjectRevenueCharts = ({
         </h3>
 
         <p className="mt-1 text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-          <span>{parseCurrency(2355440)}</span>{" "}
-          <span className="text-sm font-normal text-muted-foreground">
-            gross revenue &middot; May 2024
-          </span>
+          <span>{parseCurrency(data.grossRevenue)}</span>{" "}
+          <span className="text-sm font-normal text-muted-foreground">gross revenue</span>
         </p>
 
         <AreaChart
           showAnimation
-          yAxisWidth={65}
-          data={chartData}
+          yAxisWidth={75}
+          data={data.charts}
           valueFormatter={parseCurrency}
           animationDuration={700}
           className="mt-2 h-[360px]"
           index="date"
-          categories={["Billable", "Cost"]}
+          categories={["revenue", "cost"]}
           colors={["emerald", "red"]}
         />
       </Card>
@@ -104,34 +72,47 @@ export const ProjectRevenueCharts = ({
             Time frame
           </h4>
 
-          <p className="mt-1.5 text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-            2 weeks <span className="text-sm font-normal text-muted-foreground">remaining</span>
-          </p>
+          {data.projectEndsAt ? (
+            <p className="mt-1.5 text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
+              {formatDistanceToNow(toDate(data.projectEndsAt))}{" "}
+              <span className="text-sm font-normal text-muted-foreground">remaining</span>
+            </p>
+          ) : (
+            <p className="mt-1.5 text-muted-foreground">No end date set</p>
+          )}
 
           <p className="mt-4 flex items-center justify-between text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-            <span>48% completion</span>
-            <span>Oct 21st</span>
+            <span>{completionPercentage ?? "~"}% completion</span>
+            <span>
+              {data.projectEndsAt ? format(data.projectEndsAt, "PPP") : "No end date set"}
+            </span>
           </p>
 
-          <ProgressBar value={52} className="mt-2" />
+          <ProgressBar value={completionPercentage ?? 0} className="mt-2" />
         </Card>
 
         <Card className="flex-grow p-4 tabular-nums">
           <p className="flex items-center gap-2 text-tremor-default text-tremor-content dark:text-dark-tremor-content">
             <span>Revenue breakdown</span>
             <span className="flex items-center gap-1 text-emerald-500">
-              <PiTrendUpBold size={15} /> 66% profit
+              <PiTrendUpBold size={15} />
+              {parseNumber((data.revenue / data.grossRevenue) * 100)}%{" "}
+              {data.cost > data.revenue ? "loss" : "profit"}
             </span>
           </p>
 
           <div className="mt-1.5 flex items-center gap-4">
-            <p className="text-tremor-metric font-semibold text-emerald-500">$35,483.00</p>
-            <p className="text-tremor-metric font-semibold text-red-500">$11,928.60</p>
+            <p className="text-tremor-metric font-semibold text-emerald-500">
+              {parseCurrency(data.revenue)}
+            </p>
+            <p className="text-tremor-metric font-semibold text-red-500">
+              {parseCurrency(data.cost)}
+            </p>
           </div>
 
           <CategoryBar
             className="mt-4"
-            values={[10483, 483]}
+            values={[data.revenue / 100, data.cost / 100]}
             colors={["emerald", "red"]}
             showLabels={false}
           />

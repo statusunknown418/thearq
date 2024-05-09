@@ -1,9 +1,10 @@
 import Image from "next/image";
 import { APP_URL } from "~/lib/constants";
 import { routes } from "~/lib/navigation";
-import { auth, signIn } from "~/server/auth";
+import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
 import { Button } from "../ui/button";
+import { SignIn } from "../common/SignIn";
 
 export const InvitationDetailsWrapperRSC = async ({ params }: { params: unknown }) => {
   const {
@@ -53,14 +54,7 @@ export const InvitationDetailsWrapperRSC = async ({ params }: { params: unknown 
             <Button type="submit">Join</Button>
           </form>
         ) : (
-          <form
-            action={async () => {
-              "use server";
-              void signIn(undefined, {});
-            }}
-          >
-            <Button type="submit">Sign in</Button>
-          </form>
+          <SignIn />
         )}
       </section>
     )

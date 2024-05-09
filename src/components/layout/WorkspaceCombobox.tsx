@@ -97,6 +97,7 @@ export const WorkspaceCombobox = () => {
               {data?.map((w) => (
                 <CommandItem
                   key={w.workspaceId}
+                  value={w.workspace.slug}
                   onSelect={async () => {
                     const data = new FormData();
                     data.append("slug", w.workspace.slug);
