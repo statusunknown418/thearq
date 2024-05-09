@@ -30,7 +30,7 @@ export default function WorkspacePageError({
               "mailto:alvaro.aquije@icloud.com?subject=Error%20Report%20-%20Digest%3A%20" +
               error.digest
             }
-            className="text-indigo-500 underline underline-offset-2 dark:text-indigo-400"
+            className="text-indigo-500 underline underline-offset-1 dark:text-indigo-400"
           >
             here
           </Link>{" "}

@@ -1,14 +1,13 @@
 import { createId } from "@paralleldrive/cuid2";
 import { TRPCError } from "@trpc/server";
-import { differenceInDays, startOfMonth } from "date-fns";
-import { toZonedTime } from "date-fns-tz";
+import { addDays, differenceInDays } from "date-fns";
+import { format, toZonedTime } from "date-fns-tz";
 import { eq } from "drizzle-orm";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import slugify from "slugify";
-import { number, object, optional, parse, string } from "valibot";
+import { number, object, parse, string } from "valibot";
 import { RECENT_W_ID_KEY, VERCEL_REQUEST_LOCATION } from "~/lib/constants";
-import { secondsToHoursDecimal } from "~/lib/dates";
-import { parseCurrency } from "~/lib/parsers";
+import { adjustEndDate as adjustedEndDate, secondsToHoursDecimal } from "~/lib/dates";
 import { adminPermissions, parsePermissions, type UserPermissions } from "~/lib/stores/auth-store";
 import { projects, projectsSchema, usersOnProjects } from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
@@ -252,20 +251,14 @@ export const projectsRouter = createTRPCRouter({
       parse(
         object({
           projectShareableId: string(),
-          start: optional(string()),
-          end: optional(string()),
+          start: string(),
+          end: string(),
         }),
         i,
       ),
     )
     .query(async ({ ctx, input }) => {
-      const location = headers().get(VERCEL_REQUEST_LOCATION);
       const wId = cookies().get(RECENT_W_ID_KEY)?.value;
-
-      const defaultRange = {
-        start: toZonedTime(startOfMonth(new Date()), location ?? "UTC"),
-        end: toZonedTime(new Date(), location ?? "UTC"),
-      };
 
       if (!wId) {
         throw new TRPCError({
@@ -274,87 +267,13 @@ export const projectsRouter = createTRPCRouter({
         });
       }
 
-      const charts = await ctx.db.transaction(async (trx) => {
+      const difference = differenceInDays(new Date(input.end), new Date(input.start));
+      const [charts, project] = await ctx.db.transaction(async (trx) => {
         const project = await trx.query.projects.findFirst({
           where: (t, { eq }) => eq(t.shareableUrl, input.projectShareableId),
-        });
-
-        if (!project) {
-          trx.rollback();
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Project not found",
-          });
-        }
-
-        const data = await trx.query.usersOnProjects.findMany({
-          where: (t, { eq, and }) => and(eq(t.projectId, project.id)),
           with: {
-            user: {
-              with: {
-                timeEntries: {
-                  where: (t, { and, eq, gte, lte }) =>
-                    and(
-                      eq(t.workspaceId, Number(wId)),
-                      eq(t.projectId, project.id),
-                      gte(t.trackedAt, input.start ? new Date(input.start) : defaultRange.start),
-                      lte(t.trackedAt, input.end ? new Date(input.end) : defaultRange.end),
-                    ),
-                },
-              },
-            },
+            users: true,
           },
-        });
-
-        return data;
-      });
-
-      const revenue = charts.reduce((acc, curr) => {
-        return (
-          acc +
-          curr.user.timeEntries.reduce(
-            (a, c) => a + secondsToHoursDecimal(c.duration) * curr.billableRate,
-            0,
-          )
-        );
-      }, 0);
-
-      return {
-        revenue: parseCurrency(revenue),
-        charts,
-      };
-    }),
-
-  getAnalyticsCharts: protectedProcedure
-    .input((i) =>
-      parse(
-        object({
-          projectShareableId: string(),
-          start: optional(string()),
-          end: optional(string()),
-        }),
-        i,
-      ),
-    )
-    .query(async ({ ctx, input }) => {
-      const location = headers().get(VERCEL_REQUEST_LOCATION);
-      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
-
-      const defaultRange = {
-        start: toZonedTime(startOfMonth(new Date()), location ?? "UTC"),
-        end: toZonedTime(new Date(), location ?? "UTC"),
-      };
-
-      if (!wId) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "No workspace selected",
-        });
-      }
-
-      const charts = await ctx.db.transaction(async (trx) => {
-        const project = await trx.query.projects.findFirst({
-          where: (t, { eq }) => eq(t.shareableUrl, input.projectShareableId),
         });
 
         if (!project) {
@@ -370,12 +289,136 @@ export const projectsRouter = createTRPCRouter({
             return and(
               eq(t.workspaceId, Number(wId)),
               eq(t.projectId, project.id),
-              input.start
-                ? gte(t.trackedAt, new Date(input.start))
-                : gte(t.trackedAt, defaultRange.start),
-              input.end
-                ? lte(t.trackedAt, new Date(input.end))
-                : lte(t.trackedAt, defaultRange.end),
+              gte(t.start, new Date(input.start)),
+              lte(t.start, adjustedEndDate(input.end)),
+            );
+          },
+        });
+
+        return [data, project];
+      });
+
+      const totalRevenue = charts.reduce((acc, curr) => {
+        const user = project?.users?.find((u) => u.userId === curr.userId);
+        const rate = user?.billableRate ?? 0;
+        const hours = secondsToHoursDecimal(curr.duration);
+        return acc + rate * hours;
+      }, 0);
+
+      const totalCost = charts.reduce((acc, curr) => {
+        const user = project?.users?.find((u) => u.userId === curr.userId);
+        const cost = user?.internalCost ?? 0;
+        const hours = secondsToHoursDecimal(curr.duration);
+        return acc + cost * hours;
+      }, 0);
+
+      const arrayT1 = performance.now();
+      const revenueAndCostPerDate = charts.reduce(
+        (acc, curr) => {
+          const user = project?.users?.find((u) => u.userId === curr.userId);
+          const rate = user?.billableRate ?? 0;
+          const cost = user?.internalCost ?? 0;
+          const hours = secondsToHoursDecimal(curr.duration);
+          const date = format(curr.start, "yyyy/MM/dd");
+
+          const existing = acc.find((a) => a.date === date);
+
+          if (existing) {
+            existing.revenue += rate * hours;
+            existing.cost += cost * hours;
+            existing.hours += hours;
+          } else {
+            acc.push({
+              date,
+              revenue: rate * hours,
+              cost: cost * hours,
+              hours,
+            });
+          }
+
+          return acc;
+        },
+        [] as { date: string; revenue: number; cost: number; hours: number }[],
+      );
+
+      const withEmptyDates = Array.from({ length: difference + 1 }, (_, i) => {
+        const date = format(addDays(new Date(input.start), i + 1), "yyyy/MM/dd");
+        return {
+          date,
+          revenue: 0,
+          cost: 0,
+          hours: 0,
+        };
+      });
+
+      const finalCharts = withEmptyDates.map((entry) => {
+        const existing = revenueAndCostPerDate.find((a) => a.date === entry.date);
+        const formattedDate = format(entry.date, "PP");
+
+        if (existing) {
+          return { ...existing, date: formattedDate };
+        }
+
+        return { ...entry, date: formattedDate };
+      });
+      const arrayT2 = performance.now();
+
+      return {
+        grossRevenue: totalRevenue - totalCost,
+        revenue: totalRevenue,
+        cost: totalCost,
+        charts: finalCharts,
+        arrayT: arrayT2 - arrayT1,
+        projectEndsAt: project.endsAt,
+        projectStartsAt: project.startsAt,
+        raw: charts,
+      };
+    }),
+
+  getAnalyticsCharts: protectedProcedure
+    .input((i) =>
+      parse(
+        object({
+          projectShareableId: string(),
+          start: string(),
+          end: string(),
+        }),
+        i,
+      ),
+    )
+    .query(async ({ ctx, input }) => {
+      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+      if (!wId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No workspace selected",
+        });
+      }
+
+      const charts = await ctx.db.transaction(async (trx) => {
+        const project = await trx.query.projects.findFirst({
+          where: (t, { eq }) => eq(t.shareableUrl, input.projectShareableId),
+          with: {
+            users: true,
+          },
+        });
+
+        if (!project) {
+          trx.rollback();
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Project not found",
+          });
+        }
+
+        const data = await trx.query.timeEntries.findMany({
+          where: (t, { eq, and, gte, lte }) => {
+            return and(
+              eq(t.workspaceId, Number(wId)),
+              eq(t.projectId, project.id),
+              gte(t.start, new Date(input.start)),
+              lte(t.start, adjustedEndDate(input.end)),
             );
           },
         });
