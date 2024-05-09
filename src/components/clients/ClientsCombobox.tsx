@@ -64,7 +64,9 @@ export const ClientsCombobox = ({
                 <PopoverTrigger asChild>
                   <Button variant={"secondary"} size={"lg"} className="flex-grow justify-between">
                     <span>
-                      {field ? data?.find((c) => c.id === field.value)?.name : "Select a client"}
+                      {!!field.value
+                        ? data?.find((c) => c.id === field.value)?.name
+                        : "Select a client"}
                     </span>
 
                     <CaretSortIcon
@@ -192,7 +194,7 @@ export const ClientsComboboxStandalone = ({
           className={cn("w-max justify-between")}
         >
           <PiUserDuotone size={15} />
-          <span> Client</span>
+          <span>Client</span>
           {field.length > 0 && (
             <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full border border-primary/50 bg-primary/10 p-1 text-xs">
               {field.length}

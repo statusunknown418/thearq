@@ -11,6 +11,9 @@ export type DatePickerProps = {
   onChange: (date: Date | undefined) => void;
   onBlur: () => void;
   disabled?: DayPickerBase["disabled"];
+  formatType?: string;
+  buttonClassName?: string;
+  placeholder?: string;
 } & DayPickerBase;
 
 export const SingleDatePicker = ({
@@ -18,14 +21,17 @@ export const SingleDatePicker = ({
   onChange,
   onBlur,
   disabled,
+  formatType,
+  buttonClassName,
+  placeholder = "Select a start date",
   ...props
 }: DatePickerProps) => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant={date ? "primary" : "secondary"}>
+        <Button variant={date ? "primary" : "secondary"} className={cn(buttonClassName)}>
           <CalendarIcon className={cn("h-4 w-4")} />
-          {date ? format(date, "PPP") : "Select a start date"}
+          {date ? format(date, formatType ?? "PPP") : placeholder}
         </Button>
       </PopoverTrigger>
 
