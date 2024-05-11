@@ -24,9 +24,9 @@ export const ProjectHoursChartsWrapperRSC = async ({ projectId }: { projectId: s
 
 export const ProjectHoursChartsLoading = () => {
   return (
-    <div>
-      <Skeleton />
-      <Skeleton />
+    <div className="flex flex-col gap-2">
+      <Skeleton className="h-[360px] w-full" />
+      <Skeleton className="h-52 w-full" />
     </div>
   );
 };

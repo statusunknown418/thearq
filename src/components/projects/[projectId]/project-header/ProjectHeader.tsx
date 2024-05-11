@@ -93,11 +93,11 @@ export const ProjectHeader = ({
                   <FormDescription className="flex items-center gap-2 pl-3 text-sm">
                     <span>{data?.project.identifier && `[${data.project.identifier}]`}</span>
 
-                    <span>&middot;</span>
+                    {!!data.project.identifier && <span>&middot;</span>}
 
                     <span>{data?.project.client?.name && `${data.project.client.name}`}</span>
 
-                    <span>&middot;</span>
+                    {!!data?.project.client?.name && <span>&middot;</span>}
 
                     <span className="underline-offset-1 hover:underline">
                       {process.env.NEXT_PUBLIC_APP_URL}/shared/{data.project.shareableUrl}

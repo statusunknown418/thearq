@@ -37,7 +37,7 @@ export const ProjectHoursCharts = ({
       <Card className="p-4">
         <h3 className="text-muted-foreground">Hours per week</h3>
         <p className="mt-1 text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-          <span>{secondsToHoursDecimal(2355440).toFixed(2)}</span>{" "}
+          <span>{secondsToHoursDecimal(data.totalHours).toFixed(2)}</span>{" "}
           <span className="text-sm font-normal text-muted-foreground">total hours &middot; </span>
           <span className="text-sm font-normal text-muted-foreground">May 2024</span>
         </p>

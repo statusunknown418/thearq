@@ -9,7 +9,7 @@ import {
 } from "@tanstack/react-table";
 import { addDays, formatDistanceToNow } from "date-fns";
 import { format, toDate } from "date-fns-tz";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { PiCalendarX, PiInfo, PiMapTrifold, PiXCircle, PiXSquare } from "react-icons/pi";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -47,14 +47,7 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
     cell: ({ row }) => {
       return (
         <p className="font-medium">
-          {!!row.getValue("identifier") ? (
-            row.getValue("identifier")
-          ) : (
-            <span className="flex items-center gap-1 font-normal text-muted-foreground">
-              <PiXSquare size={16} />
-              Not set
-            </span>
-          )}
+          {!!row.getValue("identifier") ? row.getValue("identifier") : ""}
         </p>
       );
     },
@@ -86,6 +79,15 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
     maxSize: 200,
     accessorFn: (row) => row.project.client?.name,
     cell: ({ row }) => {
+      if (!row.original.project.client) {
+        return (
+          <span className="flex items-center gap-1 font-normal text-muted-foreground">
+            <PiXSquare size={16} />
+            No client
+          </span>
+        );
+      }
+
       return (
         <TooltipProvider delayDuration={0}>
           <Tooltip>
@@ -215,6 +217,8 @@ export const ProjectsTable = ({
     initialData,
   });
 
+  const router = useRouter();
+
   const workspace = useWorkspaceStore((s) => s.active);
   const shouldSeeDetails = projects.some((p) => p.role === "admin");
 
@@ -232,6 +236,19 @@ export const ProjectsTable = ({
   if (projects.length === 0) {
     return <ProjectsEmptyState />;
   }
+
+  const onRowClick = (row: ProjectsTableColumn) => {
+    if (!shouldSeeDetails) {
+      return;
+    }
+
+    void router.push(
+      routes.projectId({
+        slug: workspace?.slug ?? "",
+        id: row.project.shareableUrl,
+      }),
+    );
+  };
 
   return (
     <section className="flex flex-col gap-4 rounded-xl border bg-secondary-background p-5">
@@ -269,7 +286,11 @@ export const ProjectsTable = ({
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
-                      className="px-4"
+                      onClick={() => onRowClick(cell.row.original)}
+                      className={cn(
+                        "px-4",
+                        shouldSeeDetails ? "cursor-pointer" : "cursor-not-allowed",
+                      )}
                       style={{
                         maxWidth: `${cell.column.getSize()}px`,
                         whiteSpace: "nowrap",
@@ -277,18 +298,7 @@ export const ProjectsTable = ({
                         textOverflow: "ellipsis",
                       }}
                     >
-                      {shouldSeeDetails ? (
-                        <Link
-                          href={routes.projectId({
-                            slug: workspace?.slug ?? "",
-                            id: row.original.project.shareableUrl,
-                          })}
-                        >
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </Link>
-                      ) : (
-                        flexRender(cell.column.columnDef.cell, cell.getContext())
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>

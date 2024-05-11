@@ -3,7 +3,7 @@
 import { AreaChart, Card, CategoryBar, Legend } from "@tremor/react";
 import { differenceInWeeks, formatDistanceToNow } from "date-fns";
 import { format, toDate } from "date-fns-tz";
-import { PiEnvelopeDuotone, PiTrendDownBold, PiTrendUpBold } from "react-icons/pi";
+import { PiEnvelopeDuotone, PiTrendDownBold, PiTrendUpBold, PiXSquare } from "react-icons/pi";
 import { Button } from "~/components/ui/button";
 import { NOW, adjustEndDate } from "~/lib/dates";
 import { parseCompactCurrency, parseNumber } from "~/lib/parsers";
@@ -69,24 +69,27 @@ export const ProjectRevenueCharts = ({
             Time frame
           </h4>
           {data.projectEndsAt ? (
-            <p className="mt-1.5 text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
+            <p className="mt-2 text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
               {formatDistanceToNow(toDate(data.projectEndsAt))}{" "}
               <span className="text-sm font-normal text-muted-foreground">to go</span>
             </p>
           ) : (
-            <p className="mt-1.5 text-muted-foreground">No end date set</p>
+            <p className="mt-2 inline-flex items-center gap-1 text-muted-foreground">
+              <PiXSquare size={16} />
+              No end date set
+            </p>
           )}
 
           <p className="mt-2 text-indigo-500 dark:text-indigo-400">
-            {data.projectStartsAt ? format(data.projectStartsAt, "PP") : "No start date set"} &rarr;{" "}
-            {data.projectEndsAt ? format(data.projectEndsAt, "PP") : "No end date set"}
+            {data.projectStartsAt ? format(data.projectStartsAt, "PP") : "N/A"} &rarr;{" "}
+            {data.projectEndsAt ? format(data.projectEndsAt, "PP") : "N/A"}
           </p>
 
           <p className="mt-2 text-muted-foreground">
             (
             {data.projectEndsAt
               ? `${differenceInWeeks(data.projectEndsAt, NOW)} weeks remaining`
-              : "Cannot estimate weeks remaining, because this project has no end date"}
+              : "Unable to estimate time left because this project has no end date"}
             )
           </p>
         </Card>
