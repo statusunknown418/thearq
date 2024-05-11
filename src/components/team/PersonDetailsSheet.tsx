@@ -49,7 +49,7 @@ export const PersonDetailsSheet = () => {
         utils.teams.getByWorkspace.invalidate(),
         utils.viewer.getAnalyticsCharts.invalidate(),
         utils.viewer.getAnalyticsMetrics.invalidate(),
-        utils.projects.getAnalyticsCharts.invalidate(),
+        utils.projects.getHoursCharts.invalidate(),
         utils.projects.getRevenueCharts.invalidate(),
       ]);
     },

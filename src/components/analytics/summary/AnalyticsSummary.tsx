@@ -7,7 +7,7 @@ import { PiArrowRight, PiInfinity, PiInfoBold } from "react-icons/pi";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { paymentScheduleToDate } from "~/lib/dates";
-import { parseCurrency } from "~/lib/parsers";
+import { parseCompactCurrency } from "~/lib/parsers";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 import { AnalyticsFilters } from "../analytics-filters";
@@ -61,7 +61,7 @@ export const AnalyticsSummary = ({
         <Card className="max-w-xs" decoration="left" decorationColor="indigo">
           <h4 className="text-tremor-default text-muted-foreground">Earnings</h4>
           <p className="mt-1.5 text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-            {parseCurrency(data?.totalEarnings)}
+            {parseCompactCurrency(data?.totalEarnings)}
           </p>
 
           {data.payDate ? (
@@ -95,7 +95,7 @@ export const AnalyticsSummary = ({
                   earnings
                 </span>
 
-                <span>{parseCurrency(data.regularEarnings)}</span>
+                <span>{parseCompactCurrency(data.regularEarnings)}</span>
               </p>
 
               <ProgressBar

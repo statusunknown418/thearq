@@ -127,7 +127,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
         utils.entries.getSummary.invalidate(),
         utils.viewer.getAnalyticsCharts.invalidate(),
         utils.viewer.getAnalyticsMetrics.invalidate(),
-        utils.projects.getAnalyticsCharts.invalidate(),
+        utils.projects.getHoursCharts.invalidate(),
         utils.projects.getRevenueCharts.invalidate(),
       ]);
     },
@@ -143,7 +143,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
         utils.entries.getSummary.invalidate(),
         utils.viewer.getAnalyticsCharts.invalidate(),
         utils.viewer.getAnalyticsMetrics.invalidate(),
-        utils.projects.getAnalyticsCharts.invalidate(),
+        utils.projects.getHoursCharts.invalidate(),
         utils.projects.getRevenueCharts.invalidate(),
       ]);
     },
@@ -186,7 +186,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
         utils.entries.getSummary.invalidate(),
         utils.viewer.getAnalyticsCharts.invalidate(),
         utils.viewer.getAnalyticsMetrics.invalidate(),
-        utils.projects.getAnalyticsCharts.invalidate(),
+        utils.projects.getHoursCharts.invalidate(),
         utils.projects.getRevenueCharts.invalidate(),
       ]);
     },
