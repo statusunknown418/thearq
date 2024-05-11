@@ -1,6 +1,6 @@
 import { createId } from "@paralleldrive/cuid2";
 import { TRPCError } from "@trpc/server";
-import { addDays, differenceInDays } from "date-fns";
+import { addDays, differenceInDays, endOfMonth, startOfMonth } from "date-fns";
 import { format, toZonedTime } from "date-fns-tz";
 import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
@@ -351,7 +351,7 @@ export const projectsRouter = createTRPCRouter({
         };
       });
 
-      const finalCharts = withEmptyDates.map((entry) => {
+      const finalChart = withEmptyDates.map((entry) => {
         const existing = revenueAndCostPerDate.find((a) => a.date === entry.date);
         const formattedDate = format(entry.date, "PP");
 
@@ -367,7 +367,7 @@ export const projectsRouter = createTRPCRouter({
         grossRevenue: totalRevenue - totalCost,
         revenue: totalRevenue,
         cost: totalCost,
-        charts: finalCharts,
+        charts: finalChart,
         arrayT: arrayT2 - arrayT1,
         projectEndsAt: project.endsAt,
         projectStartsAt: project.startsAt,
@@ -375,7 +375,7 @@ export const projectsRouter = createTRPCRouter({
       };
     }),
 
-  getAnalyticsCharts: protectedProcedure
+  getHoursCharts: protectedProcedure
     .input((i) =>
       parse(
         object({
@@ -396,11 +396,16 @@ export const projectsRouter = createTRPCRouter({
         });
       }
 
-      const charts = await ctx.db.transaction(async (trx) => {
+      const difference = differenceInDays(new Date(input.end), new Date(input.start));
+      const [charts, project] = await ctx.db.transaction(async (trx) => {
         const project = await trx.query.projects.findFirst({
           where: (t, { eq }) => eq(t.shareableUrl, input.projectShareableId),
           with: {
-            users: true,
+            users: {
+              with: {
+                user: true,
+              },
+            },
           },
         });
 
@@ -423,9 +428,156 @@ export const projectsRouter = createTRPCRouter({
           },
         });
 
-        return data;
+        return [data, project];
       });
 
-      return charts;
+      const groupedByDate = charts.reduce(
+        (acc, curr) => {
+          const date = format(curr.start, "yyyy/MM/dd");
+          const existing = acc.find((a) => a.date === date);
+
+          if (existing) {
+            existing.duration += curr.duration;
+          } else {
+            acc.push({
+              date,
+              duration: curr.duration,
+            });
+          }
+
+          return acc;
+        },
+        [] as { date: string; duration: number }[],
+      );
+
+      const totalHoursByUser = charts.reduce(
+        (acc, curr) => {
+          const user = project.users.find((u) => u.userId === curr.userId);
+          const hours = curr.duration;
+          const existing = acc.find((a) => a.userId === user?.userId);
+
+          if (existing) {
+            existing.hours += hours;
+          } else if (user) {
+            acc.push({
+              userId: user.userId,
+              userName: user.user.name ?? "Unknown",
+              hours,
+            });
+          }
+
+          return acc;
+        },
+        [] as { userId: string; hours: number; userName: string }[],
+      );
+
+      const withEmptyDates = Array.from({ length: difference + 1 }, (_, i) => {
+        const date = format(addDays(new Date(input.start), i + 1), "yyyy/MM/dd");
+        return {
+          date,
+          duration: 0,
+        };
+      });
+
+      const finalChart = withEmptyDates.map((entry) => {
+        const existing = groupedByDate.find((a) => a.date === entry.date);
+        const formattedDate = format(entry.date, "PP");
+
+        if (existing) {
+          return { ...existing, date: formattedDate };
+        }
+
+        return { ...entry, date: formattedDate };
+      });
+
+      const totalNonBillableHours = charts.reduce((acc, curr) => {
+        const hours = curr.duration;
+        if (curr.billable === false) {
+          return acc + hours;
+        }
+        return acc;
+      }, 0);
+
+      const totalHours = charts.reduce((acc, curr) => {
+        return acc + curr.duration;
+      }, 0);
+
+      return {
+        charts: finalChart,
+        totalHoursByUser,
+        nonBillableHours: totalNonBillableHours,
+        totalHours,
+      };
+    }),
+
+  getBudgetRemaining: protectedProcedure
+    .input((i) =>
+      parse(
+        object({
+          projectShareableId: string(),
+          from: string(),
+          to: string(),
+        }),
+        i,
+      ),
+    )
+    .query(async ({ ctx, input }) => {
+      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+      if (!wId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No workspace selected",
+        });
+      }
+
+      const monthStart = startOfMonth(new Date(input.from));
+      const monthEnd = endOfMonth(new Date(input.to));
+
+      const [project, timeEntries] = await ctx.db.transaction(async (trx) => {
+        const project = await trx.query.projects.findFirst({
+          where: (t, { eq }) => eq(t.shareableUrl, input.projectShareableId),
+          with: {
+            users: {
+              with: {
+                user: true,
+              },
+            },
+          },
+        });
+
+        if (!project) {
+          trx.rollback();
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Project not found",
+          });
+        }
+
+        const data = await trx.query.timeEntries.findMany({
+          where: (t, { eq, and, gte, lte }) => {
+            return and(
+              eq(t.workspaceId, Number(wId)),
+              eq(t.projectId, project.id),
+              gte(t.start, monthStart),
+              lte(t.start, monthEnd),
+            );
+          },
+        });
+
+        return [project, data];
+      });
+
+      const totalHours = timeEntries.reduce((acc, curr) => {
+        return acc + curr.duration;
+      }, 0);
+
+      const totalBudget = (project.budgetHours ?? 0) * 3600;
+
+      return {
+        remaining: totalBudget ? totalBudget - totalHours : 0,
+        totalBudget,
+        totalHours,
+      };
     }),
 });

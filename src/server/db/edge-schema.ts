@@ -20,13 +20,19 @@ import { type Integration } from "~/lib/constants";
 import { dateToMonthDate } from "~/lib/dates";
 import { memberPermissions } from "~/lib/stores/auth-store";
 
-export const users = sqliteTable("user", {
-  id: text("id").notNull().primaryKey(),
-  name: text("name"),
-  email: text("email").notNull(),
-  emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),
-  image: text("image"),
-});
+export const users = sqliteTable(
+  "user",
+  {
+    id: text("id").notNull().primaryKey(),
+    name: text("name").default("Unknown user"),
+    email: text("email").notNull(),
+    emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),
+    image: text("image"),
+  },
+  (t) => ({
+    emailIdx: index("user_email_idx").on(t.email),
+  }),
+);
 
 export const accounts = sqliteTable(
   "account",

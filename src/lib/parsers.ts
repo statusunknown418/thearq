@@ -3,11 +3,22 @@
  * @param value Amount in cents
  * @returns
  */
-export const parseCurrency = (value: number) => {
-  return Intl.NumberFormat("en-US", {
+export const parseCompactCurrency = (value: number) => {
+  return Intl.NumberFormat(undefined, {
     style: "currency",
     currency: "USD",
-  }).format(value / 100);
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
+    notation: "compact",
+  }).format(receiveAmount(value));
+};
+
+export const parseLongCurrency = (value: number) => {
+  return Intl.NumberFormat(undefined, {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+  }).format(receiveAmount(value));
 };
 
 export const receiveAmount = (value: number) => {
