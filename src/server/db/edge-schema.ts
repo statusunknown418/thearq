@@ -194,6 +194,8 @@ export const workspaces = sqliteTable(
 
 export const workspacesRelations = relations(workspaces, ({ many, one }) => ({
   users: many(usersOnWorkspaces),
+  projects: many(projects),
+  invoices: many(invoices),
   invitations: many(workspaceInvitations),
   plan: one(workspacePlans, {
     fields: [workspaces.id],
@@ -364,11 +366,12 @@ export const projects = sqliteTable(
     shareableUrl: text("shareableUrl").notNull().unique(),
     name: text("name").notNull(),
     description: text("description"),
-    color: text("color").notNull().default("#000000"),
+    color: text("color").notNull().default("#cccccc"),
     identifier: text("identifier"),
     type: text("type", { enum: projectTypes }).notNull().default("hourly"),
-    budgetHours: int("budget").default(0),
-    projectHourlyRate: int("projectHourlyRate").default(0),
+    budgetHours: int("budget"),
+    budgetResetsPerMonth: int("budgetResetsPerMonth", { mode: "boolean" }).default(true),
+    projectHourlyRate: int("projectHourlyRate"),
     ownerId: text("ownerId").notNull(),
     startsAt: integer("startsAt", { mode: "timestamp" }),
     endsAt: integer("endsAt", { mode: "timestamp" }),
@@ -414,6 +417,7 @@ export const projectRelations = relations(projects, ({ one, many }) => ({
     references: [workspaces.id],
   }),
   timeEntries: many(timeEntries),
+  invoices: many(invoices),
   users: many(usersOnProjects),
   owner: one(users, { fields: [projects.ownerId], references: [users.id] }),
   client: one(clients, { fields: [projects.clientId], references: [clients.id] }),
@@ -446,6 +450,7 @@ export const clientsRelations = relations(clients, ({ one, many }) => ({
     references: [workspaces.id],
   }),
   projects: many(projects),
+  invoices: many(invoices),
 }));
 
 export const usersOnProjects = sqliteTable(
@@ -506,5 +511,56 @@ export const workspacePlansRelations = relations(workspacePlans, ({ one }) => ({
   workspace: one(workspaces, {
     fields: [workspacePlans.workspaceId],
     references: [workspaces.id],
+  }),
+}));
+
+export const invoiceStatus = ["draft", "sent", "paid", "overdue"] as const;
+export type InvoiceStatus = (typeof invoiceStatus)[number];
+
+export const invoices = sqliteTable(
+  "invoices",
+  {
+    id: integer("id", { mode: "number" }).notNull().primaryKey({ autoIncrement: true }),
+    workspaceId: int("workspaceId")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    clientId: int("clientId")
+      .notNull()
+      .references(() => clients.id, { onDelete: "cascade" }),
+    projectId: int("projectId")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    subject: text("subject"),
+    contents: text("contents"),
+    identifier: integer("number", { mode: "number" }).notNull(),
+    fromDate: integer("fromDate", { mode: "timestamp" }),
+    untilDate: integer("untilDate", { mode: "timestamp" }),
+    status: text("status", { enum: invoiceStatus }).notNull().default("draft"),
+    total: int("total").notNull(),
+    currency: text("currency").notNull().default("USD"),
+    dueAt: integer("dueAt", { mode: "timestamp" }),
+    recurring: integer("recurring", { mode: "boolean" }).default(false),
+    createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+    updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  },
+  (t) => ({
+    workspaceIdIdx: index("invoice_workspaceId_idx").on(t.workspaceId),
+    clientIdIdx: index("invoice_clientId_idx").on(t.clientId),
+    projectIdIdx: index("invoice_projectId_idx").on(t.projectId),
+  }),
+);
+
+export const invoicesRelations = relations(invoices, ({ one }) => ({
+  workspace: one(workspaces, {
+    fields: [invoices.workspaceId],
+    references: [workspaces.id],
+  }),
+  client: one(clients, {
+    fields: [invoices.clientId],
+    references: [clients.id],
+  }),
+  project: one(projects, {
+    fields: [invoices.projectId, invoices.workspaceId],
+    references: [projects.id, projects.workspaceId],
   }),
 }));
