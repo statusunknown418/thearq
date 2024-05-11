@@ -7,6 +7,7 @@ export const projectAnalyticsParsers = {
   from: parseAsString.withDefault(format(startOfMonth(addMonths(new Date(), -1)), "yyyy-MM-dd")),
   to: parseAsString.withDefault(format(endOfMonth(addMonths(new Date(), -1)), "yyyy-MM-dd")),
   tab: parseAsString.withDefault("revenue"),
+  view: parseAsString.withDefault("day"),
 };
 
 export const projectAnalyticsParamsCache = createSearchParamsCache(projectAnalyticsParsers);

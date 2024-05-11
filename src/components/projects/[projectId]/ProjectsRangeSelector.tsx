@@ -138,7 +138,7 @@ export function ProjectsRangeSelector() {
       <Button
         variant="outline"
         size={"icon"}
-        className="rounded-r-none dark:bg-dark-tremor-background"
+        className="rounded-r-none"
         subSize={"iconMd"}
         onClick={toPrevWeek}
       >
@@ -149,7 +149,7 @@ export function ProjectsRangeSelector() {
         variant="outline"
         size={"icon"}
         subSize={"iconMd"}
-        className="mr-2 rounded-l-none border-l-0 dark:bg-dark-tremor-background"
+        className="mr-2 rounded-l-none border-l-0"
         onClick={toNextWeek}
       >
         <PiArrowRight size={14} />
