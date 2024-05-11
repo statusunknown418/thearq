@@ -1,6 +1,6 @@
 {
-  "name": "zentrack",
-  "version": "0.1.0",
+  "name": "the-arq",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
