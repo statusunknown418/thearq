@@ -10,9 +10,8 @@ export const ProjectDetailsWrapperRSC = async ({ projectId: id }: { projectId: s
 
 export const ProjectDetailsLoading = () => {
   return (
-    <div className="grid h-full w-full grid-cols-2">
-      <Skeleton className="h-40" />
-      <Skeleton className="h-40" />
+    <div className="h-full w-full">
+      <Skeleton className="h-52" />
     </div>
   );
 };

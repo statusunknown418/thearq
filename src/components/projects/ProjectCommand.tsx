@@ -45,7 +45,7 @@ import { NOW } from "~/lib/dates";
 import { routes } from "~/lib/navigation";
 import { useCommandsStore } from "~/lib/stores/commands-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
-import { useHotkeys } from "~/lib/use-hotkeys";
+import { useHotkeys } from "~/lib/hooks/use-hotkeys";
 import { projectsSchema, type ProjectSchema } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 import { ClientsCombobox } from "../clients/ClientsCombobox";

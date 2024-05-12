@@ -52,7 +52,7 @@ export const ProjectRevenueCharts = ({
 
         <AreaChart
           showAnimation
-          yAxisWidth={75}
+          yAxisWidth={55}
           data={data.charts}
           valueFormatter={parseCompactCurrency}
           animationDuration={700}

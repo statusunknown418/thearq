@@ -2,8 +2,10 @@
 
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useForm } from "react-hook-form";
+import { PiArrowBendDownRight, PiSquaresFourDuotone } from "react-icons/pi";
 import { toast } from "sonner";
 import { ClientsCombobox } from "~/components/clients/ClientsCombobox";
+import { Badge } from "~/components/ui/badge";
 import {
   Form,
   FormControl,
@@ -11,12 +13,28 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import { SingleDatePicker } from "~/components/ui/single-date-picker";
+import { Switch } from "~/components/ui/switch";
 import { Textarea } from "~/components/ui/textarea";
+import { useFormAutoSave } from "~/lib/hooks/use-form-auto-save";
 import { useSafeParams } from "~/lib/navigation";
-import { projectsSchema, type ProjectSchema } from "~/server/db/edge-schema";
+import {
+  lockingSchedules,
+  projectTypes,
+  projectsSchema,
+  type ProjectSchema,
+} from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 
@@ -38,6 +56,7 @@ export const ProjectDetails = ({
     onSettled: () => {
       void utils.projects.invalidate();
       void utils.viewer.getAssignedProjects.invalidate();
+      toast.info("Project updated");
     },
   });
 
@@ -58,6 +77,9 @@ export const ProjectDetails = ({
       clientId: data?.project.clientId,
       color: data?.project.color,
       name: data?.project.name,
+      type: data?.project.type,
+      budgetHours: data?.project.budgetHours,
+      budgetResetsPerMonth: data?.project.budgetResetsPerMonth,
       startsAt: data?.project.startsAt,
       endsAt: data?.project.endsAt,
     },
@@ -65,20 +87,33 @@ export const ProjectDetails = ({
   });
 
   const onSubmit = form.handleSubmit((values) => {
-    mutate(values);
+    mutate({
+      ...values,
+      budgetHours: values.budgetHours ? Number(values.budgetHours) : null,
+    });
+  });
+
+  useFormAutoSave({
+    form,
+    onSubmit: () => void onSubmit(),
   });
 
   return (
     <Form {...form}>
       <form
-        className="flex h-max w-full flex-col gap-4 rounded-lg border bg-popover p-4"
+        className="flex h-max w-full flex-col gap-5 rounded-lg border bg-popover p-5"
         onSubmit={onSubmit}
       >
+        <Badge variant={"secondary"} className="w-max tracking-wide text-muted-foreground">
+          <PiSquaresFourDuotone size={16} />
+          Project details
+        </Badge>
+
         <FormField
           name="clientId"
           control={form.control}
           render={() => (
-            <FormItem className="grid w-full grid-cols-5 gap-2">
+            <FormItem className="grid w-full grid-cols-5 gap-4">
               <FormLabel>Client</FormLabel>
 
               <div className="col-span-4 flex flex-col gap-2">
@@ -92,16 +127,15 @@ export const ProjectDetails = ({
           name="description"
           control={form.control}
           render={({ field }) => (
-            <FormItem className="grid w-full grid-cols-5 gap-2">
+            <FormItem className="grid w-full grid-cols-5 gap-4">
               <FormLabel>Description</FormLabel>
 
               <div className="col-span-4 flex flex-col gap-2">
                 <FormControl>
                   <Textarea
                     {...field}
-                    value={field.value ?? ""}
-                    onBlur={onSubmit}
                     placeholder={"Add a description"}
+                    value={field.value ?? ""}
                   />
                 </FormControl>
 
@@ -115,29 +149,133 @@ export const ProjectDetails = ({
           name="budgetHours"
           control={form.control}
           render={({ field }) => (
-            <FormItem className="grid w-full grid-cols-5 gap-2">
+            <FormItem className="grid w-full grid-cols-5 gap-4">
               <FormLabel>Budget hours</FormLabel>
 
               <section className="col-span-4 flex flex-col gap-2">
-                <div className="flex items-center gap-0">
+                <div className="flex items-center gap-1">
                   <FormControl>
                     <Input
                       {...field}
-                      value={field.value ?? ""}
-                      onBlur={onSubmit}
                       placeholder={"200"}
-                      className="w-24 rounded-r-none"
+                      className="max-w-24"
+                      value={field.value ?? ""}
                     />
                   </FormControl>
 
-                  <span className="flex h-9 items-center justify-center rounded-r-lg border border-l-0 bg-muted px-4 text-muted-foreground">
-                    hours
-                  </span>
+                  <span className="text-muted-foreground">hours</span>
                 </div>
 
+                {form.formState.errors.budgetHours ? (
+                  <FormMessage />
+                ) : (
+                  <FormDescription>
+                    Amount of hours expected to complete the project (optional)
+                  </FormDescription>
+                )}
+              </section>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="budgetResetsPerMonth"
+          render={({ field }) => (
+            <FormItem className="grid w-full grid-cols-5 gap-4">
+              <FormLabel className="inline-flex items-center gap-2 self-start">
+                <PiArrowBendDownRight size={16} className="text-muted-foreground" /> Resettable
+              </FormLabel>
+
+              <section className="col-span-4 flex flex-col gap-2">
+                <FormControl>
+                  <Switch
+                    checked={!!field.value}
+                    onCheckedChange={(v) => {
+                      field.onChange(v);
+                      void onSubmit();
+                    }}
+                    size="md"
+                  />
+                </FormControl>
+
                 <FormDescription>
-                  Amount of hours expected to complete the project (optional)
+                  If the budget hours should reset on a monthly basis
                 </FormDescription>
+              </section>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem className="grid w-full grid-cols-5 gap-4">
+              <FormLabel className="inline-flex items-center gap-2 self-start">
+                Project type
+              </FormLabel>
+
+              <section className="col-span-4 flex flex-col gap-2">
+                <Select
+                  value={field.value}
+                  onValueChange={(v) => {
+                    field.onChange(v);
+                    void onSubmit();
+                  }}
+                >
+                  <SelectTrigger className="max-w-52 capitalize">
+                    <FormControl>
+                      <SelectValue placeholder="Hourly" />
+                    </FormControl>
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    {projectTypes.map((type) => (
+                      <SelectItem key={type} value={type} className="capitalize">
+                        {type.replaceAll("-", " ")}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <FormDescription>Choose the type of billing for this project</FormDescription>
+              </section>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="entriesLockingSchedule"
+          render={({ field }) => (
+            <FormItem className="grid w-full grid-cols-5 gap-4">
+              <Label className="inline-flex items-center gap-2 self-start">Entry locking</Label>
+
+              <section className="col-span-4 flex flex-col gap-2">
+                <Select
+                  value={field.value ?? undefined}
+                  onValueChange={(v) => {
+                    field.onChange(v);
+                    void onSubmit();
+                  }}
+                >
+                  <SelectTrigger className="max-w-52 capitalize">
+                    <FormControl>
+                      <SelectValue placeholder="Disabled" />
+                    </FormControl>
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    {lockingSchedules.map((type) => (
+                      <SelectItem key={type} value={type} className="capitalize">
+                        {type.replaceAll("-", " ")}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <FormDescription>Choose the type of billing for this project</FormDescription>
               </section>
             </FormItem>
           )}
@@ -149,14 +287,13 @@ export const ProjectDetails = ({
             control={form.control}
             render={({ field }) => (
               <FormItem className="col-span-3 grid grid-cols-6 flex-row">
-                <FormLabel className="col-span-2">Timeline</FormLabel>
+                <FormLabel className="col-span-2">Time frame</FormLabel>
 
                 <div className="col-span-4 w-full">
                   <SingleDatePicker
                     buttonClassName="min-w-full"
                     date={field.value ?? undefined}
                     onChange={field.onChange}
-                    onBlur={onSubmit}
                     placeholder="Start date"
                   />
                 </div>
@@ -174,7 +311,6 @@ export const ProjectDetails = ({
                   date={field.value ?? undefined}
                   defaultMonth={field.value ?? undefined}
                   onChange={field.onChange}
-                  onBlur={onSubmit}
                   placeholder="End date"
                 />
               </div>

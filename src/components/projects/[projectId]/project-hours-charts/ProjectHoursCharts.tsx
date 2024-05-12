@@ -1,11 +1,12 @@
 "use client";
 
 import { BarChart, Card, DonutChart, Legend, ProgressBar } from "@tremor/react";
-import { secondsToHoursDecimal } from "~/lib/dates";
+import { adjustEndDate, secondsToHoursDecimal } from "~/lib/dates";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 import { useProjectsQS } from "../project-cache";
 import { parseNumber } from "~/lib/parsers";
+import { format } from "date-fns-tz";
 
 export const ProjectHoursCharts = ({
   initialData,
@@ -35,11 +36,13 @@ export const ProjectHoursCharts = ({
   return (
     <section className="grid grid-cols-1 gap-4">
       <Card className="p-4">
-        <h3 className="text-muted-foreground">Hours per week</h3>
+        <h3 className="text-muted-foreground">
+          Hours per day - ({format(adjustEndDate(from), "PPP")} &rarr;{" "}
+          {format(adjustEndDate(to), "PPP")})
+        </h3>
         <p className="mt-1 text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
           <span>{secondsToHoursDecimal(data.totalHours).toFixed(2)}</span>{" "}
-          <span className="text-sm font-normal text-muted-foreground">total hours &middot; </span>
-          <span className="text-sm font-normal text-muted-foreground">May 2024</span>
+          <span className="text-sm font-normal text-muted-foreground">total</span>
         </p>
 
         <BarChart
@@ -64,6 +67,7 @@ export const ProjectHoursCharts = ({
               category="hours"
               valueFormatter={(v) => `${secondsToHoursDecimal(v).toFixed(2)}h`}
               className="h-32 tabular-nums tracking-wide"
+              noDataText="No hours logged per user"
             />
 
             <Legend categories={data.totalHoursByUser.map((u) => u.userName)} />

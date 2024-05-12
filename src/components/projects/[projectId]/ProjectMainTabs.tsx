@@ -15,7 +15,7 @@ export const ProjectMainTabs = ({ children }: { children: ReactNode }) => {
       <TabsList className="sticky left-0 top-0 max-w-max">
         <TabsTrigger value="revenue">Revenue</TabsTrigger>
         <TabsTrigger value="analytics">Hours</TabsTrigger>
-        <TabsTrigger value="details">Details</TabsTrigger>
+        <TabsTrigger value="settings">Settings</TabsTrigger>
         <TabsTrigger value="team">Team</TabsTrigger>
       </TabsList>
 
