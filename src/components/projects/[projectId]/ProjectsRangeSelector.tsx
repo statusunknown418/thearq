@@ -54,8 +54,8 @@ export function ProjectsRangeSelector() {
       return toast.error("Please select a date range");
     }
 
-    const start = date.from ? format(date.from, "yyyy/MM/dd") : undefined;
-    const end = date.to ? format(date.to, "yyyy/MM/dd") : undefined;
+    const start = date.from ? format(date.from, "yyyy-MM-dd") : undefined;
+    const end = date.to ? format(date.to, "yyyy-MM-dd") : undefined;
 
     void updateState({
       from: start,
@@ -72,8 +72,8 @@ export function ProjectsRangeSelector() {
       end = NOW;
 
       void updateState({
-        from: format(start, "yyyy/MM/dd"),
-        to: format(end, "yyyy/MM/dd"),
+        from: format(start, "yyyy-MM-dd"),
+        to: format(end, "yyyy-MM-dd"),
       });
     }
 
@@ -82,8 +82,8 @@ export function ProjectsRangeSelector() {
       end = endOfWeek(toDate(NOW));
 
       void updateState({
-        from: format(start, "yyyy/MM/dd"),
-        to: format(end, "yyyy/MM/dd"),
+        from: format(start, "yyyy-MM-dd"),
+        to: format(end, "yyyy-MM-dd"),
       });
     }
 
@@ -92,8 +92,8 @@ export function ProjectsRangeSelector() {
       end = addMonths(endOfMonth(NOW), -1);
 
       void updateState({
-        from: format(start, "yyyy/MM/dd"),
-        to: format(end, "yyyy/MM/dd"),
+        from: format(start, "yyyy-MM-dd"),
+        to: format(end, "yyyy-MM-dd"),
       });
     }
 
@@ -102,8 +102,8 @@ export function ProjectsRangeSelector() {
       end = addQuarters(endOfMonth(NOW), -1);
 
       void updateState({
-        from: format(start, "yyyy/MM/dd"),
-        to: format(end, "yyyy/MM/dd"),
+        from: format(start, "yyyy-MM-dd"),
+        to: format(end, "yyyy-MM-dd"),
       });
     }
 
@@ -116,8 +116,8 @@ export function ProjectsRangeSelector() {
 
     setQuickSelect(undefined);
     void updateState({
-      from: format(start, "yyyy/MM/dd"),
-      to: format(end, "yyyy/MM/dd"),
+      from: format(start, "yyyy-MM-dd"),
+      to: format(end, "yyyy-MM-dd"),
     });
   };
 
@@ -127,8 +127,8 @@ export function ProjectsRangeSelector() {
 
     setQuickSelect(undefined);
     void updateState({
-      from: format(start, "yyyy/MM/dd"),
-      to: format(end, "yyyy/MM/dd"),
+      from: format(start, "yyyy-MM-dd"),
+      to: format(end, "yyyy-MM-dd"),
     });
   };
 

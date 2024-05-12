@@ -1,10 +1,10 @@
 import { CalendarIcon } from "@radix-ui/react-icons";
-import { Button } from "./button";
-import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 import { format } from "date-fns-tz";
-import { cn } from "~/lib/utils";
-import { Calendar } from "./calendar";
 import { type DateRange } from "react-day-picker";
+import { cn } from "~/lib/utils";
+import { Button } from "./button";
+import { Calendar } from "./calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 
 export const RangePicker = ({
   open,
@@ -37,10 +37,11 @@ export const RangePicker = ({
           {date?.from ? (
             date.to ? (
               <>
-                {format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}
+                {format(new Date(date.from), "LLL dd, y")} -{" "}
+                {format(new Date(date.to), "LLL dd, y")}
               </>
             ) : (
-              format(date.from, "LLL dd, y")
+              format(new Date(date.from), "LLL dd, y")
             )
           ) : (
             <span>Pick a date</span>
