@@ -41,9 +41,9 @@ const config = {
           },
           background: {
             muted: "hsl(var(--muted))",
-            subtle: colors.gray[100],
+            subtle: "hsl(var(--secondary))",
             DEFAULT: colors.white,
-            emphasis: colors.gray[700],
+            emphasis: "hsl(var(--accent))",
           },
           border: {
             DEFAULT: "hsl(var(--border))",
@@ -63,16 +63,16 @@ const config = {
         "dark-tremor": {
           brand: {
             faint: "#0B1229",
-            muted: colors.blue[950],
-            subtle: colors.blue[800],
-            DEFAULT: colors.blue[500],
-            emphasis: colors.blue[400],
-            inverted: colors.blue[950],
+            muted: colors.indigo[950],
+            subtle: colors.indigo[700],
+            DEFAULT: colors.indigo[400],
+            emphasis: colors.indigo[300],
+            inverted: colors.indigo[950],
           },
           background: {
-            muted: "#131A2B",
-            subtle: colors.gray[800],
-            DEFAULT: "hsl(var(--secondary-background))",
+            muted: "hsl(var(--muted))",
+            subtle: "hsl(var(--secondary-background))",
+            DEFAULT: "hsl(var(--muted))",
             emphasis: colors.gray[300],
           },
           border: {
@@ -82,11 +82,11 @@ const config = {
             DEFAULT: "hsl(var(--border))",
           },
           content: {
-            subtle: colors.gray[600],
+            subtle: colors.neutral[600],
             DEFAULT: "hsl(var(--muted-foreground))",
-            emphasis: colors.gray[200],
-            strong: colors.gray[50],
-            inverted: colors.gray[950],
+            emphasis: colors.neutral[200],
+            strong: colors.neutral[50],
+            inverted: colors.neutral[950],
           },
         },
         "border-contrast": "hsl(var(--border-contrast))",
@@ -130,7 +130,7 @@ const config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
         "tremor-small": "calc(var(--radius) - 4px)",
-        "tremor-default": "calc(var(--radius) + 2px)",
+        "tremor-default": "calc(var(--radius) - 2px)",
         "tremor-full": "9999px",
       },
       // how can I customize this

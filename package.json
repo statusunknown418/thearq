@@ -11,7 +11,8 @@
     "lint": "next lint",
     "start": "next start",
     "format": "prettier --write . --config prettier.config.js",
-    "email:dev": "email dev --dir ./src/server/emails --port 8080"
+    "email:dev": "email dev --dir ./src/server/emails --port 8080",
+    "trigger:dev": "pnpm dlx @trigger.dev/cli@latest dev"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^0.8.2",
@@ -104,7 +105,10 @@
     "valibot": "^0.30.0",
     "vaul": "^0.9.1",
     "zod": "^3.23.7",
-    "zustand": "^4.5.2"
+    "zustand": "^4.5.2",
+    "@trigger.dev/sdk": "^2.3.18",
+    "@trigger.dev/nextjs": "^2.3.18",
+    "@trigger.dev/react": "^2.3.18"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.7",
@@ -131,5 +135,8 @@
   },
   "ct3aMetadata": {
     "initVersion": "7.25.2"
+  },
+  "trigger.dev": {
+    "endpointId": "mobius-QVMR"
   }
 }
