@@ -10,12 +10,17 @@ import {
 import { addDays, formatDistanceToNow } from "date-fns";
 import { format, toDate } from "date-fns-tz";
 import { useRouter } from "next/navigation";
-import { PiCalendarX, PiInfo, PiMapTrifold, PiXCircle, PiXSquare } from "react-icons/pi";
+import {
+  PiArrowsClockwiseBold,
+  PiCalendarX,
+  PiInfo,
+  PiMapTrifold,
+  PiXCircle,
+  PiXSquare,
+} from "react-icons/pi";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { FormItem } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
 import {
   Table,
   TableBody,
@@ -113,7 +118,7 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
     cell: ({ row }) => (
       <p
         className={cn(
-          "text-muted-foreground",
+          "flex items-center gap-1 text-muted-foreground",
           !!row.getValue("budgetHours") && "font-medium text-foreground",
         )}
       >
@@ -124,6 +129,18 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
             <PiXCircle size={16} />
             Not set
           </span>
+        )}
+
+        {!!row.original.project.budgetResetsPerMonth && (
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger>
+                <PiArrowsClockwiseBold className="text-blue-500 dark:text-blue-400" size={16} />
+              </TooltipTrigger>
+
+              <TooltipContent>Budget resets every month</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         )}
       </p>
     ),
@@ -167,8 +184,17 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
     id: "endsAt",
     header: "Ends At",
     accessorFn: (row) => row.project.endsAt,
-    cell: ({ row }) =>
-      !!row.getValue("endsAt") ? (
+    cell: ({ row }) => {
+      if (!row.original.project.endsAt) {
+        return (
+          <span className="flex items-center gap-1 text-muted-foreground">
+            <PiCalendarX size={16} />
+            Not set
+          </span>
+        );
+      }
+
+      return (
         <span
           className={cn(
             "flex items-center gap-1 font-medium",
@@ -199,12 +225,8 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
             </Tooltip>
           </TooltipProvider>
         </span>
-      ) : (
-        <span className="flex items-center gap-1">
-          <PiCalendarX size={16} />
-          Not set
-        </span>
-      ),
+      );
+    },
   },
 ];
 
@@ -252,16 +274,11 @@ export const ProjectsTable = ({
 
   return (
     <section className="flex flex-col gap-4 rounded-xl border bg-secondary-background p-5">
-      <div>
-        <FormItem>
-          <Label>Search</Label>
-          <Input
-            placeholder="Search projects"
-            className="w-1/3"
-            onChange={(e) => table.setGlobalFilter(e.currentTarget.value)}
-          />
-        </FormItem>
-      </div>
+      <Input
+        placeholder="Search projects"
+        className="w-1/3"
+        onChange={(e) => table.setGlobalFilter(e.currentTarget.value)}
+      />
 
       <div className="rounded-lg border bg-background">
         <Table>

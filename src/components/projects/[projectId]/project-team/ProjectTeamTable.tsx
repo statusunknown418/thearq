@@ -8,7 +8,7 @@ import {
   type ColumnDef,
 } from "@tanstack/react-table";
 import Image from "next/image";
-import { PiArrowSquareOutDuotone, PiInfinity } from "react-icons/pi";
+import { PiArrowSquareOutDuotone } from "react-icons/pi";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -20,16 +20,13 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { parseCompactCurrency } from "~/lib/parsers";
-import { useDetailsSheetStore } from "~/lib/stores/sheets-store";
-import { type Roles } from "~/server/db/edge-schema";
+import { parseLongCurrency } from "~/lib/parsers";
+import { useProjectPersonSheetStore } from "~/lib/stores/sheets-store";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 
-export type TeamTableData = RouterOutputs["teams"]["getByWorkspace"];
-
-export type TeamTableColumn = RouterOutputs["teams"]["getByWorkspace"][number];
-export const columns: ColumnDef<TeamTableColumn>[] = [
+type ProjectTeamColumn = RouterOutputs["projects"]["getTeam"]["users"][number];
+const columns: ColumnDef<ProjectTeamColumn>[] = [
   {
     id: "avatar",
     header: undefined,
@@ -58,84 +55,53 @@ export const columns: ColumnDef<TeamTableColumn>[] = [
     },
   },
   {
-    accessorKey: "role",
+    id: "role",
+    accessorFn: (row) => row.role,
     header: "Role",
-    cell: ({ row }) => (
-      <Badge variant={row.getValue<Roles>("role") === "admin" ? "primary" : "secondary"}>
-        {row.getValue("role")}
-      </Badge>
-    ),
+    cell: ({ row }) => {
+      return <Badge variant={"secondary"}>{row.getValue("role")}</Badge>;
+    },
   },
   {
-    id: "email",
-    accessorFn: (row) => row.user.email,
-    header: () => <span className="text-left">Email</span>,
-    cell: ({ row }) => (
-      <span className="text-left text-muted-foreground">{row.getValue("email")}</span>
-    ),
-    maxSize: 250,
+    id: "billableRate",
+    accessorFn: (row) => row.billableRate,
+    header: "Rate",
+    cell: ({ row }) => {
+      return <Badge variant={"secondary"}>{parseLongCurrency(row.getValue("billableRate"))}</Badge>;
+    },
   },
   {
-    accessorKey: "defaultWeekCapacity",
-    header: "Week Capacity",
-    cell: ({ row }) => (
-      <Badge className="font-mono tabular-nums">
-        {row.getValue("defaultWeekCapacity") === null ? (
-          <PiInfinity size={16} />
-        ) : (
-          row.getValue("defaultWeekCapacity")
-        )}{" "}
-        hours
-      </Badge>
-    ),
-  },
-  {
-    accessorKey: "defaultBillableRate",
-    header: "Billable Rate",
-    size: 200,
-    minSize: 180,
-    cell: ({ row }) => (
-      <span className="font-mono tabular-nums">
-        <Badge variant={"secondary"} className="text-sm">
-          {parseCompactCurrency(row.getValue("defaultBillableRate"))}
-        </Badge>
-      </span>
-    ),
-  },
-  {
-    accessorKey: "internalCost",
+    id: "internalCost",
+    accessorFn: (row) => row.internalCost,
     header: "Internal Cost",
-    size: 200,
-    minSize: 180,
-    cell: ({ row }) => (
-      <span className="font-mono tabular-nums">
-        <Badge
-          className="text-sm"
-          variant={
-            row.original.defaultBillableRate < row.original.internalCost
-              ? "destructive"
-              : "secondary"
-          }
-        >
-          {parseCompactCurrency(row.getValue("internalCost"))}
-        </Badge>
-      </span>
-    ),
+    cell: ({ row }) => {
+      return <Badge variant={"secondary"}>{parseLongCurrency(row.getValue("internalCost"))}</Badge>;
+    },
   },
 ];
 
-export const TeamTable = ({ data }: { data: TeamTableData }) => {
-  const updateDetails = useDetailsSheetStore((s) => s.setDetails);
+export const ProjectTeamTable = ({
+  id,
+  initialData,
+}: {
+  id: string;
+  initialData: RouterOutputs["projects"]["getTeam"];
+}) => {
+  const updateDetails = useProjectPersonSheetStore((s) => s.setData);
 
-  const { data: tableData } = api.teams.getByWorkspace.useQuery(undefined, {
-    initialData: data,
-    suspense: true,
-  });
+  const { data: tableData } = api.projects.getTeam.useQuery(
+    {
+      projectShareableId: id,
+    },
+    {
+      initialData,
+    },
+  );
 
   const table = useReactTable({
-    data: tableData,
+    data: tableData?.users ?? [],
     columns,
-    getCoreRowModel: getCoreRowModel<TeamTableColumn>(),
+    getCoreRowModel: getCoreRowModel<ProjectTeamColumn>(),
     getFilteredRowModel: getFilteredRowModel(),
     /**
      * TODO: Add sorting per column
@@ -146,9 +112,9 @@ export const TeamTable = ({ data }: { data: TeamTableData }) => {
   return (
     <div className="grid grid-cols-1 gap-4 rounded-xl border bg-secondary-background p-5">
       <Input
-        placeholder="Find by email"
-        value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
-        onChange={(event) => table.getColumn("email")?.setFilterValue(event.target.value)}
+        placeholder="Find by name"
+        value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+        onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)}
         className="max-w-sm"
       />
 
@@ -174,11 +140,17 @@ export const TeamTable = ({ data }: { data: TeamTableData }) => {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  onClick={() => updateDetails(row.original)}
                   className="cursor-pointer"
+                  onClick={() => updateDetails(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell
+                      key={cell.id}
+                      style={{
+                        maxWidth: `${cell.column.getSize()}px`,
+                        width: `${cell.column.getSize()}px`,
+                      }}
+                    >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
@@ -196,7 +168,8 @@ export const TeamTable = ({ data }: { data: TeamTableData }) => {
       </div>
 
       <div className="flex-1 text-xs text-muted-foreground">
-        {data.length} teammate{data.length === 1 ? "" : "s"} in this workspace
+        {initialData.users.length} {initialData.users.length === 1 ? "person" : "people"} assigned
+        to this project
       </div>
     </div>
   );

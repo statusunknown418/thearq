@@ -27,7 +27,8 @@ export const ProjectBudget = ({
     },
   );
 
-  const budgetUsedPercentage = (data.remaining / data.totalBudget) * 100;
+  const budgetUsedPercentage =
+    data.totalHours > 0 ? 100 - (data.remaining / data.totalBudget) * 100 : 0;
 
   return (
     <Card className="max-w-xs p-4">
@@ -35,11 +36,11 @@ export const ProjectBudget = ({
         Budget hours (remaining)
       </h4>
       <p className="mt-1.5 text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-        {data.totalBudget ? data.remaining : "N/A"}{" "}
+        {data.totalBudget ? parseNumber(data.remaining) : "N/A"}{" "}
         <span className="text-sm font-normal text-muted-foreground">hours</span>
       </p>
       <p className="mt-4 flex items-center justify-between text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-        <span>{data.totalBudget ? `${parseNumber(budgetUsedPercentage)}% of budget` : "N/A"}</span>
+        <span>{data.totalBudget ? `${parseNumber(budgetUsedPercentage)}% used` : "N/A"}</span>
         <span>{data.totalBudget ? `${parseNumber(data.totalBudget)} hours` : "No budget set"}</span>
       </p>
 

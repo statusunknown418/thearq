@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { PiArrowLeft, PiUserCircleDashed, PiUserDuotone } from "react-icons/pi";
 import { Badge } from "~/components/ui/badge";
@@ -25,6 +26,7 @@ export const ProjectClientDetails = ({
       initialData,
     },
   );
+
   const form = useForm<ClientSchema>({
     defaultValues: {
       name: data?.name,
@@ -32,6 +34,14 @@ export const ProjectClientDetails = ({
       address: data?.address,
     },
   });
+
+  useEffect(() => {
+    form.reset({
+      name: data?.name,
+      email: data?.email,
+      address: data?.address,
+    });
+  }, [data?.address, data?.email, data?.name, form]);
 
   const onSubmit = () => {
     return;

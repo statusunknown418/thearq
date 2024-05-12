@@ -19,6 +19,11 @@ import {
   ProjectRevenueChartsLoading,
   ProjectRevenueChartsWrapperRSC,
 } from "~/components/projects/[projectId]/project-revenue-charts/revenue-charts-wrapper";
+import { ProjectPersonSheet } from "~/components/projects/[projectId]/project-team/ProjectPersonSheet";
+import {
+  ProjectTeamLoading,
+  ProjectTeamWrapper,
+} from "~/components/projects/[projectId]/project-team/project-team-wrapper";
 import { TabsContent } from "~/components/ui/tabs";
 import { routes } from "~/lib/navigation";
 
@@ -69,11 +74,13 @@ export default function ProjectIdPage({
           </TabsContent>
 
           <TabsContent value="team">
-            <section className="grid grid-cols-2 gap-4">
-              <Suspense></Suspense>
-            </section>
+            <Suspense fallback={<ProjectTeamLoading />}>
+              <ProjectTeamWrapper id={parsed.id} />
+            </Suspense>
           </TabsContent>
         </ProjectMainTabs>
+
+        <ProjectPersonSheet />
       </Suspense>
     </Main>
   );

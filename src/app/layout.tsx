@@ -9,11 +9,12 @@ import { ThemeWrapper } from "~/components/theme-wrapper";
 import { Toaster } from "~/components/ui/sonner";
 import { auth } from "~/server/auth";
 import { TRPCReactProvider } from "~/trpc/react";
+import NextTopLoader from "nextjs-toploader";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | Zentrack",
-    default: "Zentrack",
+    template: "%s | TheArq",
+    default: "TheArq",
   },
   description: "The new cool kid on the block.",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
@@ -33,6 +34,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} text-sm`}>
+        <NextTopLoader
+          color="#a78bfa"
+          showSpinner={false}
+          speed={300}
+          initialPosition={0.1}
+          height={4}
+        />
+
         <ThemeWrapper>
           <AuthProvider session={session}>
             <TRPCReactProvider>{children}</TRPCReactProvider>

@@ -60,14 +60,14 @@ export const ProjectHoursCharts = ({
         {children}
 
         <Card className="flex-grow p-4 tabular-nums">
-          <div className="flex items-center justify-start">
+          <div className="flex items-center justify-center">
             <DonutChart
               data={data.totalHoursByUser}
               index="userName"
               category="hours"
               valueFormatter={(v) => `${secondsToHoursDecimal(v).toFixed(2)}h`}
-              className="h-32 tabular-nums tracking-wide"
-              noDataText="No hours logged per user"
+              className="h-32 w-52 tabular-nums tracking-wide"
+              noDataText="No hours logged yet"
             />
 
             <Legend categories={data.totalHoursByUser.map((u) => u.userName)} />
@@ -86,6 +86,7 @@ export const ProjectHoursCharts = ({
               {data.nonBillableHours > 0 ? parseNumber(nonBillablePercentage) : 0}% of total
             </span>
           </p>
+
           <ProgressBar value={nonBillablePercentage} color="slate" className="mt-2" />
         </Card>
       </article>

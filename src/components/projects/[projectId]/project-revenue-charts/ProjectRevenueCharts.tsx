@@ -1,10 +1,9 @@
 "use client";
 
-import { AreaChart, Card, CategoryBar, Legend } from "@tremor/react";
-import { differenceInWeeks, formatDistanceToNow } from "date-fns";
-import { format, toDate } from "date-fns-tz";
-import { PiEnvelopeDuotone, PiTrendDownBold, PiTrendUpBold, PiXSquare } from "react-icons/pi";
-import { Button } from "~/components/ui/button";
+import { AreaChart, Card, CategoryBar, Divider, DonutChart, Legend } from "@tremor/react";
+import { differenceInWeeks, formatDistanceToNow, toDate } from "date-fns";
+import { format } from "date-fns-tz";
+import { PiTrendDownBold, PiTrendUpBold } from "react-icons/pi";
 import { NOW, adjustEndDate } from "~/lib/dates";
 import { parseCompactCurrency, parseNumber } from "~/lib/parsers";
 import { cn } from "~/lib/utils";
@@ -48,6 +47,22 @@ export const ProjectRevenueCharts = ({
               <span className="text-sm font-normal text-muted-foreground">gross revenue</span>
             </p>
           </div>
+
+          <div className="flex flex-col items-end">
+            <p className="text-muted-foreground">
+              Expected to end in{" "}
+              {data.projectEndsAt && formatDistanceToNow(toDate(data.projectEndsAt))} &middot; (
+              {data.projectEndsAt
+                ? `${differenceInWeeks(data.projectEndsAt, NOW)} weeks remaining`
+                : "Unable to estimate time left because this project has no end date"}
+              )
+            </p>
+
+            <p className="text-indigo-500 dark:text-indigo-400">
+              {data.projectStartsAt ? format(data.projectStartsAt, "PP") : "[No start date]"} &rarr;{" "}
+              {data.projectEndsAt ? format(data.projectEndsAt, "PP") : "[No end date]"}
+            </p>
+          </div>
         </article>
 
         <AreaChart
@@ -63,41 +78,36 @@ export const ProjectRevenueCharts = ({
         />
       </Card>
 
+      <Divider className="my-0">Revenue breakdown</Divider>
+
       <article className="flex gap-4">
-        <Card className="max-w-xs p-4">
-          <h4 className="text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-            Time frame
-          </h4>
-          {data.projectEndsAt ? (
-            <p className="mt-2 text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-              {formatDistanceToNow(toDate(data.projectEndsAt))}{" "}
-              <span className="text-sm font-normal text-muted-foreground">to go</span>
+        <Card className="p-4 tabular-nums">
+          <p className="text-muted-foreground">Detailed profits & costs</p>
+
+          <div className="mt-1.5 flex items-center gap-4">
+            <p className="text-tremor-metric font-semibold text-emerald-500">
+              {parseCompactCurrency(data.revenue)}
             </p>
-          ) : (
-            <p className="mt-2 inline-flex items-center gap-1 text-muted-foreground">
-              <PiXSquare size={16} />
-              No end date set
+            <p className="text-tremor-metric font-semibold text-red-500">
+              {parseCompactCurrency(data.cost)}
             </p>
-          )}
+          </div>
 
-          <p className="mt-2 text-indigo-500 dark:text-indigo-400">
-            {data.projectStartsAt ? format(data.projectStartsAt, "PP") : "N/A"} &rarr;{" "}
-            {data.projectEndsAt ? format(data.projectEndsAt, "PP") : "N/A"}
-          </p>
+          <CategoryBar
+            className="mt-4"
+            colors={["emerald", "red"]}
+            values={[data.revenue / 100, data.cost / 100, data.revenue === 0 ? 100 : 0]}
+            showLabels={false}
+          />
 
-          <p className="mt-2 text-muted-foreground">
-            (
-            {data.projectEndsAt
-              ? `${differenceInWeeks(data.projectEndsAt, NOW)} weeks remaining`
-              : "Unable to estimate time left because this project has no end date"}
-            )
-          </p>
-        </Card>
+          <div className="flex items-end justify-between">
+            <Legend
+              className="mt-2"
+              categories={["Profits", "Expenses"]}
+              colors={["emerald", "red"]}
+            />
 
-        <Card className="flex-grow p-4 tabular-nums">
-          <p className="flex items-center gap-2 text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-            <span>Revenue breakdown</span>
-            <span
+            <p
               className={cn(
                 "flex items-center gap-1",
                 data.revenue && data.grossRevenue
@@ -120,44 +130,22 @@ export const ProjectRevenueCharts = ({
                   ? "loss"
                   : "profit"
                 : ""}
-            </span>
-          </p>
-
-          <div className="mt-1.5 flex items-center gap-4">
-            <p className="text-tremor-metric font-semibold text-emerald-500">
-              {parseCompactCurrency(data.revenue)}
-            </p>
-            <p className="text-tremor-metric font-semibold text-red-500">
-              {parseCompactCurrency(data.cost)}
             </p>
           </div>
-
-          <CategoryBar
-            className="mt-4"
-            values={[data.revenue / 100, data.cost / 100, data.revenue === 0 ? 100 : 0]}
-            colors={["emerald", "red"]}
-            showLabels={false}
-          />
-
-          <Legend
-            className="mt-2"
-            categories={["Profits", "Expenses"]}
-            colors={["emerald", "red"]}
-          />
         </Card>
 
-        <Card className="max-w-xs p-4 tabular-nums">
-          <h3 className="text-muted-foreground">Non-invoiced amount</h3>
-          <p className="mt-1.5 text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-            {parseCompactCurrency(2312)}
-          </p>
-          <p className="mt-2 break-words text-muted-foreground">
-            This amount is pending to be invoiced
-          </p>
-          <Button variant={"secondary"} className="mt-2">
-            <PiEnvelopeDuotone size={15} />
-            Create invoice
-          </Button>
+        <Card className="flex items-center justify-center p-4 tabular-nums">
+          <DonutChart
+            showAnimation
+            animationDuration={700}
+            data={data.groupedByUser}
+            valueFormatter={parseCompactCurrency}
+            category="revenue"
+            index="userName"
+            className="h-32 w-44 tabular-nums tracking-wide"
+          />
+
+          <Legend categories={data.groupedByUser.map((u) => u.userName)} />
         </Card>
       </article>
     </section>

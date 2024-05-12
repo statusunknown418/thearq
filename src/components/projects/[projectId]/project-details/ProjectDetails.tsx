@@ -2,10 +2,11 @@
 
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useForm } from "react-hook-form";
-import { PiArrowBendDownRight, PiSquaresFourDuotone } from "react-icons/pi";
+import { PiSquaresFourDuotone, PiXCircle } from "react-icons/pi";
 import { toast } from "sonner";
 import { ClientsCombobox } from "~/components/clients/ClientsCombobox";
 import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import {
   Form,
   FormControl,
@@ -56,6 +57,7 @@ export const ProjectDetails = ({
     onSettled: () => {
       void utils.projects.invalidate();
       void utils.viewer.getAssignedProjects.invalidate();
+      void utils.clients.getByProject.invalidate();
       toast.info("Project updated");
     },
   });
@@ -80,6 +82,7 @@ export const ProjectDetails = ({
       type: data?.project.type,
       budgetHours: data?.project.budgetHours,
       budgetResetsPerMonth: data?.project.budgetResetsPerMonth,
+      entriesLockingSchedule: data?.project.entriesLockingSchedule,
       startsAt: data?.project.startsAt,
       endsAt: data?.project.endsAt,
     },
@@ -183,9 +186,7 @@ export const ProjectDetails = ({
           name="budgetResetsPerMonth"
           render={({ field }) => (
             <FormItem className="grid w-full grid-cols-5 gap-4">
-              <FormLabel className="inline-flex items-center gap-2 self-start">
-                <PiArrowBendDownRight size={16} className="text-muted-foreground" /> Resettable
-              </FormLabel>
+              <FormLabel>Resettable</FormLabel>
 
               <section className="col-span-4 flex flex-col gap-2">
                 <FormControl>
@@ -249,33 +250,51 @@ export const ProjectDetails = ({
           control={form.control}
           name="entriesLockingSchedule"
           render={({ field }) => (
-            <FormItem className="grid w-full grid-cols-5 gap-4">
+            <FormItem className="grid w-full grid-cols-5  gap-4">
               <Label className="inline-flex items-center gap-2 self-start">Entry locking</Label>
 
               <section className="col-span-4 flex flex-col gap-2">
-                <Select
-                  value={field.value ?? undefined}
-                  onValueChange={(v) => {
-                    field.onChange(v);
-                    void onSubmit();
-                  }}
-                >
-                  <SelectTrigger className="max-w-52 capitalize">
-                    <FormControl>
-                      <SelectValue placeholder="Disabled" />
-                    </FormControl>
-                  </SelectTrigger>
+                <div className="flex items-center gap-1">
+                  <Select
+                    value={field.value ?? undefined}
+                    onValueChange={(v) => {
+                      field.onChange(v);
 
-                  <SelectContent>
-                    {lockingSchedules.map((type) => (
-                      <SelectItem key={type} value={type} className="capitalize">
-                        {type.replaceAll("-", " ")}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      void onSubmit();
+                    }}
+                  >
+                    <SelectTrigger className="max-w-52 capitalize">
+                      <FormControl>
+                        <SelectValue placeholder="" />
+                      </FormControl>
+                    </SelectTrigger>
 
-                <FormDescription>Choose the type of billing for this project</FormDescription>
+                    <SelectContent>
+                      {lockingSchedules.map((type) => (
+                        <SelectItem key={type} value={type} className="capitalize">
+                          {type.replaceAll("-", " ")}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {!!field.value && (
+                    <Button
+                      variant={"outline"}
+                      size={"icon"}
+                      onClick={() => {
+                        form.setValue("entriesLockingSchedule", null);
+                        void onSubmit();
+                      }}
+                    >
+                      <PiXCircle size={16} />
+                    </Button>
+                  )}
+                </div>
+
+                <FormDescription>
+                  Choose if the entries should be locked after a certain time
+                </FormDescription>
               </section>
             </FormItem>
           )}
