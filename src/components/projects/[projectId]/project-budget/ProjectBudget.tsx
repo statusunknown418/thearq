@@ -1,4 +1,5 @@
 "use client";
+
 import { Card, ProgressBar } from "@tremor/react";
 import { parseNumber } from "~/lib/parsers";
 import { api } from "~/trpc/react";

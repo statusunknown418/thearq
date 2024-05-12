@@ -38,8 +38,8 @@ export const ProjectRevenueCharts = ({
         <article className="flex justify-between">
           <div>
             <h3 className="text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-              Revenue vs Internal costs - ({format(adjustEndDate(from), "PPP")} &rarr;{" "}
-              {format(adjustEndDate(to), "PPP")})
+              Revenue vs Internal costs - ({format(toDate(adjustEndDate(from)), "PPP")} &rarr;{" "}
+              {format(toDate(adjustEndDate(to)), "PPP")})
             </h3>
 
             <p className="mt-1 text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
@@ -71,7 +71,7 @@ export const ProjectRevenueCharts = ({
           data={data.charts}
           valueFormatter={parseCompactCurrency}
           animationDuration={700}
-          className="mt-2 h-[360px]"
+          className="mt-2 h-[360px] overflow-visible"
           index="date"
           categories={["revenue", "cost"]}
           colors={["emerald", "red"]}

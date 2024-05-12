@@ -1,12 +1,12 @@
 "use client";
 
 import { BarChart, Card, DonutChart, Legend, ProgressBar } from "@tremor/react";
+import { format } from "date-fns-tz";
 import { adjustEndDate, secondsToHoursDecimal } from "~/lib/dates";
+import { parseNumber } from "~/lib/parsers";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 import { useProjectsQS } from "../project-cache";
-import { parseNumber } from "~/lib/parsers";
-import { format } from "date-fns-tz";
 
 export const ProjectHoursCharts = ({
   initialData,

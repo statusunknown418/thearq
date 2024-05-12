@@ -8,7 +8,7 @@ export const parseCompactCurrency = (value: number) => {
     style: "currency",
     currency: "USD",
     maximumFractionDigits: 2,
-    minimumFractionDigits: 2,
+    minimumFractionDigits: 0,
     notation: "compact",
   }).format(receiveAmount(value));
 };
