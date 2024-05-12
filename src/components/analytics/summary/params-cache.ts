@@ -5,8 +5,8 @@ import { createSearchParamsCache, parseAsString } from "nuqs/server";
 import { NOW } from "~/lib/dates";
 
 export const analyticsParsers = {
-  from: parseAsString.withDefault(format(startOfMonth(toDate(NOW)), "yyyy-MM-dd")),
-  to: parseAsString.withDefault(format(toDate(NOW), "yyyy-MM-dd")),
+  from: parseAsString.withDefault(format(startOfMonth(toDate(NOW)), "yyyy/MM/dd")),
+  to: parseAsString.withDefault(format(toDate(NOW), "yyyy/MM/dd")),
 };
 
 console.log(NOW, toDate(NOW));
