@@ -56,14 +56,14 @@ export default function ProjectIdPage({
             </Suspense>
           </TabsContent>
 
-          <TabsContent value="details">
-            <section className="grid grid-cols-2 gap-4">
+          <TabsContent value="settings">
+            <section className="grid grid-cols-2 gap-5">
               <Suspense fallback={<ProjectDetailsLoading />}>
-                <ProjectClientDetailsWrapperRSC projectId={parsed.id} />
+                <ProjectDetailsWrapperRSC projectId={parsed.id} />
               </Suspense>
 
               <Suspense fallback={<ProjectDetailsLoading />}>
-                <ProjectDetailsWrapperRSC projectId={parsed.id} />
+                <ProjectClientDetailsWrapperRSC projectId={parsed.id} />
               </Suspense>
             </section>
           </TabsContent>

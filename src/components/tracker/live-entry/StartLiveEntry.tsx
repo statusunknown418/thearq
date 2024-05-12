@@ -11,7 +11,7 @@ import { Input } from "~/components/ui/input";
 import { KBD } from "~/components/ui/kbd";
 import { Toggle } from "~/components/ui/toggle";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
-import { useHotkeys } from "~/lib/use-hotkeys";
+import { useHotkeys } from "~/lib/hooks/use-hotkeys";
 import { cn } from "~/lib/utils";
 import { timeEntrySchema, type NewTimeEntry } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";

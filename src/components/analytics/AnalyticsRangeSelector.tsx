@@ -1,6 +1,14 @@
 "use client";
 
-import { addDays, endOfWeek, startOfMonth, startOfWeek } from "date-fns";
+import {
+  addDays,
+  addMonths,
+  addWeeks,
+  endOfMonth,
+  endOfWeek,
+  startOfMonth,
+  startOfWeek,
+} from "date-fns";
 import { format, toDate } from "date-fns-tz";
 import * as React from "react";
 import { type DateRange } from "react-day-picker";
@@ -74,8 +82,8 @@ export function AnalyticsRangeSelector() {
     }
 
     if (v === "last-14-days") {
-      start = addDays(NOW, -14);
-      end = NOW;
+      start = addWeeks(startOfWeek(toDate(NOW)), -2);
+      end = addWeeks(endOfWeek(toDate(NOW)), -1);
 
       void updateState({
         from: format(start, "yyyy-MM-dd"),
@@ -83,9 +91,9 @@ export function AnalyticsRangeSelector() {
       });
     }
 
-    if (v === "last-30-days") {
-      start = addDays(NOW, -30);
-      end = NOW;
+    if (v === "last-month") {
+      start = addMonths(startOfMonth(toDate(NOW)), -1);
+      end = addMonths(endOfMonth(toDate(NOW)), -1);
 
       void updateState({
         from: format(start, "yyyy-MM-dd"),
@@ -132,34 +140,34 @@ export function AnalyticsRangeSelector() {
       <Button
         variant="outline"
         size={"icon"}
+        subSize={"iconBase"}
         className="rounded-r-none"
-        subSize={"iconMd"}
         onClick={toPrevWeek}
       >
-        <PiArrowLeft size={14} />
+        <PiArrowLeft size={13} />
       </Button>
 
       <Button
         variant="outline"
         size={"icon"}
-        subSize={"iconMd"}
+        subSize={"iconBase"}
         className="mr-2 rounded-l-none border-l-0"
         onClick={toNextWeek}
       >
-        <PiArrowRight size={14} />
+        <PiArrowRight size={13} />
       </Button>
 
       <RangePicker open={open} onOpenChange={onOpenChange} onDateChange={setDate} date={date} />
 
       <Select value={quickSelect} onValueChange={onQuickSelect}>
-        <SelectTrigger className="w-40 rounded-l-none border-l-0">
+        <SelectTrigger className="w-32 rounded-l-none border-l-0">
           <SelectValue placeholder="Select a range" />
         </SelectTrigger>
 
         <SelectContent>
           <SelectItem value="last-7-days">This week</SelectItem>
           <SelectItem value="last-14-days">Last 2 weeks</SelectItem>
-          <SelectItem value="last-30-days">Last month</SelectItem>
+          <SelectItem value="last-month">Last month</SelectItem>
           <SelectItem value="month-to-date">Month to date</SelectItem>
         </SelectContent>
       </Select>

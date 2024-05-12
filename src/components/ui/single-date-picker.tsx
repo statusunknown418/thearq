@@ -9,7 +9,7 @@ import { type DayPickerBase } from "react-day-picker";
 export type DatePickerProps = {
   date: Date | undefined;
   onChange: (date: Date | undefined) => void;
-  onBlur: () => void;
+  onBlur?: () => void;
   disabled?: DayPickerBase["disabled"];
   formatType?: string;
   buttonClassName?: string;

@@ -11,11 +11,15 @@ export const RangePicker = ({
   onOpenChange,
   onDateChange,
   date,
+  align = "center",
+  disableAfter = true,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onDateChange: (date: DateRange | undefined) => void;
   date: DateRange | undefined;
+  align?: "start" | "end" | "center";
+  disableAfter?: boolean;
 }) => {
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
@@ -25,7 +29,7 @@ export const RangePicker = ({
           variant={"outline"}
           size={"lg"}
           className={cn(
-            "w-[300px] justify-start rounded-r-none bg-tremor-background text-left font-normal dark:bg-dark-tremor-background",
+            "w-[240px] justify-start rounded-r-none bg-tremor-background text-left font-normal dark:bg-dark-tremor-background",
             !date && "text-muted-foreground",
           )}
         >
@@ -44,7 +48,7 @@ export const RangePicker = ({
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-auto p-0" align={align}>
         <Calendar
           initialFocus
           showOutsideDays={false}
@@ -53,6 +57,11 @@ export const RangePicker = ({
           selected={date}
           onSelect={onDateChange}
           numberOfMonths={2}
+          {...(disableAfter && {
+            disabled: {
+              after: new Date(),
+            },
+          })}
         />
       </PopoverContent>
     </Popover>

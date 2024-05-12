@@ -62,7 +62,11 @@ export const ClientsCombobox = ({
 
               <FormControl>
                 <PopoverTrigger asChild>
-                  <Button variant={"secondary"} size={"lg"} className="flex-grow justify-between">
+                  <Button
+                    variant={"secondary"}
+                    size={"lg"}
+                    className="max-w-52 flex-grow justify-between"
+                  >
                     <span>
                       {!!field.value
                         ? data?.find((c) => c.id === field.value)?.name
@@ -79,7 +83,7 @@ export const ClientsCombobox = ({
               </FormControl>
             </div>
 
-            <PopoverContent className="w-[var(--radix-popper-anchor-width)] p-0" align="start">
+            <PopoverContent className={"w-[280px] p-0"} align="start">
               <Command>
                 <CommandInput placeholder="Search" />
                 <CommandEmpty>No client found</CommandEmpty>

@@ -26,7 +26,7 @@ import {
   useQueryDateState,
 } from "~/lib/stores/dynamic-dates-store";
 import { createFakeEvent, useEventsStore } from "~/lib/stores/events-store";
-import { useHotkeys } from "~/lib/use-hotkeys";
+import { useHotkeys } from "~/lib/hooks/use-hotkeys";
 import { cn } from "~/lib/utils";
 import { type CustomEvent } from "~/server/api/routers/entries";
 import { api } from "~/trpc/react";

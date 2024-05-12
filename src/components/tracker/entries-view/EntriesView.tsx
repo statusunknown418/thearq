@@ -13,7 +13,7 @@ import {
   toPrevMonthDate,
   useDynamicMonthStore,
 } from "~/lib/stores/dynamic-dates-store";
-import { useHotkeys } from "~/lib/use-hotkeys";
+import { useHotkeys } from "~/lib/hooks/use-hotkeys";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";

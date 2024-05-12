@@ -34,7 +34,7 @@ import { dateToMonthDate } from "~/lib/dates";
 import { useCommandsStore } from "~/lib/stores/commands-store";
 import { createFakeEvent, useEventsStore } from "~/lib/stores/events-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
-import { useHotkeys } from "~/lib/use-hotkeys";
+import { useHotkeys } from "~/lib/hooks/use-hotkeys";
 import { type CustomEvent } from "~/server/api/routers/entries";
 import { timeEntrySchema, type NewTimeEntry } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";

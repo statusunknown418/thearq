@@ -5,7 +5,7 @@ import { routes } from "~/lib/navigation";
 import { useCommandsStore } from "~/lib/stores/commands-store";
 import { useEventsStore } from "~/lib/stores/events-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
-import { useHotkeys } from "~/lib/use-hotkeys";
+import { useHotkeys } from "~/lib/hooks/use-hotkeys";
 import { NewClientCommand } from "../clients/NewClientCommand";
 import { ProjectCommand } from "../projects/ProjectCommand";
 import { TrackerCommand } from "../tracker/TrackerCommand";
