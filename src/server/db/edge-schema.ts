@@ -394,6 +394,7 @@ export const projects = sqliteTable(
 export const projectsSchema = omit(
   createInsertSchema(projects, {
     name: string([minLength(3, "Name must be at least 3 characters long")]),
+    budgetHours: coerce(number("Budget must be a number"), (v) => Number(v)),
   }),
   ["workspaceId", "shareableUrl", "ownerId"],
   [
