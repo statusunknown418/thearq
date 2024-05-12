@@ -1,3 +1,4 @@
+import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import { Main } from "~/components/layout/Main";
 import { ProjectMainTabs } from "~/components/projects/[projectId]/ProjectMainTabs";
@@ -11,21 +12,29 @@ import {
   ProjectHeaderLoading,
   ProjectHeaderWrapperRSC,
 } from "~/components/projects/[projectId]/project-header/project-header-wrapper";
-import {
-  ProjectHoursChartsLoading,
-  ProjectHoursChartsWrapperRSC,
-} from "~/components/projects/[projectId]/project-hours-charts/hours-charts-wrapper";
+import { ProjectHoursChartsLoading } from "~/components/projects/[projectId]/project-hours-charts/hours-charts-wrapper";
 import {
   ProjectRevenueChartsLoading,
   ProjectRevenueChartsWrapperRSC,
 } from "~/components/projects/[projectId]/project-revenue-charts/revenue-charts-wrapper";
-import { ProjectPersonSheet } from "~/components/projects/[projectId]/project-team/ProjectPersonSheet";
 import {
   ProjectTeamLoading,
   ProjectTeamWrapper,
 } from "~/components/projects/[projectId]/project-team/project-team-wrapper";
 import { TabsContent } from "~/components/ui/tabs";
 import { routes } from "~/lib/navigation";
+
+const DynamicPersonSheet = dynamic(() =>
+  import("~/components/projects/[projectId]/project-team/ProjectPersonSheet").then(
+    (mod) => mod.ProjectPersonSheet,
+  ),
+);
+
+const DynamicHoursCharts = dynamic(() =>
+  import("~/components/projects/[projectId]/project-hours-charts/hours-charts-wrapper").then(
+    (mod) => mod.ProjectHoursChartsWrapperRSC,
+  ),
+);
 
 export default function ProjectIdPage({
   params,
@@ -57,7 +66,7 @@ export default function ProjectIdPage({
 
           <TabsContent value="analytics">
             <Suspense fallback={<ProjectHoursChartsLoading />}>
-              <ProjectHoursChartsWrapperRSC projectId={parsed.id} />
+              <DynamicHoursCharts projectId={parsed.id} />
             </Suspense>
           </TabsContent>
 
@@ -80,7 +89,9 @@ export default function ProjectIdPage({
           </TabsContent>
         </ProjectMainTabs>
 
-        <ProjectPersonSheet />
+        <Suspense>
+          <DynamicPersonSheet />
+        </Suspense>
       </Suspense>
     </Main>
   );

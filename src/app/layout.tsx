@@ -35,7 +35,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} text-sm`}>
         <NextTopLoader
-          color="#a78bfa"
+          color="#6366f1"
           showSpinner={false}
           speed={300}
           initialPosition={0.1}
