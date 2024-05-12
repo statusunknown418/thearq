@@ -346,7 +346,7 @@ export const projectsRouter = createTRPCRouter({
       );
 
       const withEmptyDates = Array.from({ length: difference + 1 }, (_, i) => {
-        const date = format(addDays(new Date(input.start), i + 1), "yyyy/MM/dd");
+        const date = format(addDays(new Date(input.start), i), "yyyy/MM/dd");
         return {
           date,
           revenue: 0,
