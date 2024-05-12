@@ -6,7 +6,7 @@ import { NOW } from "~/lib/dates";
 
 export const projectAnalyticsParsers = {
   from: parseAsString.withDefault(format(startOfMonth(addMonths(NOW, -1)), "yyyy/MM/dd")),
-  to: parseAsString.withDefault(format(NOW, "yyyy-MM-dd")),
+  to: parseAsString.withDefault(format(NOW, "yyyy/MM/dd")),
   tab: parseAsString.withDefault("revenue"),
   view: parseAsString.withDefault("day"),
 };

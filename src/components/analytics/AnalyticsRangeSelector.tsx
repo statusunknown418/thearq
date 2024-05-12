@@ -48,8 +48,8 @@ export function AnalyticsRangeSelector() {
       return toast.error("Please select a date range");
     }
 
-    const start = date.from ? format(date.from, "yyyy-MM-dd") : undefined;
-    const end = date.to ? format(date.to, "yyyy-MM-dd") : undefined;
+    const start = date.from ? format(date.from, "yyyy/MM/dd") : undefined;
+    const end = date.to ? format(date.to, "yyyy/MM/dd") : undefined;
 
     void updateState({
       from: start,
@@ -66,8 +66,8 @@ export function AnalyticsRangeSelector() {
       end = NOW;
 
       void updateState({
-        from: format(start, "yyyy-MM-dd"),
-        to: format(end, "yyyy-MM-dd"),
+        from: format(start, "yyyy/MM/dd"),
+        to: format(end, "yyyy/MM/dd"),
       });
     }
 
@@ -76,8 +76,8 @@ export function AnalyticsRangeSelector() {
       end = endOfWeek(toDate(NOW));
 
       void updateState({
-        from: format(start, "yyyy-MM-dd"),
-        to: format(end, "yyyy-MM-dd"),
+        from: format(start, "yyyy/MM/dd"),
+        to: format(end, "yyyy/MM/dd"),
       });
     }
 
@@ -86,8 +86,8 @@ export function AnalyticsRangeSelector() {
       end = addWeeks(endOfWeek(toDate(NOW)), -1);
 
       void updateState({
-        from: format(start, "yyyy-MM-dd"),
-        to: format(end, "yyyy-MM-dd"),
+        from: format(start, "yyyy/MM/dd"),
+        to: format(end, "yyyy/MM/dd"),
       });
     }
 
@@ -96,8 +96,8 @@ export function AnalyticsRangeSelector() {
       end = addMonths(endOfMonth(toDate(NOW)), -1);
 
       void updateState({
-        from: format(start, "yyyy-MM-dd"),
-        to: format(end, "yyyy-MM-dd"),
+        from: format(start, "yyyy/MM/dd"),
+        to: format(end, "yyyy/MM/dd"),
       });
     }
 
@@ -110,8 +110,8 @@ export function AnalyticsRangeSelector() {
 
     setQuickSelect(undefined);
     void updateState({
-      from: format(start, "yyyy-MM-dd"),
-      to: format(end, "yyyy-MM-dd"),
+      from: format(start, "yyyy/MM/dd"),
+      to: format(end, "yyyy/MM/dd"),
     });
   };
 
@@ -121,8 +121,8 @@ export function AnalyticsRangeSelector() {
 
     setQuickSelect(undefined);
     void updateState({
-      from: format(start, "yyyy-MM-dd"),
-      to: format(end, "yyyy-MM-dd"),
+      from: format(start, "yyyy/MM/dd"),
+      to: format(end, "yyyy/MM/dd"),
     });
   };
 
