@@ -483,6 +483,17 @@ export const usersOnProjects = sqliteTable(
   }),
 );
 
+export const projectUserSchema = omit(
+  createInsertSchema(usersOnProjects, {
+    billableRate: coerce(number("Rate must be a number"), (v) => Number(v)),
+    internalCost: coerce(number("Cost must be a number"), (v) => Number(v)),
+    weekCapacity: coerce(number("Week capacity must be a number"), (v) => Number(v)),
+  }),
+  ["userId", "projectId", "workspaceId"],
+);
+
+export type ProjectUserSchema = Output<typeof projectUserSchema>;
+
 export const usersOnProjectsRelations = relations(usersOnProjects, ({ one }) => ({
   user: one(users, { fields: [usersOnProjects.userId], references: [users.id] }),
   project: one(projects, {

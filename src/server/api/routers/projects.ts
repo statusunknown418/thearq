@@ -2,14 +2,14 @@ import { createId } from "@paralleldrive/cuid2";
 import { TRPCError } from "@trpc/server";
 import { addDays, differenceInDays, endOfMonth, startOfMonth } from "date-fns";
 import { format, toZonedTime } from "date-fns-tz";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 import slugify from "slugify";
-import { number, object, parse, string } from "valibot";
+import { nullable, number, object, parse, string } from "valibot";
 import { RECENT_W_ID_KEY, VERCEL_REQUEST_LOCATION } from "~/lib/constants";
 import { adjustEndDate as adjustedEndDate, secondsToHoursDecimal } from "~/lib/dates";
 import { adminPermissions, parsePermissions, type UserPermissions } from "~/lib/stores/auth-store";
-import { projects, projectsSchema, usersOnProjects } from "~/server/db/edge-schema";
+import { type Roles, projects, projectsSchema, usersOnProjects } from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const hasServer = (perms: UserPermissions, data: string) => {
@@ -99,6 +99,7 @@ export const projectsRouter = createTRPCRouter({
             startsAt: true,
             endsAt: true,
             shareableUrl: true,
+            budgetResetsPerMonth: true,
           },
           with: {
             client: true,
@@ -272,7 +273,11 @@ export const projectsRouter = createTRPCRouter({
         const project = await trx.query.projects.findFirst({
           where: (t, { eq }) => eq(t.shareableUrl, input.projectShareableId),
           with: {
-            users: true,
+            users: {
+              with: {
+                user: true,
+              },
+            },
           },
         });
 
@@ -312,7 +317,6 @@ export const projectsRouter = createTRPCRouter({
         return acc + cost * hours;
       }, 0);
 
-      const arrayT1 = performance.now();
       const revenueAndCostPerDate = charts.reduce(
         (acc, curr) => {
           const user = project?.users?.find((u) => u.userId === curr.userId);
@@ -361,16 +365,42 @@ export const projectsRouter = createTRPCRouter({
 
         return { ...entry, date: formattedDate };
       });
-      const arrayT2 = performance.now();
+
+      const groupedByUser = charts.reduce(
+        (acc, curr) => {
+          const user = project?.users?.find((u) => u.userId === curr.userId);
+          const rate = user?.billableRate ?? 0;
+          const cost = user?.internalCost ?? 0;
+          const hours = secondsToHoursDecimal(curr.duration);
+          const existing = acc.find((a) => a.userId === user?.userId);
+
+          if (existing) {
+            existing.revenue += rate * hours;
+            existing.cost += cost * hours;
+            existing.hours += hours;
+          } else if (user) {
+            acc.push({
+              userId: user.userId,
+              userName: user.user.name ?? "Unknown",
+              revenue: rate * hours,
+              cost: cost * hours,
+              hours,
+            });
+          }
+
+          return acc;
+        },
+        [] as { userId: string; revenue: number; cost: number; hours: number; userName: string }[],
+      );
 
       return {
         grossRevenue: totalRevenue - totalCost,
         revenue: totalRevenue,
         cost: totalCost,
         charts: finalChart,
-        arrayT: arrayT2 - arrayT1,
         projectEndsAt: project.endsAt,
         projectStartsAt: project.startsAt,
+        groupedByUser,
         raw: charts,
       };
     }),
@@ -572,12 +602,135 @@ export const projectsRouter = createTRPCRouter({
         return acc + curr.duration;
       }, 0);
 
-      const totalBudget = (project.budgetHours ?? 0) * 3600;
+      const totalBudget = project.budgetHours ?? 0;
 
       return {
-        remaining: totalBudget ? totalBudget - totalHours : 0,
+        remaining: totalBudget ? totalBudget - totalHours / 3600 : 0,
         totalBudget,
         totalHours,
       };
+    }),
+  getTeam: protectedProcedure
+    .input((i) =>
+      parse(
+        object({
+          projectShareableId: string(),
+        }),
+        i,
+      ),
+    )
+    .query(async ({ ctx, input }) => {
+      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+      if (!wId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No workspace selected",
+        });
+      }
+
+      const data = await ctx.db.transaction(async (trx) => {
+        const project = await trx.query.projects.findFirst({
+          where: (t, { eq }) => eq(t.shareableUrl, input.projectShareableId),
+          columns: {
+            id: true,
+            name: true,
+            identifier: true,
+          },
+          with: {
+            users: {
+              with: {
+                user: true,
+              },
+            },
+          },
+        });
+
+        if (!project) {
+          trx.rollback();
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Project not found",
+          });
+        }
+
+        return project;
+      });
+
+      if (data.users.find((u) => u.userId === ctx.session.user.id)?.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You are not allowed to view this project",
+        });
+      }
+
+      return data;
+    }),
+
+  updateMember: protectedProcedure
+    .input((i) =>
+      parse(
+        object({
+          projectId: number(),
+          userId: string(),
+          role: string(),
+          billableRate: number(),
+          weekCapacity: nullable(number()),
+          internalCost: number(),
+        }),
+        i,
+      ),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+      if (!wId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No workspace selected",
+        });
+      }
+
+      return ctx.db.transaction(async (trx) => {
+        const allowed = await trx.query.projects.findFirst({
+          where: (t, { eq, and }) => {
+            return and(eq(t.id, input.projectId), eq(t.ownerId, ctx.session.user.id));
+          },
+          with: {
+            users: true,
+          },
+        });
+
+        if (!allowed?.id) {
+          trx.rollback();
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Project not found",
+          });
+        }
+
+        if (allowed.users.find((u) => u.userId === ctx.session.user.id)?.role !== "admin") {
+          trx.rollback();
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "You are not allowed to update this project",
+          });
+        }
+
+        return await trx
+          .update(usersOnProjects)
+          .set({
+            billableRate: input.billableRate,
+            weekCapacity: input.weekCapacity,
+            internalCost: input.internalCost,
+            role: input.role as Roles,
+          })
+          .where(
+            and(
+              eq(usersOnProjects.projectId, allowed.id),
+              eq(usersOnProjects.userId, input.userId),
+            ),
+          );
+      });
     }),
 });
