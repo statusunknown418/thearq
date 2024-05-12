@@ -423,7 +423,7 @@ export const viewerRouter = createTRPCRouter({
       );
 
       const totalHoursPerDay = Array.from({ length: difference + 1 }).map((_, index) => {
-        const date = format(addDays(new Date(input.startDate), index + 1), "yyyy/MM/dd");
+        const date = format(addDays(new Date(input.startDate), index), "yyyy/MM/dd");
         const hours = hoursPerDate[date] ?? 0;
 
         return {

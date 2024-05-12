@@ -1,5 +1,5 @@
 import { addMonths, startOfMonth } from "date-fns";
-import { format } from "date-fns-tz";
+import { format, toDate } from "date-fns-tz";
 import { useQueryStates } from "nuqs";
 import { createSearchParamsCache, parseAsString } from "nuqs/server";
 import { NOW } from "~/lib/dates";
@@ -11,6 +11,7 @@ export const projectAnalyticsParsers = {
   view: parseAsString.withDefault("day"),
 };
 
+console.log(NOW, toDate(NOW));
 export const projectAnalyticsParamsCache = createSearchParamsCache(projectAnalyticsParsers);
 
 export const useProjectsQS = () => {

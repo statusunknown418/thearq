@@ -9,6 +9,7 @@ export const analyticsParsers = {
   to: parseAsString.withDefault(format(toDate(NOW), "yyyy-MM-dd")),
 };
 
+console.log(NOW, toDate(NOW));
 export const analyticsParamsCache = createSearchParamsCache(analyticsParsers);
 
 export const useAnalyticsQS = () => {

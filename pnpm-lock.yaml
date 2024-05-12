@@ -304,8 +304,8 @@ importers:
         specifier: ^8.56.10
         version: 8.56.10
       '@types/node':
-        specifier: ^18.19.33
-        version: 18.19.33
+        specifier: ^20.12.11
+        version: 20.12.11
       '@types/react':
         specifier: ^18.3.2
         version: 18.3.2
@@ -2569,6 +2569,9 @@ packages:
 
   '@types/node@18.19.33':
     resolution: {integrity: sha512-NR9+KrpSajr2qBVp/Yt5TU/rp+b5Mayi3+OlMlcg2cVCfRmcG5PWZ7S4+MG9PZ5gWBoc9Pd0BKSRViuBCRPu0A==}
+
+  '@types/node@20.12.11':
+    resolution: {integrity: sha512-vDg9PZ/zi+Nqp6boSOT7plNuthRugEKixDv5sFTIpkE89MmNtEArAShI4mxuX2+UrLEe9pxC1vm2cjm9YlWbJw==}
 
   '@types/prismjs@1.26.4':
     resolution: {integrity: sha512-rlAnzkW2sZOjbqZ743IHUhFcvzaGbqijwOu8QZnZCjfQzBqFE3s4lOTJEsxikImav9uzz/42I+O7YUs1mWgMlg==}
@@ -7697,6 +7700,10 @@ snapshots:
   '@types/json5@0.0.29': {}
 
   '@types/node@18.19.33':
+    dependencies:
+      undici-types: 5.26.5
+
+  '@types/node@20.12.11':
     dependencies:
       undici-types: 5.26.5
 
