@@ -45,3 +45,29 @@ export const useClientsSheetStore = create<ClientsSheetStore>((set) => ({
   open: false,
   openChange: (state: boolean) => set({ open: state }),
 }));
+
+export type ProjectPersonSheet = {
+  open: boolean;
+  openChange: (open: boolean) => void;
+  data: (RouterOutputs["projects"]["getTeam"]["users"][number] & { projectId: number }) | null;
+  setData: (
+    data: RouterOutputs["projects"]["getTeam"]["users"][number] & { projectId: number },
+  ) => void;
+  clear: () => void;
+};
+
+export const useProjectPersonSheetStore = create<ProjectPersonSheet>((set) => ({
+  open: false,
+  openChange: (state: boolean) => set({ open: state }),
+  data: null,
+  setData: (data) =>
+    set({
+      data: {
+        ...data,
+        billableRate: receiveAmount(data.billableRate),
+        internalCost: receiveAmount(data.internalCost),
+      },
+      open: true,
+    }),
+  clear: () => set({ data: null, open: false }),
+}));

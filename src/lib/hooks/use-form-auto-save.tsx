@@ -3,7 +3,7 @@ import { type FieldValues, type UseFormReturn } from "react-hook-form";
 
 export const useFormAutoSave = <FormParams extends FieldValues>({
   form,
-  debounce = 300,
+  debounce = 500,
   onSubmit,
 }: {
   form: UseFormReturn<FormParams>;

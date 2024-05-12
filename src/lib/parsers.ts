@@ -30,5 +30,5 @@ export const sendAmount = (value: number) => {
 };
 
 export const parseNumber = (value: number) => {
-  return Intl.NumberFormat().format(value);
+  return Intl.NumberFormat(undefined, {}).format(value);
 };
