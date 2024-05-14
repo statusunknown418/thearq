@@ -9,6 +9,7 @@ export const projectAnalyticsParsers = {
   to: parseAsString.withDefault(format(NOW, "yyyy-MM-dd")),
   tab: parseAsString.withDefault("revenue"),
   view: parseAsString.withDefault("day"),
+  user: parseAsString,
 };
 
 export const projectAnalyticsParamsCache = createSearchParamsCache(projectAnalyticsParsers);

@@ -2,7 +2,6 @@
 import { type ReactNode } from "react";
 import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useProjectsQS } from "./project-cache";
-import { ProjectFilters } from "./ProjectFilters";
 
 export const ProjectMainTabs = ({ children }: { children: ReactNode }) => {
   const [{ tab }, update] = useProjectsQS();
@@ -20,8 +19,6 @@ export const ProjectMainTabs = ({ children }: { children: ReactNode }) => {
           <TabsTrigger value="team">Team</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
-
-        <ProjectFilters />
       </div>
 
       {children}

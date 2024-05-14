@@ -1,6 +1,5 @@
 "use client";
 import { valibotResolver } from "@hookform/resolvers/valibot";
-import { DonutChart } from "@tremor/react";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -32,12 +31,13 @@ import {
   SheetTitle,
 } from "~/components/ui/sheet";
 import { Switch } from "~/components/ui/switch";
-import { secondsToHoursDecimal } from "~/lib/dates";
-import { parseLongCurrency, sendAmount } from "~/lib/parsers";
+import { sendAmount } from "~/lib/parsers";
 import { useAuthStore } from "~/lib/stores/auth-store";
 import { useProjectPersonSheetStore } from "~/lib/stores/sheets-store";
 import { projectUserSchema, type ProjectUserSchema } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
+import { useProjectsQS } from "../project-cache";
+import { PersonCharts } from "./person-graphs/PersonCharts";
 
 export const ProjectPersonSheet = () => {
   const auth = useAuthStore((s) => s.user);
@@ -45,6 +45,7 @@ export const ProjectPersonSheet = () => {
   const change = useProjectPersonSheetStore((s) => s.openChange);
   const details = useProjectPersonSheetStore((s) => s.data);
   const utils = api.useUtils();
+  const [_state, setState] = useProjectsQS();
 
   const update = api.projects.updateMember.useMutation({
     onSuccess: async () => {
@@ -86,7 +87,10 @@ export const ProjectPersonSheet = () => {
     <Sheet
       open={open}
       onOpenChange={(sw) => {
-        if (!sw) form.reset();
+        if (!sw) {
+          form.reset();
+          void setState({ user: null });
+        }
         change(sw);
       }}
     >
@@ -114,49 +118,7 @@ export const ProjectPersonSheet = () => {
         </SheetHeader>
 
         <section className="mt-8 grid grid-cols-1 gap-4">
-          <article className="flex items-center justify-between rounded-lg border bg-muted p-5">
-            <div className="flex h-full w-full flex-col items-center gap-4">
-              <p className="text-muted-foreground">Revenue & cost</p>
-
-              <DonutChart
-                data={[
-                  {
-                    name: "Total revenue",
-                    value: 224440,
-                  },
-                  {
-                    name: "Internal cost",
-                    value: 100000,
-                  },
-                ]}
-                index="name"
-                category="value"
-                valueFormatter={parseLongCurrency}
-                colors={["emerald", "red"]}
-              />
-            </div>
-
-            <div className="flex h-full w-full flex-col items-center gap-4">
-              <p className="text-muted-foreground">Hours breakdown</p>
-
-              <DonutChart
-                data={[
-                  {
-                    name: "Billable hours",
-                    value: 224440,
-                  },
-                  {
-                    name: "Non-billable hours",
-                    value: 2434,
-                  },
-                ]}
-                index="name"
-                category="value"
-                valueFormatter={(v) => `${secondsToHoursDecimal(v).toFixed(2)}h`}
-                colors={["blue", "yellow"]}
-              />
-            </div>
-          </article>
+          <PersonCharts />
 
           <Form {...form}>
             <form className="flex h-full flex-col gap-5" onSubmit={onSubmit}>

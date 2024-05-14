@@ -24,6 +24,7 @@ import { parseLongCurrency } from "~/lib/parsers";
 import { useProjectPersonSheetStore } from "~/lib/stores/sheets-store";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
+import { useProjectsQS } from "../project-cache";
 
 type ProjectTeamColumn = RouterOutputs["projects"]["getTeam"]["users"][number];
 const columns: ColumnDef<ProjectTeamColumn>[] = [
@@ -88,6 +89,7 @@ export const ProjectTeamTable = ({
   initialData: RouterOutputs["projects"]["getTeam"];
 }) => {
   const updateDetails = useProjectPersonSheetStore((s) => s.setData);
+  const [_state, set] = useProjectsQS();
 
   const { data: tableData } = api.projects.getTeam.useQuery(
     {
@@ -141,7 +143,10 @@ export const ProjectTeamTable = ({
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   className="cursor-pointer"
-                  onClick={() => updateDetails(row.original)}
+                  onClick={() => {
+                    updateDetails(row.original);
+                    void set({ user: row.original.userId });
+                  }}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell

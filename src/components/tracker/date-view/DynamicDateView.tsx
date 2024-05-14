@@ -261,7 +261,7 @@ export const DynamicDateView = ({
 
   if (!events) {
     return (
-      <div className="h-h-[calc(100vh-150px)] flex min-w-[340px] flex-col  gap-4">
+      <div className="flex h-[calc(100vh-150px)] w-[340px] flex-col gap-4">
         <Skeleton className="h-10 w-full" />
 
         <Skeleton className="h-full w-full flex-grow" />

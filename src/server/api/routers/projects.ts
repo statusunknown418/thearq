@@ -9,7 +9,7 @@ import { nullable, number, object, parse, string } from "valibot";
 import { RECENT_W_ID_KEY, VERCEL_REQUEST_LOCATION } from "~/lib/constants";
 import { adjustEndDate as adjustedEndDate, secondsToHoursDecimal } from "~/lib/dates";
 import { adminPermissions, parsePermissions, type UserPermissions } from "~/lib/stores/auth-store";
-import { type Roles, projects, projectsSchema, usersOnProjects } from "~/server/db/edge-schema";
+import { projects, projectsSchema, usersOnProjects, type Roles } from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const hasServer = (perms: UserPermissions, data: string) => {
@@ -732,5 +732,90 @@ export const projectsRouter = createTRPCRouter({
             ),
           );
       });
+    }),
+
+  getPersonCharts: protectedProcedure
+    .input((i) =>
+      parse(
+        object({
+          projectId: number(),
+          userId: string(),
+          start: string(),
+          end: string(),
+        }),
+        i,
+      ),
+    )
+    .query(async ({ ctx, input }) => {
+      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+      if (!wId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No workspace selected",
+        });
+      }
+
+      const [project, charts] = await Promise.all([
+        ctx.db.query.projects.findFirst({
+          where: (t, { eq }) => eq(t.id, input.projectId),
+          with: {
+            users: {
+              with: {
+                user: true,
+              },
+            },
+          },
+        }),
+
+        ctx.db.query.timeEntries.findMany({
+          where: (t, { eq, and, gte, lte }) => {
+            return and(
+              eq(t.workspaceId, Number(wId)),
+              eq(t.projectId, input.projectId),
+              eq(t.userId, input.userId),
+              gte(t.start, new Date(input.start)),
+              lte(t.start, adjustedEndDate(input.end)),
+            );
+          },
+        }),
+      ]);
+
+      const totalRevenue = charts.reduce((acc, curr) => {
+        const user = project?.users?.find((u) => u.userId === curr.userId);
+        const rate = user?.billableRate ?? 0;
+        const hours = secondsToHoursDecimal(curr.duration);
+        return acc + rate * hours;
+      }, 0);
+
+      const totalCost = charts.reduce((acc, curr) => {
+        const user = project?.users?.find((u) => u.userId === curr.userId);
+        const cost = user?.internalCost ?? 0;
+        const hours = secondsToHoursDecimal(curr.duration);
+        return acc + cost * hours;
+      }, 0);
+
+      const totalBillableHours = charts.reduce((acc, curr) => {
+        const hours = curr.duration;
+        if (curr.billable === true) {
+          return acc + hours;
+        }
+        return acc;
+      }, 0);
+
+      const totalNonBillableHours = charts.reduce((acc, curr) => {
+        const hours = curr.duration;
+        if (curr.billable === false) {
+          return acc + hours;
+        }
+        return acc;
+      }, 0);
+
+      return {
+        totalRevenue,
+        totalCost,
+        totalBillableHours,
+        totalNonBillableHours,
+      };
     }),
 });
