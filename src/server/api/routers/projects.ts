@@ -454,19 +454,19 @@ export const projectsRouter = createTRPCRouter({
           const existing = acc.find((a) => a.date === date);
 
           if (existing) {
-            existing.duration += curr.billable === true ? curr.duration : 0;
+            existing.Duration += curr.billable === true ? curr.duration : 0;
             existing["Non-Billable"] += curr.billable === false ? curr.duration : 0;
           } else {
             acc.push({
               date,
-              duration: curr.billable === true ? curr.duration : 0,
+              Duration: curr.billable === true ? curr.duration : 0,
               "Non-Billable": curr.billable === false ? curr.duration : 0,
             });
           }
 
           return acc;
         },
-        [] as { date: string; duration: number; "Non-Billable": number }[],
+        [] as { date: string; Duration: number; "Non-Billable": number }[],
       );
 
       const totalHoursByUser = charts.reduce(
@@ -494,7 +494,7 @@ export const projectsRouter = createTRPCRouter({
         const date = format(addDays(new Date(input.start), i), "yyyy/MM/dd");
         return {
           date,
-          duration: 0,
+          Duration: 0,
           "Non-Billable": 0,
         };
       });
