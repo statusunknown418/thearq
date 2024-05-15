@@ -115,12 +115,25 @@ export const ProjectDetails = ({
         <FormField
           name="clientId"
           control={form.control}
-          render={() => (
+          render={({ field }) => (
             <FormItem className="grid w-full grid-cols-5 gap-4">
               <FormLabel>Client</FormLabel>
 
-              <div className="col-span-4 flex flex-col gap-2">
-                <ClientsCombobox showLabel={false} onSelect={onSubmit} />
+              <div className="col-span-4 flex items-center gap-2">
+                <ClientsCombobox triggerClassnames="w-max" showLabel={false} onSelect={onSubmit} />
+
+                {!!field.value && (
+                  <Button
+                    variant={"outline"}
+                    size={"icon"}
+                    onClick={() => {
+                      form.setValue("clientId", null);
+                      void onSubmit();
+                    }}
+                  >
+                    <PiXCircle size={16} className="text-muted-foreground" />
+                  </Button>
+                )}
               </div>
             </FormItem>
           )}
@@ -156,7 +169,7 @@ export const ProjectDetails = ({
               <FormLabel>Budget hours</FormLabel>
 
               <section className="col-span-4 flex flex-col gap-2">
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
                   <FormControl>
                     <Input
                       {...field}
@@ -254,7 +267,7 @@ export const ProjectDetails = ({
               <Label className="inline-flex items-center gap-2 self-start">Entry locking</Label>
 
               <section className="col-span-4 flex flex-col gap-2">
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
                   <Select
                     value={field.value ?? undefined}
                     onValueChange={(v) => {
@@ -287,7 +300,7 @@ export const ProjectDetails = ({
                         void onSubmit();
                       }}
                     >
-                      <PiXCircle size={16} />
+                      <PiXCircle size={16} className="text-muted-foreground" />
                     </Button>
                   )}
                 </div>

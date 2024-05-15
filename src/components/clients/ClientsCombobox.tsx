@@ -24,9 +24,11 @@ import { Checkbox } from "../ui/checkbox";
 export const ClientsCombobox = ({
   showLabel = true,
   onSelect,
+  triggerClassnames,
 }: {
   showLabel?: boolean;
   onSelect?: () => void;
+  triggerClassnames?: string;
 }) => {
   const formContext = useFormContext<ProjectSchema>();
 
@@ -57,7 +59,7 @@ export const ClientsCombobox = ({
               }
             }}
           >
-            <div className="flex w-full flex-col gap-2">
+            <div className={cn("flex w-full flex-col gap-2", triggerClassnames)}>
               {showLabel && <FormLabel>Client</FormLabel>}
 
               <FormControl>

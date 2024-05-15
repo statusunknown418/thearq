@@ -27,7 +27,7 @@ export default function SlugWorkspaceLayout({ children }: { children: ReactNode 
       </Suspense>
 
       <section className="max-h-screen py-2 pr-2">
-        <div className="h-full overflow-y-scroll rounded-2xl border border-border/70 bg-background shadow">
+        <div className="h-full overflow-y-scroll rounded-xl border border-border/70 bg-background shadow">
           {children}
         </div>
       </section>

@@ -9,8 +9,8 @@ import { routes } from "~/lib/navigation";
 
 export default function AllWorkspacesPage() {
   return (
-    <main className="grid h-screen grid-cols-1 place-items-center bg-gradient-to-br from-muted">
-      <section className="grid w-[600px] grid-cols-1 gap-8 rounded-3xl border bg-muted p-8 shadow-2xl shadow-black/60">
+    <main className="grid h-screen grid-cols-1 place-items-center bg-secondary-background bg-gradient-to-br">
+      <section className="grid w-[600px] grid-cols-1 gap-8 rounded-3xl border bg-background p-8 shadow-2xl shadow-black/60">
         <header className="flex justify-between gap-4">
           <div>
             <h1 className="text-2xl font-black">Welcome back</h1>

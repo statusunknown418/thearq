@@ -84,7 +84,7 @@ export const ProjectRevenueCharts = ({
         <Card className="p-4 tabular-nums">
           <p className="text-muted-foreground">Detailed profits & costs</p>
 
-          <div className="mt-1.5 flex items-center gap-4">
+          <div className="mt-2 flex items-center gap-4">
             <p className="text-tremor-metric font-semibold text-emerald-500">
               {parseCompactCurrency(data.revenue)}
             </p>

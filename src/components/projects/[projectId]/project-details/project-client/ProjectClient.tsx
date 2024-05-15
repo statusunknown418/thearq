@@ -6,7 +6,6 @@ import { PiArrowLeft, PiTriangleDuotone, PiUserCircleDashed, PiUserDuotone } fro
 import { Badge } from "~/components/ui/badge";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { Skeleton } from "~/components/ui/skeleton";
 import { Textarea } from "~/components/ui/textarea";
 import { type ClientSchema } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
@@ -19,7 +18,7 @@ export const ProjectClientDetails = ({
   initialData: RouterOutputs["clients"]["getByProject"];
   projectId: string;
 }) => {
-  const { data, isRefetching } = api.clients.getByProject.useQuery(
+  const { data } = api.clients.getByProject.useQuery(
     {
       shareableId: projectId,
     },
@@ -63,12 +62,8 @@ export const ProjectClientDetails = ({
     );
   }
 
-  if (isRefetching) {
-    return <Skeleton className="h-56 w-full" />;
-  }
-
   return (
-    <div className="relative flex h-max flex-col gap-6 rounded-lg border p-5">
+    <div className="relative flex h-max flex-col gap-6 rounded-lg border p-5 shadow-lg shadow-black/50">
       <PiTriangleDuotone size={18} className="absolute -left-4 top-[30%] -rotate-90 text-border" />
       <Badge variant={"secondary"} className="w-max tracking-wide  text-muted-foreground">
         <PiUserDuotone size={15} />

@@ -5,7 +5,7 @@ import ResizableTextarea, { type TextareaAutosizeProps } from "react-textarea-au
 import { cn } from "~/lib/utils";
 
 const textareaVariants = cva(
-  "flex min-h-[48px] w-full rounded-md border !border-border text-sm bg-muted px-3 py-2 hover:border-primary shadow placeholder:text-muted-foreground focus-visible:!outline-none focus-visible:!ring focus-visible:!ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+  "flex min-h-[48px] w-full rounded-md border !border-border text-sm bg-input px-3 py-2 hover:border-primary shadow placeholder:text-muted-foreground focus-visible:!outline-none focus-visible:!ring focus-visible:!ring-ring disabled:cursor-not-allowed disabled:opacity-50",
   {
     variants: {
       variant: {

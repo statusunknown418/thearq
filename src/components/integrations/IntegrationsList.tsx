@@ -61,28 +61,30 @@ export const IntegrationsList = ({
       <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {data.map((integration) => (
           <li
-            className="flex flex-col gap-4 rounded-xl bg-muted p-1 pt-4"
+            className="flex flex-col gap-4 rounded-xl border bg-secondary-background p-4 shadow"
             key={integration.providerAccountId}
           >
-            <div className="flex items-center gap-4 rounded-full px-4">
-              <p className={cn(integration.enabled ? "text-indigo-400" : "text-muted-foreground")}>
-                {integration.enabled ? "Enabled" : "Disabled"}
-              </p>
+            <section className="flex flex-col gap-4 rounded-xl ">
+              <div className="flex items-center gap-4 rounded-full">
+                <p
+                  className={cn(integration.enabled ? "text-indigo-400" : "text-muted-foreground")}
+                >
+                  {integration.enabled ? "Enabled" : "Disabled"}
+                </p>
 
-              <Switch
-                disabled={reconnect.isLoading || disconnect.isLoading}
-                checked={integration.enabled}
-                onCheckedChange={async (v) => {
-                  if (!!v) {
-                    await handleReconnect(integration.provider);
-                  } else {
-                    await handleDisconnect(integration.provider);
-                  }
-                }}
-              />
-            </div>
+                <Switch
+                  disabled={reconnect.isLoading || disconnect.isLoading}
+                  checked={integration.enabled}
+                  onCheckedChange={async (v) => {
+                    if (!!v) {
+                      await handleReconnect(integration.provider);
+                    } else {
+                      await handleDisconnect(integration.provider);
+                    }
+                  }}
+                />
+              </div>
 
-            <section className="flex flex-col gap-4 rounded-xl border bg-background p-8 shadow">
               <header className="flex w-full items-center gap-3">
                 {integration.provider === "github" ? (
                   <PiGithubLogoDuotone size={24} />
