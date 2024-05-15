@@ -37,32 +37,27 @@ export const projectsRouter = createTRPCRouter({
         });
       }
 
-      const data = await ctx.db.transaction(async (trx) => {
-        const project = await trx.query.projects.findFirst({
-          where: (t, { eq }) => eq(t.shareableUrl, input.shareableUrl),
-          with: {
-            client: true,
+      const project = await ctx.db.query.projects.findFirst({
+        where: (t, { eq }) => eq(t.shareableUrl, input.shareableUrl),
+        with: {
+          client: true,
+          users: {
+            where: (t, { eq }) => eq(t.userId, ctx.session.user.id),
+            with: {
+              user: true,
+            },
           },
-        });
-
-        if (!project) {
-          trx.rollback();
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Project not found",
-          });
-        }
-
-        const userOnProject = await trx.query.usersOnProjects.findFirst({
-          where: (t, { and, eq }) =>
-            and(eq(t.projectId, project.id), eq(t.userId, ctx.session.user.id)),
-        });
-
-        return {
-          ...userOnProject,
-          project,
-        };
+        },
       });
+
+      if (!project) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Project not found",
+        });
+      }
+
+      const data = project.users.find((u) => u.userId === ctx.session.user.id);
 
       if (!data || data.role !== "admin") {
         throw new TRPCError({
@@ -71,7 +66,7 @@ export const projectsRouter = createTRPCRouter({
         });
       }
 
-      return data;
+      return project;
     }),
   get: protectedProcedure.query(async ({ ctx }) => {
     const wId = cookies().get(RECENT_W_ID_KEY)?.value;
@@ -269,38 +264,34 @@ export const projectsRouter = createTRPCRouter({
       }
 
       const difference = differenceInDays(new Date(input.end), new Date(input.start));
-      const [charts, project] = await ctx.db.transaction(async (trx) => {
-        const project = await trx.query.projects.findFirst({
-          where: (t, { eq }) => eq(t.shareableUrl, input.projectShareableId),
-          with: {
-            users: {
-              with: {
-                user: true,
-              },
+
+      const project = await ctx.db.query.projects.findFirst({
+        where: (t, { eq }) => eq(t.shareableUrl, input.projectShareableId),
+        with: {
+          users: {
+            with: {
+              user: true,
             },
           },
+        },
+      });
+
+      if (!project) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Project not found",
         });
+      }
 
-        if (!project) {
-          trx.rollback();
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Project not found",
-          });
-        }
-
-        const data = await trx.query.timeEntries.findMany({
-          where: (t, { eq, and, gte, lte }) => {
-            return and(
-              eq(t.workspaceId, Number(wId)),
-              eq(t.projectId, project.id),
-              gte(t.start, new Date(input.start)),
-              lte(t.start, adjustedEndDate(input.end)),
-            );
-          },
-        });
-
-        return [data, project];
+      const charts = await ctx.db.query.timeEntries.findMany({
+        where: (t, { eq, and, gte, lte }) => {
+          return and(
+            eq(t.workspaceId, Number(wId)),
+            eq(t.projectId, project.id),
+            gte(t.start, new Date(input.start)),
+            lte(t.start, adjustedEndDate(input.end)),
+          );
+        },
       });
 
       const totalRevenue = charts.reduce((acc, curr) => {
@@ -427,38 +418,34 @@ export const projectsRouter = createTRPCRouter({
       }
 
       const difference = differenceInDays(new Date(input.end), new Date(input.start));
-      const [charts, project] = await ctx.db.transaction(async (trx) => {
-        const project = await trx.query.projects.findFirst({
-          where: (t, { eq }) => eq(t.shareableUrl, input.projectShareableId),
-          with: {
-            users: {
-              with: {
-                user: true,
-              },
+
+      const project = await ctx.db.query.projects.findFirst({
+        where: (t, { eq }) => eq(t.shareableUrl, input.projectShareableId),
+        with: {
+          users: {
+            with: {
+              user: true,
             },
           },
+        },
+      });
+
+      if (!project) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Project not found",
         });
+      }
 
-        if (!project) {
-          trx.rollback();
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Project not found",
-          });
-        }
-
-        const data = await trx.query.timeEntries.findMany({
-          where: (t, { eq, and, gte, lte }) => {
-            return and(
-              eq(t.workspaceId, Number(wId)),
-              eq(t.projectId, project.id),
-              gte(t.start, new Date(input.start)),
-              lte(t.start, adjustedEndDate(input.end)),
-            );
-          },
-        });
-
-        return [data, project];
+      const charts = await ctx.db.query.timeEntries.findMany({
+        where: (t, { eq, and, gte, lte }) => {
+          return and(
+            eq(t.workspaceId, Number(wId)),
+            eq(t.projectId, project.id),
+            gte(t.start, new Date(input.start)),
+            lte(t.start, adjustedEndDate(input.end)),
+          );
+        },
       });
 
       const groupedByDate = charts.reduce(
@@ -467,17 +454,19 @@ export const projectsRouter = createTRPCRouter({
           const existing = acc.find((a) => a.date === date);
 
           if (existing) {
-            existing.duration += curr.duration;
+            existing.duration += curr.billable === true ? curr.duration : 0;
+            existing["Non-Billable"] += curr.billable === false ? curr.duration : 0;
           } else {
             acc.push({
               date,
-              duration: curr.duration,
+              duration: curr.billable === true ? curr.duration : 0,
+              "Non-Billable": curr.billable === false ? curr.duration : 0,
             });
           }
 
           return acc;
         },
-        [] as { date: string; duration: number }[],
+        [] as { date: string; duration: number; "Non-Billable": number }[],
       );
 
       const totalHoursByUser = charts.reduce(
@@ -506,6 +495,7 @@ export const projectsRouter = createTRPCRouter({
         return {
           date,
           duration: 0,
+          "Non-Billable": 0,
         };
       });
 

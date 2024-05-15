@@ -189,7 +189,7 @@ export const viewerRouter = createTRPCRouter({
         });
       }
 
-      const workspace = await ctx.db.query.workspaces.findFirst({
+      const workspacePromise = ctx.db.query.workspaces.findFirst({
         where: (t, op) => op.and(op.eq(t.id, input.workspaceId)),
       });
 
@@ -233,7 +233,11 @@ export const viewerRouter = createTRPCRouter({
         },
       });
 
-      const [summary, user] = await Promise.all([summaryPromise, userPromise]);
+      const [summary, user, workspace] = await Promise.all([
+        summaryPromise,
+        userPromise,
+        workspacePromise,
+      ]);
 
       const totalHours = summary.reduce((acc, curr) => acc + curr.duration, 0);
 

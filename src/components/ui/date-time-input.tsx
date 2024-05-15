@@ -27,15 +27,19 @@ export const DateTimeInput = ({ selector }: { selector: "start" | "end" }) => {
     const newDate = new Date(date);
     newDate.setHours(time ? getHours(time) : 0);
     newDate.setMinutes(time ? time.getMinutes() : 0);
+    newDate.setSeconds(0);
 
     const start = form.getValues("start") ?? new Date();
     start.setDate(newDate.getDate());
+    start.setMonth(newDate.getMonth());
+    start.setSeconds(0);
 
     form.setValue(selector, newDate);
 
     const otherDate = new Date(start);
     otherDate.setHours(start ? getHours(start) : 0);
     otherDate.setMinutes(start ? start.getMinutes() : 0);
+    otherDate.setSeconds(0);
     selector === "end" && form.setValue("start", otherDate);
   };
 
@@ -48,12 +52,17 @@ export const DateTimeInput = ({ selector }: { selector: "start" | "end" }) => {
 
     date.setHours(parseInt(hours));
     date.setMinutes(parseInt(minutes));
+    date.setSeconds(0);
 
     if (selector === "end" && date < start) {
       form.setError(selector, {
         message: "End cannot be before start.",
       });
-    } else if (selector === "start" && date > end) {
+    } else {
+      form.clearErrors(selector);
+    }
+
+    if (selector === "start" && date > end) {
       form.setError(selector, {
         message: "Start cannot be after end.",
       });
