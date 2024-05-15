@@ -4,7 +4,7 @@ import { secondsToHoursDecimal } from "~/lib/dates";
 import { parseLongCurrency } from "~/lib/parsers";
 import { useProjectPersonSheetStore } from "~/lib/stores/sheets-store";
 import { api } from "~/trpc/react";
-import { useProjectsQS } from "../../project-cache";
+import { useProjectsQS } from "../project-cache";
 import { Skeleton } from "~/components/ui/skeleton";
 
 export const PersonCharts = () => {

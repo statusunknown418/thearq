@@ -49,8 +49,8 @@ export const ProjectHeader = ({
   const form = useForm<ProjectSchema>({
     resolver: valibotResolver(projectsSchema),
     defaultValues: {
-      id: data?.project.id,
-      name: data?.project.name,
+      id: data?.id,
+      name: data?.name,
     },
     mode: "onBlur",
   });
@@ -90,22 +90,22 @@ export const ProjectHeader = ({
                     onBlur={onSubmit}
                   />
 
-                  <FormDescription className="flex items-center gap-2 pl-3 text-sm">
-                    <span>{data?.project.identifier && `[${data.project.identifier}]`}</span>
+                  <FormDescription className="ml-3 flex items-center gap-2 text-sm">
+                    <span>{data?.identifier && `[${data.identifier}]`}</span>
 
-                    {!!data.project.identifier && <span>&middot;</span>}
+                    {!!data.identifier && <span>&middot;</span>}
 
-                    <span>{data?.project.client?.name && `${data.project.client.name}`}</span>
+                    <span>{data?.client?.name && `${data.client.name}`}</span>
 
-                    {!!data?.project.client?.name && <span>&middot;</span>}
+                    {!!data?.client?.name && <span>&middot;</span>}
 
                     <span className="underline-offset-1 hover:underline">
-                      {process.env.NEXT_PUBLIC_APP_URL}/shared/{data.project.shareableUrl}
+                      {process.env.NEXT_PUBLIC_APP_URL}/shared/{data.shareableUrl}
                     </span>
 
                     <CopyButton
                       className="h-7 w-7"
-                      text={`${process.env.NEXT_PUBLIC_APP_URL}/shared/${data.project.shareableUrl}`}
+                      text={`${process.env.NEXT_PUBLIC_APP_URL}/shared/${data.shareableUrl}`}
                     />
                   </FormDescription>
                 </FormItem>

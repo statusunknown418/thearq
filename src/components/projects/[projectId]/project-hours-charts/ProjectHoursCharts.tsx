@@ -46,13 +46,15 @@ export const ProjectHoursCharts = ({
         </p>
 
         <BarChart
+          stack
           showAnimation
           data={data.charts}
           valueFormatter={(v) => `${secondsToHoursDecimal(v).toFixed(2)} h`}
           animationDuration={700}
           className="mt-2 h-[360px]"
           index="date"
-          categories={["duration"]}
+          categories={["Duration", "Non-Billable"]}
+          colors={["blue", "yellow"]}
         />
       </Card>
 

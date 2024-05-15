@@ -37,7 +37,7 @@ import { useProjectPersonSheetStore } from "~/lib/stores/sheets-store";
 import { projectUserSchema, type ProjectUserSchema } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 import { useProjectsQS } from "../project-cache";
-import { PersonCharts } from "./person-graphs/PersonCharts";
+import { PersonCharts } from "./PersonCharts";
 
 export const ProjectPersonSheet = () => {
   const auth = useAuthStore((s) => s.user);

@@ -28,6 +28,8 @@ export const ProjectsCombobox = ({
 }) => {
   const formContext = useFormContext<ProjectsComboboxContext>();
 
+  const [open, setOpen] = useState(false);
+
   const { data } = api.viewer.getAssignedProjects.useQuery(undefined, {
     refetchOnMount: false,
   });
@@ -37,7 +39,7 @@ export const ProjectsCombobox = ({
       control={formContext.control}
       name="projectId"
       render={({ field }) => (
-        <Popover>
+        <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button variant={"secondary"} size={size} className="w-max bg-muted shadow">
               <PiSquaresFourDuotone size={15} />
@@ -83,6 +85,7 @@ export const ProjectsCombobox = ({
                         }
 
                         onSelect?.();
+                        setOpen(false);
                       }}
                     >
                       <CheckIcon

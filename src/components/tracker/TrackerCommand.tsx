@@ -30,7 +30,7 @@ import { Separator } from "~/components/ui/separator";
 import { Textarea } from "~/components/ui/textarea";
 import { Toggle } from "~/components/ui/toggle";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
-import { dateToMonthDate } from "~/lib/dates";
+import { computeDuration, dateToMonthDate } from "~/lib/dates";
 import { useCommandsStore } from "~/lib/stores/commands-store";
 import { createFakeEvent, useEventsStore } from "~/lib/stores/events-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
@@ -81,10 +81,10 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
 
   const onCancelTrack = (state: boolean) => {
     if (!state) {
-      setOpen(null);
       clear();
       clearEvents();
       form.reset({});
+      setOpen(null);
     }
   };
 
@@ -199,16 +199,27 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
   });
 
   const onSubmit = form.handleSubmit(async (data) => {
+    if (!data.end || !data.start) {
+      return toast.error("Start and end time are required", {
+        description: "This is unexpected please report this bug to us",
+      });
+    }
+
+    const computedDuration = computeDuration({
+      end: data.end,
+      start: data.start,
+    });
+
     if (isEditing && !defaultValues.temp) {
       updateEntry({
         ...data,
         id: defaultValues.id,
-        duration: Number(data.duration),
+        duration: computedDuration,
       });
     } else {
       manualTrack({
         ...data,
-        duration: Number(data.duration),
+        duration: computedDuration,
       });
     }
 

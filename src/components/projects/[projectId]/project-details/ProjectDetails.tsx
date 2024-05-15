@@ -74,17 +74,17 @@ export const ProjectDetails = ({
   const form = useForm<ProjectSchema>({
     resolver: valibotResolver(projectsSchema),
     defaultValues: {
-      id: data?.project.id,
-      description: data?.project.description,
-      clientId: data?.project.clientId,
-      color: data?.project.color,
-      name: data?.project.name,
-      type: data?.project.type,
-      budgetHours: data?.project.budgetHours,
-      budgetResetsPerMonth: data?.project.budgetResetsPerMonth,
-      entriesLockingSchedule: data?.project.entriesLockingSchedule,
-      startsAt: data?.project.startsAt,
-      endsAt: data?.project.endsAt,
+      id: data?.id,
+      description: data?.description,
+      clientId: data?.clientId,
+      color: data?.color,
+      name: data?.name,
+      type: data?.type,
+      budgetHours: data?.budgetHours,
+      budgetResetsPerMonth: data?.budgetResetsPerMonth,
+      entriesLockingSchedule: data?.entriesLockingSchedule,
+      startsAt: data?.startsAt,
+      endsAt: data?.endsAt,
     },
     mode: "onBlur",
   });
@@ -104,7 +104,7 @@ export const ProjectDetails = ({
   return (
     <Form {...form}>
       <form
-        className="flex h-max w-full flex-col gap-5 rounded-lg border bg-popover p-5"
+        className="flex h-max w-full flex-col gap-5 rounded-lg border bg-secondary-background p-5"
         onSubmit={onSubmit}
       >
         <Badge variant={"secondary"} className="w-max tracking-wide text-muted-foreground">

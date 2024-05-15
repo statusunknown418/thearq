@@ -1,5 +1,7 @@
 "use client";
 
+import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
+import "react-big-calendar/lib/css/react-big-calendar.css";
 import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons";
 import { addHours, getDay, getMonth, parse, startOfDay, startOfWeek } from "date-fns";
 import { format, fromZonedTime } from "date-fns-tz";
@@ -9,9 +11,7 @@ import { Calendar, dateFnsLocalizer, type SlotInfo } from "react-big-calendar";
 import withDragAndDrop, {
   type withDragAndDropProps,
 } from "react-big-calendar/lib/addons/dragAndDrop";
-import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
-import "react-big-calendar/lib/css/react-big-calendar.css";
-import { PiTrendDown, PiTrendUp } from "react-icons/pi";
+import { PiGrainsSlash, PiTrendDown, PiTrendUp } from "react-icons/pi";
 import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -261,7 +261,7 @@ export const DynamicDateView = ({
 
   if (!events) {
     return (
-      <div className="flex h-[calc(100vh-150px)] w-[340px] flex-col gap-4">
+      <div className="flex h-[calc(100vh-150px)] min-w-[340px] flex-col gap-4">
         <Skeleton className="h-10 w-full" />
 
         <Skeleton className="h-full w-full flex-grow" />
@@ -361,10 +361,10 @@ export const DynamicDateView = ({
               return (
                 <section
                   className={cn(
-                    "flex min-h-full w-full flex-col items-start gap-1 rounded-lg border border-primary px-3 py-2 text-foreground",
+                    "flex min-h-full w-full flex-col items-start gap-1.5 rounded-lg border border-primary px-3 py-2 text-foreground",
                     !event.end
                       ? "border-dashed bg-indigo-50 dark:bg-zinc-700"
-                      : "bg-indigo-100 dark:border-primary/20 dark:bg-zinc-800 dark:text-foreground",
+                      : "bg-indigo-100 dark:border-primary/20 dark:bg-muted dark:text-foreground",
                     {
                       "!rounded-t-none": continuesPrior,
                       "pointer-events-none !rounded-b-none bg-gray-100 dark:bg-gray-800":
@@ -406,11 +406,20 @@ export const DynamicDateView = ({
                   {event.end === null && <RealtimeCounter start={event.start} />}
 
                   {event.end && (
-                    <p className="text-sm font-light">
-                      {convertTime(computeDuration({ start: event.start, end: event.end }), {
-                        includeSeconds: true,
-                      })}
-                    </p>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-sm font-light">
+                        {convertTime(computeDuration({ start: event.start, end: event.end }), {
+                          includeSeconds: true,
+                        })}
+                      </p>
+
+                      {event.billable === false && (
+                        <p className="flex items-center gap-2 text-destructive">
+                          <PiGrainsSlash size={15} />
+                          Non-billable
+                        </p>
+                      )}
+                    </div>
                   )}
                 </section>
               );
