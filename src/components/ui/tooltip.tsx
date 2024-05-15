@@ -27,4 +27,23 @@ const TooltipContent = React.forwardRef<
 ));
 TooltipContent.displayName = TooltipPrimitive.Content.displayName;
 
-export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger };
+const StackTooltip = ({
+  children,
+  content,
+  duration = 0,
+}: {
+  children: React.ReactNode;
+  content: React.ReactNode;
+  duration?: number;
+}) => {
+  return (
+    <TooltipProvider delayDuration={duration}>
+      <Tooltip>
+        <TooltipTrigger asChild>{children}</TooltipTrigger>
+        <TooltipContent>{content}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
+
+export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, StackTooltip };
