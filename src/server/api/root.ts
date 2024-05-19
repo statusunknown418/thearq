@@ -8,6 +8,7 @@ import { teamsRouter } from "./routers/team";
 import { trackerRouter } from "./routers/track";
 import { viewerRouter } from "./routers/viewer";
 import { workspacesRouter } from "./routers/workspaces";
+import { invoicesRouter } from "./routers/invoices";
 
 /**
  * This is the primary router for your server.
@@ -24,6 +25,7 @@ export const appRouter = createTRPCRouter({
   projects: projectsRouter,
   teams: teamsRouter,
   clients: clientsRouter,
+  invoices: invoicesRouter,
 });
 
 // export type definition of API

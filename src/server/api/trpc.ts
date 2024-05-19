@@ -98,3 +98,8 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
     },
   });
 });
+
+/**
+ * Useful for breaking down huge routers into smaller pieces and exporting the parent one
+ */
+export const mergeTRPCRouters = t.mergeRouters;

@@ -37,6 +37,7 @@ export const entriesRouter = createTRPCRouter({
         with: {
           project: {
             columns: {
+              id: true,
               color: true,
               name: true,
               identifier: true,
@@ -67,6 +68,7 @@ export const entriesRouter = createTRPCRouter({
         with: {
           project: {
             columns: {
+              id: true,
               color: true,
               name: true,
               identifier: true,
@@ -100,9 +102,24 @@ export const entriesRouter = createTRPCRouter({
         {} as Record<number, number>,
       );
 
+      const entriesByDate = summary.reduce(
+        (acc, entry) => {
+          const date = entry.start.getDate();
+
+          if (!acc[date]) {
+            acc[date] = [];
+          }
+
+          acc[date]?.push(entry);
+          return acc;
+        },
+        {} as Record<number, (TimeEntry & { project: { name: string } | null })[]>,
+      );
+
       return {
         total,
         hoursByDay,
+        entriesByDate,
       };
     }),
   getLiveEntry: protectedProcedure.query(async ({ ctx }) => {

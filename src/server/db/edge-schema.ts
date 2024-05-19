@@ -9,6 +9,7 @@ import {
   email,
   forward,
   maxLength,
+  merge,
   minLength,
   number,
   object,
@@ -528,6 +529,11 @@ export const workspacePlansRelations = relations(workspacePlans, ({ one }) => ({
 
 export const invoiceStatus = ["draft", "sent", "paid", "overdue"] as const;
 export type InvoiceStatus = (typeof invoiceStatus)[number];
+export type InvoiceItem = {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+};
 
 export const invoices = sqliteTable(
   "invoices",
@@ -539,17 +545,16 @@ export const invoices = sqliteTable(
     clientId: int("clientId")
       .notNull()
       .references(() => clients.id, { onDelete: "cascade" }),
-    projectId: int("projectId")
-      .notNull()
-      .references(() => projects.id, { onDelete: "cascade" }),
     subject: text("subject"),
-    contents: text("contents"),
-    identifier: integer("number", { mode: "number" }).notNull(),
+    items: text("items", { mode: "json" }).$type<InvoiceItem[]>(),
+    identifier: text("identifier").notNull(),
+    notes: text("notes"),
     fromDate: integer("fromDate", { mode: "timestamp" }),
     untilDate: integer("untilDate", { mode: "timestamp" }),
     status: text("status", { enum: invoiceStatus }).notNull().default("draft"),
     total: int("total").notNull(),
     currency: text("currency").notNull().default("USD"),
+    payedAt: integer("payedAt", { mode: "timestamp" }),
     dueAt: integer("dueAt", { mode: "timestamp" }),
     recurring: integer("recurring", { mode: "boolean" }).default(false),
     createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
@@ -558,11 +563,32 @@ export const invoices = sqliteTable(
   (t) => ({
     workspaceIdIdx: index("invoice_workspaceId_idx").on(t.workspaceId),
     clientIdIdx: index("invoice_clientId_idx").on(t.clientId),
-    projectIdIdx: index("invoice_projectId_idx").on(t.projectId),
   }),
 );
 
-export const invoicesRelations = relations(invoices, ({ one }) => ({
+export const baseInvoiceSchema = omit(
+  createInsertSchema(invoices, {
+    subject: string([minLength(3, "Subject must be at least 3 characters long")]),
+    items: array(
+      object({
+        description: string([minLength(3, "Description must be at least 3 characters long")]),
+        quantity: coerce(number("Quantity must be a number"), (v) => Number(v)),
+        unitPrice: coerce(number("Price must be a number"), (v) => Number(v)),
+      }),
+    ),
+  }),
+  ["workspaceId"],
+);
+
+const invoiceProjectsSchema = object({
+  projects: array(number()),
+});
+
+export const invoicesSchema = merge([baseInvoiceSchema, invoiceProjectsSchema]);
+
+export type InvoiceSchema = Output<typeof invoicesSchema>;
+
+export const invoicesRelations = relations(invoices, ({ one, many }) => ({
   workspace: one(workspaces, {
     fields: [invoices.workspaceId],
     references: [workspaces.id],
@@ -571,8 +597,5 @@ export const invoicesRelations = relations(invoices, ({ one }) => ({
     fields: [invoices.clientId],
     references: [clients.id],
   }),
-  project: one(projects, {
-    fields: [invoices.projectId, invoices.workspaceId],
-    references: [projects.id, projects.workspaceId],
-  }),
+  projects: many(projects),
 }));
