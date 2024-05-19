@@ -7,8 +7,8 @@ import { useEventsStore } from "~/lib/stores/events-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 import { useHotkeys } from "~/lib/hooks/use-hotkeys";
 import { NewClientCommand } from "../clients/NewClientCommand";
-import { ProjectCommand } from "../projects/ProjectCommand";
-import { TrackerCommand } from "../tracker/TrackerCommand";
+import { ProjectCommand } from "../commands/ProjectCommand";
+import { TrackerCommand } from "../commands/TrackerCommand";
 
 export const Hotkeys = () => {
   const router = useRouter();
@@ -97,6 +97,13 @@ export const Hotkeys = () => {
       "ctrl + shift + C",
       () => {
         setOpened("new-client");
+      },
+    ],
+    [
+      "ctrl + shift + I",
+      () => {
+        if (!workspace?.slug) return;
+        router.push(routes.newInvoice({ slug: workspace.slug }));
       },
     ],
   ]);
