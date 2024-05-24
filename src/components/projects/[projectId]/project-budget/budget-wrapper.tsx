@@ -15,5 +15,5 @@ export const ProjectBudgetWrapper = async ({ projectId }: { projectId: string })
 };
 
 export const ProjectBudgetLoading = () => {
-  return <Skeleton className="h-44 w-80" />;
+  return <Skeleton className="h-44 min-w-80" />;
 };

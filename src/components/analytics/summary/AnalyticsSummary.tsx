@@ -15,7 +15,7 @@ import { useAnalyticsQS } from "./params-cache";
 
 export const AnalyticsSummaryLoading = () => {
   return (
-    <div className="flex max-h-52 min-h-52 w-full gap-4">
+    <div className="flex max-h-[260px] min-h-[260px] w-full gap-4">
       <Skeleton className="h-full w-full" />
       <Skeleton className="h-full w-full" />
       <Skeleton className="h-full w-full" />

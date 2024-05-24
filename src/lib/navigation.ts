@@ -124,6 +124,11 @@ export const { routes, useSafeParams, useSafeSearchParams } = createNavigationCo
         id: z.string(),
       }),
     }),
+    newInvoice: defineRoute("/[slug]/invoices/new", {
+      params: z.object({
+        slug: z.string(),
+      }),
+    }),
     /**
      * User routes
      */

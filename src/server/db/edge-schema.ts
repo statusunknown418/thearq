@@ -8,6 +8,7 @@ import {
   custom,
   email,
   forward,
+  literal,
   maxLength,
   merge,
   minLength,
@@ -15,6 +16,7 @@ import {
   object,
   omit,
   string,
+  union,
   type Output,
 } from "valibot";
 import { type Integration } from "~/lib/constants";
@@ -294,6 +296,7 @@ export const timeEntries = sqliteTable(
     monthDate: text("monthDate")
       .notNull()
       .$defaultFn(() => dateToMonthDate(new Date())),
+    invoiceId: int("invoiceId").references(() => invoices.id, { onDelete: "set null" }),
     integrationUrl: text("integrationUrl"),
     integrationProvider: text("integrationProvider").$type<Integration>(),
     duration: integer("duration").notNull(),
@@ -349,8 +352,12 @@ export const timeEntriesRelations = relations(timeEntries, ({ one }) => ({
     references: [workspaces.id],
   }),
   project: one(projects, {
-    fields: [timeEntries.projectId, timeEntries.workspaceId],
-    references: [projects.id, projects.workspaceId],
+    fields: [timeEntries.projectId],
+    references: [projects.id],
+  }),
+  invoice: one(invoices, {
+    fields: [timeEntries.invoiceId],
+    references: [invoices.id],
   }),
 }));
 
@@ -580,8 +587,15 @@ export const baseInvoiceSchema = omit(
   ["workspaceId"],
 );
 
+export enum IncludeHours {
+  All,
+  Range,
+  None,
+}
+
 const invoiceProjectsSchema = object({
   projects: array(number()),
+  includeHours: union([literal("all"), literal("range"), literal("none")]),
 });
 
 export const invoicesSchema = merge([baseInvoiceSchema, invoiceProjectsSchema]);
@@ -598,4 +612,5 @@ export const invoicesRelations = relations(invoices, ({ one, many }) => ({
     references: [clients.id],
   }),
   projects: many(projects),
+  linkedEntries: many(timeEntries),
 }));

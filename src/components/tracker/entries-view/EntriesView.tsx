@@ -131,7 +131,7 @@ export const EntriesViews = ({
         <section
           className={cn(
             "grid h-full min-w-full resize-none grid-cols-1 justify-stretch overflow-scroll",
-            "rounded-b-lg border-x border-b bg-popover text-center last:border-r md:grid-cols-3 lg:grid-cols-7",
+            "rounded-b-lg border-x border-b text-center last:border-r md:grid-cols-3 lg:grid-cols-7",
           )}
         >
           {Array.from({ length: prefixDays }).map((_, index) => (
@@ -139,7 +139,12 @@ export const EntriesViews = ({
           ))}
 
           {computedMonthGrid.map(({ date, id }) => (
-            <DateCell key={id} date={date} entryData={data.hoursByDay[date.getDate()]} />
+            <DateCell
+              key={id}
+              date={date}
+              entrySummary={data.hoursByDay[date.getDate()]}
+              entryList={data.entriesByDate[date.getDate()]}
+            />
           ))}
 
           {Array.from({ length: suffixDays }).map((_, index) => (

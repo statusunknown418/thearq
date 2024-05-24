@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart, Card, DonutChart, Legend, ProgressBar } from "@tremor/react";
+import { BarChart, Card, Divider, DonutChart, Legend, ProgressBar } from "@tremor/react";
 import { format } from "date-fns-tz";
 import { adjustEndDate, secondsToHoursDecimal } from "~/lib/dates";
 import { parseNumber } from "~/lib/parsers";
@@ -57,6 +57,8 @@ export const ProjectHoursCharts = ({
           colors={["blue", "yellow"]}
         />
       </Card>
+
+      <Divider className="my-0 text-xs">Hours breakdown</Divider>
 
       <article className="flex gap-4">
         {children}

@@ -33,9 +33,7 @@ export default function WorkspaceTrackerPage() {
           <div className="flex flex-col gap-0.5">
             <h1 className="text-xl font-semibold">Tracker</h1>
 
-            <p className="text-muted-foreground">
-              Track everything, benefit from the enabled integrations and be more productive.
-            </p>
+            <p className="text-muted-foreground">Here&apos;s an overview of your time entries</p>
           </div>
         </section>
 

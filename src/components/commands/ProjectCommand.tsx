@@ -153,7 +153,7 @@ export const ProjectCommand = () => {
               />
             </div>
 
-            <ClientsCombobox />
+            <ClientsCombobox triggerClassnames="max-w-52" />
 
             <FormField
               control={form.control}

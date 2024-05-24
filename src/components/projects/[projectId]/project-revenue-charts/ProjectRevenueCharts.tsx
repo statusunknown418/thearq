@@ -78,7 +78,7 @@ export const ProjectRevenueCharts = ({
         />
       </Card>
 
-      <Divider className="my-0">Revenue breakdown</Divider>
+      <Divider className="my-0 text-xs">Revenue breakdown</Divider>
 
       <article className="flex gap-4">
         <Card className="p-4 tabular-nums">

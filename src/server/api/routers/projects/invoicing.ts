@@ -6,7 +6,7 @@ export const projectsInvoicingRouter = createTRPCRouter({
     .input((i) =>
       parse(
         object({
-          ids: array(number()),
+          projectIds: array(number()),
         }),
         i,
       ),

@@ -261,7 +261,7 @@ export const DynamicDateView = ({
 
   if (!events) {
     return (
-      <div className="flex h-[calc(100vh-150px)] min-w-[340px] flex-col gap-4">
+      <div className="flex h-[calc(100vh-140px)] min-w-[340px] flex-col gap-4">
         <Skeleton className="h-10 w-full" />
 
         <Skeleton className="h-full w-full flex-grow" />
@@ -271,7 +271,7 @@ export const DynamicDateView = ({
 
   return (
     <section className="rounded-xl">
-      <section className="h-[calc(100vh-150px)] w-[340px]">
+      <section className="h-[calc(100vh-140px)] w-[340px]">
         <DnDCalendar
           className="text-xs"
           defaultView="day"

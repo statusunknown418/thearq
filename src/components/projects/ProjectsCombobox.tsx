@@ -22,9 +22,11 @@ type ProjectsComboboxContext = Pick<NewTimeEntry, "projectId">;
 export const ProjectsCombobox = ({
   onSelect,
   size = "default",
+  triggerClassName,
 }: {
   onSelect?: () => void;
   size?: "sm" | "lg" | "default";
+  triggerClassName?: string;
 }) => {
   const formContext = useFormContext<ProjectsComboboxContext>();
 
@@ -41,7 +43,11 @@ export const ProjectsCombobox = ({
       render={({ field }) => (
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <Button variant={"secondary"} size={size} className="w-max bg-muted shadow">
+            <Button
+              variant={"secondary"}
+              size={size}
+              className={cn("w-max bg-muted shadow", triggerClassName)}
+            >
               <PiSquaresFourDuotone size={15} />
 
               <span className="max-w-[10ch] justify-between overflow-hidden text-ellipsis whitespace-nowrap">
@@ -52,7 +58,7 @@ export const ProjectsCombobox = ({
 
               <CaretDownIcon
                 className={cn(
-                  "h-5 w-5 flex-none justify-self-end text-muted-foreground transition-all",
+                  "ml-auto h-5 w-5 flex-none justify-self-end text-muted-foreground transition-all",
                 )}
               />
             </Button>

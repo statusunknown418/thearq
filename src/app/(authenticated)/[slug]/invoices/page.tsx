@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { PiPaperclip } from "react-icons/pi";
 import { Main } from "~/components/layout/Main";
 import { PageHeader } from "~/components/layout/PageHeader";
@@ -13,13 +14,15 @@ export default function InvoicesPage() {
           side="bottom"
           align="start"
           content={
-            <>
+            <div>
               Create a new invoice <KBD>Shift</KBD> + <KBD>I</KBD> + <KBD>N</KBD>
-            </>
+            </div>
           }
         >
-          <Button size={"icon"} subSize={"iconLg"}>
-            <PiPaperclip size={20} />
+          <Button size={"icon"} subSize={"iconLg"} asChild>
+            <Link href={"./invoices/new"}>
+              <PiPaperclip size={20} />
+            </Link>
           </Button>
         </StackTooltip>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
+import { ChevronDownIcon, CheckIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { PiPlusCircleDuotone, PiUserDuotone } from "react-icons/pi";
@@ -27,7 +27,7 @@ export const ClientsCombobox = ({
   triggerClassnames,
 }: {
   showLabel?: boolean;
-  onSelect?: () => void;
+  onSelect?: (id?: number) => void;
   triggerClassnames?: string;
 }) => {
   const formContext = useFormContext<ProjectSchema>();
@@ -59,7 +59,7 @@ export const ClientsCombobox = ({
               }
             }}
           >
-            <div className={cn("flex w-full flex-col gap-2", triggerClassnames)}>
+            <div className={cn("flex flex-col gap-2", triggerClassnames)}>
               {showLabel && <FormLabel>Client</FormLabel>}
 
               <FormControl>
@@ -67,7 +67,7 @@ export const ClientsCombobox = ({
                   <Button
                     variant={"secondary"}
                     size={"lg"}
-                    className="max-w-52 flex-grow justify-between"
+                    className={cn("flex-grow justify-between", triggerClassnames)}
                   >
                     <span>
                       {!!field.value
@@ -75,9 +75,9 @@ export const ClientsCombobox = ({
                         : "Select a client"}
                     </span>
 
-                    <CaretSortIcon
+                    <ChevronDownIcon
                       className={cn(
-                        "h-5 w-5 flex-none justify-self-end text-muted-foreground transition-all",
+                        "h-4 w-4 flex-none justify-self-end text-muted-foreground transition-all",
                       )}
                     />
                   </Button>
@@ -104,7 +104,7 @@ export const ClientsCombobox = ({
                         key={client.id}
                         onSelect={() => {
                           field.onChange(client.id);
-                          onSelect?.();
+                          onSelect?.(client.id);
                           setCombobox(false);
                         }}
                       >

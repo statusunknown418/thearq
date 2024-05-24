@@ -39,7 +39,7 @@ import { type CustomEvent } from "~/server/api/routers/entries";
 import { timeEntrySchema, type NewTimeEntry } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 import { ProjectsCombobox } from "../projects/ProjectsCombobox";
-import { FromIntegrationDialog } from "./FromIntegrationDialog";
+import { FromIntegrationDialog } from "../tracker/FromIntegrationDialog";
 
 const DynamicDateTimeInput = dynamic(
   () => import("~/components/ui/date-time-input").then((mod) => mod.DateTimeInput),
