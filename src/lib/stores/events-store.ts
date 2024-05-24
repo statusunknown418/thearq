@@ -74,6 +74,7 @@ export const createFakeEvent = (
       trackedAt: new Date(),
       duration,
       project: null,
+      invoiceId: null,
     } satisfies CustomEvent;
   }
 

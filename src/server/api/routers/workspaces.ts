@@ -223,9 +223,12 @@ export const workspacesRouter = createTRPCRouter({
       const inviteId = createId();
       const newLink = createWorkspaceInviteLink(input.workspaceSlug, inviteId);
 
-      await ctx.db.update(workspaces).set({
-        inviteLink: newLink,
-      });
+      await ctx.db
+        .update(workspaces)
+        .set({
+          inviteLink: newLink,
+        })
+        .where(eq(workspaces.id, workspace.id));
 
       return {
         success: true,
@@ -279,9 +282,12 @@ export const workspacesRouter = createTRPCRouter({
       }
 
       await ctx.db.transaction(async (trx) => {
-        await trx.update(workspaces).set({
-          seatCount: workspace.seatCount + 1,
-        });
+        await trx
+          .update(workspaces)
+          .set({
+            seatCount: workspace.seatCount + 1,
+          })
+          .where(eq(workspaces.id, workspace.id));
 
         await trx
           .delete(workspaceInvitations)

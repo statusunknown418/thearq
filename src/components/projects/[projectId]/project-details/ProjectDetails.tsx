@@ -120,7 +120,11 @@ export const ProjectDetails = ({
               <FormLabel>Client</FormLabel>
 
               <div className="col-span-4 flex items-center gap-2">
-                <ClientsCombobox triggerClassnames="w-max" showLabel={false} onSelect={onSubmit} />
+                <ClientsCombobox
+                  triggerClassnames="w-max"
+                  showLabel={false}
+                  onSelect={() => onSubmit()}
+                />
 
                 {!!field.value && (
                   <Button
