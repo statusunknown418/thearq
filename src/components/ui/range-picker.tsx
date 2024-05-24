@@ -13,13 +13,17 @@ export const RangePicker = ({
   date,
   align = "center",
   disableAfter = true,
+  className,
+  placeholder = "Pick dates",
 }: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   onDateChange: (date: DateRange | undefined) => void;
   date: DateRange | undefined;
   align?: "start" | "end" | "center";
   disableAfter?: boolean;
+  className?: string;
+  placeholder?: string;
 }) => {
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
@@ -31,6 +35,7 @@ export const RangePicker = ({
           className={cn(
             "w-[240px] justify-start rounded-r-none bg-tremor-background text-left font-normal dark:bg-dark-tremor-background",
             !date && "text-muted-foreground",
+            className,
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
@@ -44,7 +49,7 @@ export const RangePicker = ({
               format(new Date(date.from), "LLL dd, y")
             )
           ) : (
-            <span>Pick a date</span>
+            <span>{placeholder}</span>
           )}
         </Button>
       </PopoverTrigger>
