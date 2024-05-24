@@ -164,7 +164,7 @@ export const trackerRouter = createTRPCRouter({
       return updatedEntry;
     }),
 
-  delete: protectedProcedure
+  remove: protectedProcedure
     .input((i) => parse(object({ id: number() }), i))
     .mutation(async ({ ctx, input }) => {
       const deletedEntry = await ctx.db

@@ -102,7 +102,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
 
   const utils = api.useUtils();
 
-  const { mutate: deleteEntry } = api.tracker.delete.useMutation({
+  const { mutate: deleteEntry } = api.tracker.remove.useMutation({
     onMutate: async (entry) => {
       const monthDate = dateToMonthDate(new Date());
 
