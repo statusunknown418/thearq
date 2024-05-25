@@ -131,24 +131,34 @@ export const ProjectsSection = () => {
                       />
                     </FormControl>
 
-                    <p className="flex items-center gap-2">
+                    <p className="flex items-center gap-1">
                       {project.identifier && (
-                        <span className="text-muted-foreground">[{project.identifier}]</span>
+                        <span className="mr-1 text-muted-foreground">[{project.identifier}]</span>
                       )}
 
                       <span>{project.name}</span>
 
-                      <DotIcon />
+                      {(project.startsAt ?? project.endsAt) && (
+                        <DotIcon className="text-muted-foreground" />
+                      )}
+
+                      {!!project.startsAt && (
+                        <CalendarIcon className="w-3.5 text-muted-foreground" />
+                      )}
 
                       {project.startsAt && (
-                        <span className="text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           {format(new Date(project.startsAt), "MMM dd, yyyy")}
                         </span>
                       )}
 
+                      {project.startsAt && project.endsAt && (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
+
                       {project.endsAt && (
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <CalendarIcon /> {format(new Date(project.endsAt), "MMM dd, yyyy")}
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(project.endsAt), "MMM dd, yyyy")}
                         </span>
                       )}
                     </p>

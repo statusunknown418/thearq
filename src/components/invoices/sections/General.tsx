@@ -4,13 +4,21 @@ import { FormField, FormItem, FormLabel } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { SingleDatePicker } from "~/components/ui/single-date-picker";
 import { Textarea } from "~/components/ui/textarea";
-import { type InvoiceSchema } from "~/server/db/edge-schema";
+import { type ClientSchema, type InvoiceSchema } from "~/server/db/edge-schema";
 import { ProjectsSection } from "./Projects";
 import { useInvoicesQS } from "../invoices-cache";
+import { useInvoicesStore } from "~/lib/stores/invoices-store";
 
 export const GeneralSection = () => {
   const [_state, update] = useInvoicesQS();
   const formContext = useFormContext<InvoiceSchema>();
+
+  const storeClient = useInvoicesStore((s) => s.update);
+
+  const onChooseClient = (id: number, data: ClientSchema) => {
+    storeClient({ client: data });
+    void update({ client: id, projects: [] });
+  };
 
   return (
     <article className="flex h-full w-full flex-col gap-5">
@@ -82,12 +90,7 @@ export const GeneralSection = () => {
         <h4 className="text-base font-medium text-muted-foreground">Client details</h4>
 
         <div className="grid grid-cols-2 gap-4">
-          <ClientsCombobox
-            triggerClassnames="max-h-14"
-            onSelect={(clientId) => {
-              void update({ client: clientId });
-            }}
-          />
+          <ClientsCombobox triggerClassnames="max-h-14" onSelect={onChooseClient} />
 
           <FormField
             control={formContext.control}

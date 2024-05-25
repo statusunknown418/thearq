@@ -1,12 +1,13 @@
 "use client";
 
 import { valibotResolver } from "@hookform/resolvers/valibot";
+import { addMonths } from "date-fns";
 import { useForm } from "react-hook-form";
 import { invoicesSchema, type InvoiceSchema } from "~/server/db/edge-schema";
 import { Form } from "../ui/form";
-import { Stepper, renderers } from "./sections/Stepper";
-import { useInvoicesQS } from "./invoices-cache";
 import { InvoicePreview } from "./Preview";
+import { useInvoicesQS } from "./invoices-cache";
+import { Stepper, renderers } from "./sections/Stepper";
 
 export const InvoiceForm = () => {
   const [{ step, client }] = useInvoicesQS();
@@ -16,7 +17,10 @@ export const InvoiceForm = () => {
     defaultValues: {
       clientId: client ?? undefined,
       includeHours: "all",
+      identifier: "INV-0001",
       projects: [],
+      createdAt: new Date(),
+      dueAt: addMonths(new Date(), 1),
     },
   });
 
