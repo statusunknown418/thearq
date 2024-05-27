@@ -61,7 +61,7 @@ export const baseProjectsRouter = createTRPCRouter({
 
       return project;
     }),
-  get: protectedProcedure.query(async ({ ctx }) => {
+  getAll: protectedProcedure.query(async ({ ctx }) => {
     const wId = cookies().get(RECENT_W_ID_KEY)?.value;
     const location = ctx.headers.get(VERCEL_REQUEST_LOCATION);
 

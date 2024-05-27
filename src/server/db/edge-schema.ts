@@ -426,7 +426,7 @@ export const projectRelations = relations(projects, ({ one, many }) => ({
     references: [workspaces.id],
   }),
   timeEntries: many(timeEntries),
-  invoices: many(invoices),
+  invoices: many(invoicesToProjects),
   users: many(usersOnProjects),
   owner: one(users, { fields: [projects.ownerId], references: [users.id] }),
   client: one(clients, { fields: [projects.clientId], references: [clients.id] }),
@@ -587,11 +587,33 @@ export const baseInvoiceSchema = omit(
   ["workspaceId"],
 );
 
-export enum IncludeHours {
-  All,
-  Range,
-  None,
-}
+export const invoicesToProjects = sqliteTable(
+  "invoiceToProjects",
+  {
+    invoiceId: int("invoiceId")
+      .notNull()
+      .references(() => invoices.id, { onDelete: "cascade" }),
+    projectId: int("projectId")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+  },
+  (t) => ({
+    compoundKey: primaryKey({ columns: [t.invoiceId, t.projectId] }),
+    projectIdIdx: index("invoiceToProjects_projectId_idx").on(t.projectId),
+    invoiceIdIdx: index("invoiceToProjects_invoiceId_idx").on(t.invoiceId),
+  }),
+);
+
+export const invoicesToProjectsRelations = relations(invoicesToProjects, ({ one }) => ({
+  invoice: one(invoices, {
+    fields: [invoicesToProjects.invoiceId],
+    references: [invoices.id],
+  }),
+  project: one(projects, {
+    fields: [invoicesToProjects.projectId],
+    references: [projects.id],
+  }),
+}));
 
 const invoiceProjectsSchema = object({
   projects: array(number()),
@@ -611,6 +633,6 @@ export const invoicesRelations = relations(invoices, ({ one, many }) => ({
     fields: [invoices.clientId],
     references: [clients.id],
   }),
-  projects: many(projects),
+  projects: many(invoicesToProjects),
   linkedEntries: many(timeEntries),
 }));

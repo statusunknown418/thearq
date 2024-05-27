@@ -140,7 +140,7 @@ export const viewerRouter = createTRPCRouter({
       return issuesAssigned.nodes;
     }),
 
-  getAssignedProjects: protectedProcedure.query(({ ctx }) => {
+  getAssignedProjects: protectedProcedure.query(async ({ ctx }) => {
     const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
 
     if (!workspaceId) {
@@ -150,7 +150,7 @@ export const viewerRouter = createTRPCRouter({
       });
     }
 
-    return ctx.db.query.usersOnProjects.findMany({
+    const data = await ctx.db.query.usersOnProjects.findMany({
       where: (t, { eq }) => eq(t.userId, ctx.session.user.id),
       with: {
         project: {
@@ -166,9 +166,19 @@ export const viewerRouter = createTRPCRouter({
             endsAt: true,
             shareableUrl: true,
           },
+          with: {
+            client: {
+              columns: {
+                id: true,
+                name: true,
+              },
+            },
+          },
         },
       },
     });
+
+    return data;
   }),
 
   getAnalyticsMetrics: protectedProcedure
@@ -412,7 +422,7 @@ export const viewerRouter = createTRPCRouter({
 
       const hoursPerDate = summary.reduce(
         (acc, curr) => {
-          const date = format(curr.start, "yyyy/MM/dd");
+          const date = format(curr.start, "PP");
           const duration = secondsToHoursDecimal(curr.duration);
 
           if (!acc[date]) {
@@ -427,7 +437,7 @@ export const viewerRouter = createTRPCRouter({
       );
 
       const totalHoursPerDay = Array.from({ length: difference + 1 }).map((_, index) => {
-        const date = format(addDays(new Date(input.startDate), index), "yyyy/MM/dd");
+        const date = format(addDays(new Date(input.startDate), index), "PP");
         const hours = hoursPerDate[date] ?? 0;
 
         return {

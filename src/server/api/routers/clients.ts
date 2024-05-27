@@ -4,6 +4,7 @@ import { object, parse, string } from "valibot";
 import { RECENT_W_ID_KEY } from "~/lib/constants";
 import { clients, clientsSchema } from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { and, eq } from "drizzle-orm";
 
 export const clientsRouter = createTRPCRouter({
   getByWorkspace: protectedProcedure.query(async ({ ctx }) => {
@@ -78,5 +79,32 @@ export const clientsRouter = createTRPCRouter({
       }
 
       return project.client;
+    }),
+
+  update: protectedProcedure
+    .input((i) => parse(clientsSchema, i))
+    .mutation(async ({ ctx, input }) => {
+      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+      if (!workspaceId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No workspace selected",
+        });
+      }
+
+      if (!input.id) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Client ID is required",
+        });
+      }
+
+      const updatedClient = await ctx.db
+        .update(clients)
+        .set(input)
+        .where(and(eq(clients.id, input.id), eq(clients.workspaceId, Number(workspaceId))));
+
+      return updatedClient;
     }),
 });
