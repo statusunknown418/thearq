@@ -76,7 +76,7 @@ export const ProjectCommand = () => {
       toast.success("Project created");
 
       void Promise.all([
-        utils.projects.get.invalidate(),
+        utils.projects.getAll.invalidate(),
         utils.viewer.getAssignedProjects.invalidate(),
       ]);
       void router.push(routes.projects({ slug: workspace.slug }));

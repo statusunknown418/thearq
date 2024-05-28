@@ -90,12 +90,12 @@ export const ProjectHeader = ({
                     onBlur={onSubmit}
                   />
 
-                  <FormDescription className="flex items-center gap-2 text-sm">
-                    <span>{data?.identifier && `[${data.identifier}]`}</span>
+                  <FormDescription className="ml-3 flex items-center gap-2 text-sm">
+                    {!!data?.identifier && <span>[{data.identifier}]</span>}
 
                     {!!data.identifier && <span>&middot;</span>}
 
-                    <span>{data?.client?.name && `${data.client.name}`}</span>
+                    {!!data?.client?.name && <span>{data.client.name}</span>}
 
                     {!!data?.client?.name && <span>&middot;</span>}
 

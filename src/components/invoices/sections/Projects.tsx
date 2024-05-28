@@ -52,7 +52,7 @@ export const ProjectsSection = () => {
 
   if (!client) {
     return (
-      <article className="flex flex-col gap-4">
+      <article className="flex flex-col gap-3">
         <h4 className="text-base font-medium text-muted-foreground">Projects</h4>
 
         <div className="flex h-40 flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-muted-foreground">
@@ -67,7 +67,7 @@ export const ProjectsSection = () => {
 
   if (isLoading) {
     return (
-      <article className="flex flex-col gap-4">
+      <article className="flex flex-col gap-3">
         <h4 className="text-base font-medium text-muted-foreground">Projects</h4>
 
         <div className="flex flex-col gap-1">
@@ -81,7 +81,7 @@ export const ProjectsSection = () => {
 
   if (!data) {
     return (
-      <article className="flex flex-col gap-4">
+      <article className="flex flex-col gap-3">
         <h4 className="text-base font-medium text-muted-foreground">Projects</h4>
 
         <div className="flex h-40 flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-secondary text-muted-foreground">
@@ -93,7 +93,7 @@ export const ProjectsSection = () => {
   }
 
   return (
-    <article className="flex h-full w-full flex-col gap-4">
+    <article className="flex h-full w-full flex-col gap-3">
       <h4 className="text-base font-medium text-muted-foreground">Projects</h4>
 
       <ScrollArea className="max-h-32">

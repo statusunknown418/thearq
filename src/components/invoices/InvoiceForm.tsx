@@ -1,7 +1,6 @@
 "use client";
 
 import { valibotResolver } from "@hookform/resolvers/valibot";
-import { addMonths } from "date-fns";
 import { useForm } from "react-hook-form";
 import { invoicesSchema, type InvoiceSchema } from "~/server/db/edge-schema";
 import { Form } from "../ui/form";
@@ -20,7 +19,6 @@ export const InvoiceForm = () => {
       identifier: "INV-0001",
       projects: [],
       createdAt: new Date(),
-      dueAt: addMonths(new Date(), 1),
     },
   });
 

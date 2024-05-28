@@ -22,7 +22,7 @@ export const GeneralSection = () => {
 
   return (
     <article className="flex h-full w-full flex-col gap-5">
-      <section className="grid grid-cols-1 gap-4">
+      <section className="grid grid-cols-1 gap-3">
         <h4 className="text-base font-medium text-muted-foreground">Invoice terms</h4>
 
         <div className="grid grid-cols-5 gap-4">

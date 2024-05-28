@@ -9,6 +9,7 @@ import { Button } from "~/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { Loader } from "~/components/ui/loader";
+import { Skeleton } from "~/components/ui/skeleton";
 import { Textarea } from "~/components/ui/textarea";
 import { type ClientSchema } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
@@ -21,7 +22,7 @@ export const ProjectClientDetails = ({
   initialData: RouterOutputs["clients"]["getByProject"];
   projectId: string;
 }) => {
-  const { data } = api.clients.getByProject.useQuery(
+  const { data, isFetching } = api.clients.getByProject.useQuery(
     {
       shareableId: projectId,
     },
@@ -32,7 +33,7 @@ export const ProjectClientDetails = ({
 
   const utils = api.useUtils();
 
-  const { mutate, isLoading } = api.clients.update.useMutation({
+  const { mutate, isLoading, isSuccess } = api.clients.update.useMutation({
     onSuccess: () => {
       void utils.clients.invalidate();
     },
@@ -53,7 +54,7 @@ export const ProjectClientDetails = ({
   });
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isSuccess) return;
 
     form.reset({
       name: data?.name,
@@ -61,7 +62,7 @@ export const ProjectClientDetails = ({
       address: data?.address,
       id: data?.id,
     });
-  }, [data?.address, data?.email, data?.id, data?.name, form, isLoading]);
+  }, [data?.address, data?.email, data?.id, data?.name, form, isSuccess]);
 
   const onSubmit = form.handleSubmit((data) => {
     mutate({
@@ -83,6 +84,10 @@ export const ProjectClientDetails = ({
         </p>
       </div>
     );
+  }
+
+  if (isFetching) {
+    return <Skeleton className="h-52 w-full" />;
   }
 
   return (

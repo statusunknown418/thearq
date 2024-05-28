@@ -17,7 +17,7 @@ import { FormControl, FormField, FormLabel } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import { cn } from "~/lib/utils";
-import { type ProjectSchema } from "~/server/db/edge-schema";
+import { type ClientSchema, type ProjectSchema } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 import { Checkbox } from "../ui/checkbox";
 
@@ -27,7 +27,7 @@ export const ClientsCombobox = ({
   triggerClassnames,
 }: {
   showLabel?: boolean;
-  onSelect?: (id?: number) => void;
+  onSelect?: (id: number, data: ClientSchema) => void;
   triggerClassnames?: string;
 }) => {
   const formContext = useFormContext<ProjectSchema>();
@@ -104,7 +104,7 @@ export const ClientsCombobox = ({
                         key={client.id}
                         onSelect={() => {
                           field.onChange(client.id);
-                          onSelect?.(client.id);
+                          onSelect?.(client.id, client);
                           setCombobox(false);
                         }}
                       >

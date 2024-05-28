@@ -55,7 +55,7 @@ export const ProjectDetails = ({
         description: error.message,
       });
     },
-    onSettled: () => {
+    onSuccess: () => {
       void utils.projects.invalidate();
       void utils.viewer.getAssignedProjects.invalidate();
       void utils.clients.getByProject.invalidate();
@@ -73,19 +73,7 @@ export const ProjectDetails = ({
 
   const form = useForm<ProjectSchema>({
     resolver: valibotResolver(projectsSchema),
-    defaultValues: {
-      id: data?.id,
-      description: data?.description,
-      clientId: data?.clientId,
-      color: data?.color,
-      name: data?.name,
-      type: data?.type,
-      budgetHours: data?.budgetHours,
-      budgetResetsPerMonth: data?.budgetResetsPerMonth,
-      entriesLockingSchedule: data?.entriesLockingSchedule,
-      startsAt: data?.startsAt,
-      endsAt: data?.endsAt,
-    },
+    defaultValues: data,
     mode: "onBlur",
   });
 

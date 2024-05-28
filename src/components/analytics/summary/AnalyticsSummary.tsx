@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, DonutChart, Legend, ProgressBar } from "@tremor/react";
-import { addDays, format } from "date-fns";
+import { addDays, differenceInWeeks, format } from "date-fns";
 import Link from "next/link";
 import { PiArrowRight, PiInfinity, PiInfoBold } from "react-icons/pi";
 import { Button } from "~/components/ui/button";
@@ -52,6 +52,7 @@ export const AnalyticsSummary = ({
 
   const paymentDate = data?.payDate ? paymentScheduleToDate(data.payDate) : null;
   const capacityPercentage = data.capacity ? (data.totalHours / data.capacity) * 100 : 0;
+  const fullCapacity = data.capacity ? differenceInWeeks(state.to, state.from) * data.capacity : 0;
 
   return (
     <section className="flex flex-col gap-5">
@@ -123,12 +124,12 @@ export const AnalyticsSummary = ({
             <p className="flex items-center justify-between text-xs text-tremor-content dark:text-dark-tremor-content">
               <span>
                 {!!data.capacity
-                  ? `${capacityPercentage.toFixed(2)}% of week capacity`
+                  ? `${capacityPercentage.toFixed(2)}% of acc. capacity`
                   : "No capacity set"}{" "}
               </span>
 
               <span className="flex items-center gap-1">
-                {data.capacity ? `${data.capacity} hours` : <PiInfinity size={16} />}
+                {fullCapacity ? `${fullCapacity} hours` : <PiInfinity size={16} />}
                 <PiInfoBold size={14} className="text-blue-500" />
               </span>
             </p>
