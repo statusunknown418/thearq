@@ -38,9 +38,9 @@ import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 
-export type ProjectsTableData = RouterOutputs["projects"]["get"];
+export type ProjectsTableData = RouterOutputs["projects"]["getAll"];
 
-export type ProjectsTableColumn = RouterOutputs["projects"]["get"][number];
+export type ProjectsTableColumn = RouterOutputs["projects"]["getAll"][number];
 
 const columns: ColumnDef<ProjectsTableColumn>[] = [
   {
@@ -233,9 +233,9 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
 export const ProjectsTable = ({
   initialData,
 }: {
-  initialData: RouterOutputs["projects"]["get"];
+  initialData: RouterOutputs["projects"]["getAll"];
 }) => {
-  const { data: projects } = api.projects.get.useQuery(undefined, {
+  const { data: projects } = api.projects.getAll.useQuery(undefined, {
     initialData,
   });
 

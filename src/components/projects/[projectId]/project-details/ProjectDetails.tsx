@@ -18,6 +18,7 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { Loader } from "~/components/ui/loader";
 import {
   Select,
   SelectContent,
@@ -48,7 +49,7 @@ export const ProjectDetails = ({
 
   const utils = api.useUtils();
 
-  const { mutate } = api.projects.edit.useMutation({
+  const { mutate, isLoading } = api.projects.edit.useMutation({
     onError: (error) => {
       toast.error("Failed to update project", {
         description: error.message,
@@ -58,7 +59,6 @@ export const ProjectDetails = ({
       void utils.projects.invalidate();
       void utils.viewer.getAssignedProjects.invalidate();
       void utils.clients.getByProject.invalidate();
-      toast.info("Project updated");
     },
   });
 
@@ -107,10 +107,19 @@ export const ProjectDetails = ({
         className="flex h-max w-full flex-col gap-5 rounded-lg border bg-secondary-background p-5"
         onSubmit={onSubmit}
       >
-        <Badge variant={"secondary"} className="w-max tracking-wide text-muted-foreground">
-          <PiSquaresFourDuotone size={16} />
-          Project details
-        </Badge>
+        <div className="flex items-center justify-between">
+          <Badge variant={"secondary"} className="w-max tracking-wide text-muted-foreground">
+            <PiSquaresFourDuotone size={16} />
+            Project details
+          </Badge>
+
+          {isLoading && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Loader />
+              <span>Saving ...</span>
+            </div>
+          )}
+        </div>
 
         <FormField
           name="clientId"
@@ -121,7 +130,7 @@ export const ProjectDetails = ({
 
               <div className="col-span-4 flex items-center gap-2">
                 <ClientsCombobox
-                  triggerClassnames="w-max"
+                  triggerClassnames="w-52"
                   showLabel={false}
                   onSelect={() => onSubmit()}
                 />
@@ -156,6 +165,29 @@ export const ProjectDetails = ({
                     {...field}
                     placeholder={"Add a description"}
                     value={field.value ?? ""}
+                  />
+                </FormControl>
+
+                <FormDescription>Internal notes, not shared with the client</FormDescription>
+              </div>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          name="identifier"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem className="grid w-full grid-cols-5 gap-4">
+              <FormLabel>Identifier</FormLabel>
+
+              <div className="col-span-4 flex flex-col gap-2">
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder={"AQX-777"}
+                    value={field.value ?? ""}
+                    className="max-w-24"
                   />
                 </FormControl>
 
@@ -231,7 +263,7 @@ export const ProjectDetails = ({
           render={({ field }) => (
             <FormItem className="grid w-full grid-cols-5 gap-4">
               <FormLabel className="inline-flex items-center gap-2 self-start">
-                Project type
+                Project billing
               </FormLabel>
 
               <section className="col-span-4 flex flex-col gap-2">

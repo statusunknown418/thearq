@@ -101,7 +101,7 @@ export const ProjectsCombobox = ({
                         )}
                       />
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex w-full items-center gap-2">
                         <div
                           className={cn("h-3 w-3 rounded-full bg-gray-600")}
                           style={{
@@ -109,6 +109,10 @@ export const ProjectsCombobox = ({
                           }}
                         />
                         <span>{relation.project.name}</span>
+                        {relation.project.client?.name && (
+                          <span className="text-muted-foreground">&middot;</span>
+                        )}
+                        <p className="text-muted-foreground">{relation.project.client?.name}</p>
                       </div>
                     </CommandItem>
                   ))}
@@ -194,7 +198,7 @@ export const ProjectsComboboxStandalone = ({
                     checked={field.includes(relation.projectId)}
                   />
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex w-full items-center gap-2">
                     <div
                       className={cn("h-3 w-3 rounded-full bg-gray-600")}
                       style={{
@@ -202,6 +206,10 @@ export const ProjectsComboboxStandalone = ({
                       }}
                     />
                     <span>{relation.project.name}</span>
+                    {relation.project.client?.name && (
+                      <span className="text-muted-foreground">&middot;</span>
+                    )}
+                    <p className="text-muted-foreground">{relation.project.client?.name}</p>
                   </div>
                 </CommandItem>
               ))}

@@ -90,7 +90,7 @@ export const ProjectHeader = ({
                     onBlur={onSubmit}
                   />
 
-                  <FormDescription className="ml-3 flex items-center gap-2 text-sm">
+                  <FormDescription className="flex items-center gap-2 text-sm">
                     <span>{data?.identifier && `[${data.identifier}]`}</span>
 
                     {!!data.identifier && <span>&middot;</span>}

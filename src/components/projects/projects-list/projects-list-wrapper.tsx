@@ -7,7 +7,7 @@ export const ProjectsListLoading = () => {
 };
 
 export const ProjectsListRSC = async () => {
-  const projects = await api.projects.get.query();
+  const projects = await api.projects.getAll.query();
 
   return <ProjectsTable initialData={projects} />;
 };
