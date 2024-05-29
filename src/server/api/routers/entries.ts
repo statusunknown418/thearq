@@ -26,7 +26,7 @@ export const entriesRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const wId = cookies().get(RECENT_W_ID_KEY)?.value;
 
-      if (input.selection === "none" || !input.projectIds || !wId) {
+      if (input.selection === "none" || input.projectIds?.length === 0 || !wId) {
         return [];
       }
 
@@ -47,8 +47,14 @@ export const entriesRouter = createTRPCRouter({
               name: true,
               identifier: true,
             },
+            with: {
+              users: {
+                with: {
+                  user: true,
+                },
+              },
+            },
           },
-          user: true,
         },
       });
 

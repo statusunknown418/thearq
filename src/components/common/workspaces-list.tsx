@@ -2,9 +2,16 @@ import { CubeIcon } from "@radix-ui/react-icons";
 import { APP_URL } from "~/lib/constants";
 import { api } from "~/trpc/server";
 import { List } from "./List";
+import { auth } from "~/server/auth";
+import { redirect } from "next/navigation";
 
 export const WorkspacesList = async () => {
   const workspaces = await api.workspaces.get.query();
+  const session = await auth();
+
+  if (!!session?.user) {
+    return redirect("/api/auth/signin");
+  }
 
   if (!workspaces.length) {
     return (

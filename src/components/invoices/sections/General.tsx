@@ -91,17 +91,6 @@ export const GeneralSection = () => {
 
         <div className="grid grid-cols-2 gap-4">
           <ClientsCombobox triggerClassnames="max-h-14" onSelect={onChooseClient} />
-
-          <FormField
-            control={formContext.control}
-            name="subject"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Address</FormLabel>
-                <Textarea maxRows={2} {...field} value={field.value ?? ""} className="w-full" />
-              </FormItem>
-            )}
-          />
         </div>
       </section>
 

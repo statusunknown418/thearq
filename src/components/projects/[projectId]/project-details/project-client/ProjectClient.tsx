@@ -28,6 +28,8 @@ export const ProjectClientDetails = ({
     },
     {
       initialData,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
     },
   );
 
