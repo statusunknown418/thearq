@@ -25,10 +25,12 @@ export const ClientsCombobox = ({
   showLabel = true,
   onSelect,
   triggerClassnames,
+  labelClassnames,
 }: {
   showLabel?: boolean;
   onSelect?: (id: number, data: ClientSchema) => void;
   triggerClassnames?: string;
+  labelClassnames?: string;
 }) => {
   const formContext = useFormContext<ProjectSchema>();
 
@@ -60,7 +62,7 @@ export const ClientsCombobox = ({
             }}
           >
             <div className={cn("flex flex-col gap-2", triggerClassnames)}>
-              {showLabel && <FormLabel>Client</FormLabel>}
+              {showLabel && <FormLabel className={cn(labelClassnames)}>Client</FormLabel>}
 
               <FormControl>
                 <PopoverTrigger asChild>
@@ -85,7 +87,10 @@ export const ClientsCombobox = ({
               </FormControl>
             </div>
 
-            <PopoverContent className={"w-[280px] p-0"} align="start">
+            <PopoverContent
+              className={"min-w-[var(--radix-popper-anchor-width)] p-0"}
+              align="start"
+            >
               <Command>
                 <CommandInput placeholder="Search" />
                 <CommandEmpty>No client found</CommandEmpty>

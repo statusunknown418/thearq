@@ -1,10 +1,18 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
-import { PiArrowLeft, PiArrowRight, PiPlus, PiX } from "react-icons/pi";
+import {
+  PiArrowLeft,
+  PiArrowRight,
+  PiFloppyDiskDuotone,
+  PiFolder,
+  PiPlus,
+  PiX,
+} from "react-icons/pi";
 import { Button } from "~/components/ui/button";
-import { FormField, FormItem, FormLabel } from "~/components/ui/form";
+import { FormDescription, FormField, FormItem, FormLabel } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -23,7 +31,7 @@ import { useInvoicesQS } from "../invoices-cache";
 export const ItemsSection = () => {
   const [{ projects }, update] = useInvoicesQS();
 
-  const [groupBy, changeGrouping] = useState<"person" | "project">("person");
+  const [groupBy, _changeGrouping] = useState<"person" | "project">("person");
 
   const formContext = useFormContext<InvoiceSchema>();
   const { fields, append, replace, remove } = useFieldArray({
@@ -119,7 +127,7 @@ export const ItemsSection = () => {
   const goToNextStep = () => {
     void update((prev) => ({
       ...prev,
-      step: "items",
+      step: "notes",
     }));
   };
 
@@ -160,9 +168,23 @@ export const ItemsSection = () => {
 
   if (data.length === 0) {
     return (
-      <article className="flex h-full w-full flex-col gap-6">
+      <article className="mx-auto flex h-full w-full max-w-5xl flex-col gap-4">
         {fields.map((field, index) => (
-          <div key={field.id} className="flex gap-2">
+          <div key={field.id} className="flex gap-4">
+            <FormItem>
+              <Label>Type</Label>
+              <Select>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value="service">Service</SelectItem>
+                  <SelectItem value="product">Product</SelectItem>
+                </SelectContent>
+              </Select>
+            </FormItem>
+
             <FormField
               control={formContext.control}
               name={`items.${index}.quantity`}
@@ -211,12 +233,30 @@ export const ItemsSection = () => {
               )}
             />
 
-            <div className="flex flex-col gap-2">
-              <p>Amount</p>
-              <p>{field.quantity * field.unitPrice}</p>
+            <div className="flex min-w-24 flex-col items-end gap-2">
+              <Label>Amount</Label>
+              <p className="font-semibold tabular-nums">
+                {parseLongCurrency(field.quantity * field.unitPrice * 100)}
+              </p>
             </div>
           </div>
         ))}
+
+        <Button
+          type="button"
+          className="max-w-max"
+          variant={"secondary"}
+          onClick={() => {
+            append({
+              description: "",
+              quantity: 1,
+              unitPrice: 0,
+            });
+          }}
+        >
+          <PiPlus />
+          Add item
+        </Button>
 
         <div className="flex w-full justify-end gap-4">
           <Button variant={"outline"} size={"lg"} type="button" onClick={goToPreviousStep}>
@@ -233,91 +273,102 @@ export const ItemsSection = () => {
     );
   }
 
+  const computeTotal = formContext
+    .watch("items")
+    ?.map((item) => item.quantity * item.unitPrice)
+    .reduce((acc, curr) => acc + curr, 0);
+
   return (
-    <article className="flex h-full w-full flex-col gap-4">
-      <Select value={groupBy} onValueChange={(v) => changeGrouping(v as "person" | "project")}>
-        <SelectTrigger className="max-w-max gap-1">
-          Group by
-          <SelectValue placeholder={"Group by"} />
-        </SelectTrigger>
+    <article className="mx-auto flex h-full w-full max-w-5xl flex-col gap-4">
+      <section className="flex flex-col gap-3">
+        {fields.map((field, index) => (
+          <div key={field.id} className="flex gap-4">
+            <Button
+              className="mt-5"
+              variant={"outline"}
+              size={"icon"}
+              onClick={() => {
+                remove(index);
+              }}
+            >
+              <PiX />
+            </Button>
 
-        <SelectContent>
-          <SelectItem value="person">Person</SelectItem>
-          <SelectItem value="project">Project</SelectItem>
-        </SelectContent>
-      </Select>
+            <FormItem className="min-w-40">
+              <Label>Type</Label>
+              <Select>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
 
-      <section>
-        <ul className="flex items-center justify-between gap-2 rounded-sm bg-secondary p-2.5 text-right text-xs">
-          <li className="w-8"></li>
-          <li className="min-w-20 text-left">Quantity</li>
-          <li className="max-w-[420px] flex-grow text-left">Description</li>
-          <li className="min-w-20">Price</li>
-          <li className="min-w-20">Amount</li>
-        </ul>
+                <SelectContent>
+                  <SelectItem value="service">Service</SelectItem>
+                  <SelectItem value="product">Product</SelectItem>
+                </SelectContent>
+              </Select>
+            </FormItem>
 
-        <div className="my-2 flex flex-col gap-2">
-          {fields.map((field, index) => (
-            <article key={field.id} className="flex gap-2">
-              <Button
-                variant={"outline"}
-                size={"icon"}
-                onClick={() => {
-                  remove(index);
-                }}
-              >
-                <PiX />
-              </Button>
+            <FormField
+              control={formContext.control}
+              name={`items.${index}.quantity`}
+              render={({ field }) => (
+                <FormItem className="max-w-20">
+                  <FormLabel>Quantity</FormLabel>
 
-              <FormField
-                control={formContext.control}
-                name={`items.${index}.quantity`}
-                render={({ field }) => (
                   <Input
                     {...field}
                     value={field.value ?? ""}
                     placeholder={"Quantity"}
-                    className="max-w-20 text-right"
+                    className="text-right"
                   />
-                )}
-              />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={formContext.control}
-                name={`items.${index}.description`}
-                render={({ field }) => (
-                  <div className="max-w-[420px] flex-grow">
-                    <Textarea
-                      {...field}
-                      value={field.value ?? ""}
-                      placeholder={"Description"}
-                      className="w-full"
-                    />
-                  </div>
-                )}
-              />
+            <FormField
+              control={formContext.control}
+              name={`items.${index}.description`}
+              render={({ field }) => (
+                <FormItem className="flex-grow">
+                  <FormLabel>Description</FormLabel>
 
-              <FormField
-                control={formContext.control}
-                name={`items.${index}.unitPrice`}
-                render={({ field }) => (
+                  <Textarea
+                    {...field}
+                    value={field.value ?? ""}
+                    placeholder={"Description"}
+                    className="w-full"
+                  />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={formContext.control}
+              name={`items.${index}.unitPrice`}
+              render={({ field }) => (
+                <FormItem className="max-w-20">
+                  <FormLabel>Unit price</FormLabel>
                   <Input
                     {...field}
                     value={field.value ?? ""}
                     placeholder={"Price"}
-                    className="max-w-20 text-right"
+                    className="text-right"
                   />
-                )}
-              />
+                </FormItem>
+              )}
+            />
 
-              <p className="w-max min-w-20 text-right text-sm font-medium tabular-nums">
+            <div className="flex min-w-24 flex-col items-end gap-2">
+              <Label>Amount</Label>
+              <p className="font-semibold tabular-nums">
                 {parseLongCurrency(field.quantity * field.unitPrice * 100)}
               </p>
-            </article>
-          ))}
-        </div>
+            </div>
+          </div>
+        ))}
 
         <Button
+          className="max-w-max"
           type="button"
           variant={"secondary"}
           onClick={() => {
@@ -333,15 +384,47 @@ export const ItemsSection = () => {
         </Button>
       </section>
 
+      <div className="flex flex-col items-end justify-end">
+        <p>Total</p>
+        <p className="font-semibold tabular-nums">
+          {!!computeTotal && parseLongCurrency(computeTotal * 100)}
+        </p>
+      </div>
+
+      <FormField
+        control={formContext.control}
+        name="notes"
+        render={({ field }) => (
+          <FormItem className="mt-4">
+            <FormLabel>Notes</FormLabel>
+            <Textarea
+              {...field}
+              value={field.value ?? ""}
+              placeholder={"Notes"}
+              className="w-full"
+            />
+            <FormDescription>
+              Add extra notes to the invoice. This will be displayed on the invoice and can be used
+              to explain it, or to add any additional information.
+            </FormDescription>
+          </FormItem>
+        )}
+      />
+
       <div className="flex w-full justify-end gap-4">
         <Button variant={"outline"} size={"lg"} type="button" onClick={goToPreviousStep}>
           <PiArrowLeft />
           Previous
         </Button>
 
-        <Button variant={"outline"} size={"lg"} type="button" onClick={goToNextStep}>
-          Next
-          <PiArrowRight />
+        <Button variant={"secondary"} size={"lg"} type="button">
+          <PiFolder size={15} />
+          Preview
+        </Button>
+
+        <Button size={"lg"}>
+          <PiFloppyDiskDuotone size={15} />
+          Save
         </Button>
       </div>
     </article>

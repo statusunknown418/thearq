@@ -62,12 +62,12 @@ export const updateCookiesAction = async (ctx: FormData) => {
  * Should only be used in a server context
  * @returns
  */
-export const getUserRole = () => {
+export const getUserRole = async () => {
   const store = cookies();
   return store.get(USER_WORKSPACE_ROLE)?.value as Roles;
 };
 
-export const getLatestWorkspace = () => {
+export const getLatestWorkspace = async () => {
   const store = cookies();
   return store.get(RECENT_WORKSPACE_KEY)?.value;
 };

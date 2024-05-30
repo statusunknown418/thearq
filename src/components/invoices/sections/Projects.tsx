@@ -175,13 +175,13 @@ export const ProjectsSection = () => {
         {data.length === 1 ? " project" : " projects"} found linked to this client
       </p>
 
-      <div className="mt-2 grid grid-cols-2 items-end gap-4">
+      <div className="mt-2 grid grid-cols-4 items-end gap-4">
         <FormField
           control={formContext.control}
           name="includeHours"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Include hours</FormLabel>
+            <FormItem className="">
+              <FormLabel className="min-w-24">Include hours</FormLabel>
 
               <Select value={String(field.value)} onValueChange={field.onChange}>
                 <SelectTrigger>

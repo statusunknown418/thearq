@@ -15,6 +15,7 @@ import {
   number,
   object,
   omit,
+  optional,
   string,
   union,
   type Output,
@@ -561,6 +562,8 @@ export const invoices = sqliteTable(
     status: text("status", { enum: invoiceStatus }).notNull().default("draft"),
     total: int("total").notNull(),
     currency: text("currency").notNull().default("USD"),
+    taxPercentage: int("taxPercentage").default(0),
+    discountPercentage: int("discountPercentage").default(0),
     payedAt: integer("payedAt", { mode: "timestamp" }),
     dueAt: integer("dueAt", { mode: "timestamp" }),
     recurring: integer("recurring", { mode: "boolean" }).default(false),
@@ -576,6 +579,7 @@ export const invoices = sqliteTable(
 export const baseInvoiceSchema = omit(
   createInsertSchema(invoices, {
     subject: string([minLength(3, "Subject must be at least 3 characters long")]),
+    total: optional(number()),
     items: array(
       object({
         description: string([minLength(3, "Description must be at least 3 characters long")]),

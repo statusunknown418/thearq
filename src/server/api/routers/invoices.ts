@@ -48,10 +48,19 @@ export const invoicesRouter = createTRPCRouter({
         });
       }
 
+      const baseTotal = input.items?.reduce((acc, curr) => acc + curr.quantity * curr.unitPrice, 0);
+
+      const computeTotal =
+        baseTotal &&
+        baseTotal -
+          ((input.discountPercentage ?? 0) * baseTotal) / 100 +
+          ((input.taxPercentage ?? 0) * baseTotal) / 100;
+
       const invoice = await ctx.db
         .insert(invoices)
         .values({
           ...input,
+          total: computeTotal ?? 0,
           workspaceId: Number(wId),
         })
         .returning();
