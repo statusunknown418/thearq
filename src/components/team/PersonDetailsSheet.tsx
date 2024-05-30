@@ -94,7 +94,8 @@ export const PersonDetailsSheet = () => {
           <SheetTitle>{details?.user.name}&apos;s profile</SheetTitle>
 
           <SheetDescription>
-            Edit this person&apos;s details, like their billable rate, role, and internal cost.
+            Edit this person&apos;s global details, like their billable rate, role, and internal
+            cost.
           </SheetDescription>
         </SheetHeader>
 
@@ -145,8 +146,9 @@ export const PersonDetailsSheet = () => {
                   </FormControl>
 
                   <FormDescription>
-                    This is the default billable rate for this person. It can be customized per
-                    project.
+                    This is the default billable rate for this person. It will be used for all{" "}
+                    <span className="italic">new</span> projects created (can be customized per
+                    project).
                   </FormDescription>
 
                   <FormMessage />
@@ -159,15 +161,16 @@ export const PersonDetailsSheet = () => {
               name="internalCost"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Internal cost</FormLabel>
+                  <FormLabel>Internal cost (Default)</FormLabel>
 
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
 
                   <FormDescription>
-                    This is the person&apos;s cost to the company. It is used to calculate the
-                    profitability of the projects.
+                    This is the person&apos;s cost to the company. It will be used for all{" "}
+                    <span className="italic">new</span> projects created (can be customized per
+                    project).
                   </FormDescription>
 
                   <FormMessage />

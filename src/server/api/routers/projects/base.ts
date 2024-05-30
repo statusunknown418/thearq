@@ -73,7 +73,8 @@ export const baseProjectsRouter = createTRPCRouter({
     }
 
     const data = await ctx.db.query.usersOnProjects.findMany({
-      where: (t, { eq }) => eq(t.userId, ctx.session.user.id),
+      where: (t, { eq, and }) =>
+        and(eq(t.userId, ctx.session.user.id), eq(t.workspaceId, Number(wId))),
       with: {
         project: {
           columns: {
