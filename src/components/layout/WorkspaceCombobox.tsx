@@ -105,6 +105,7 @@ export const WorkspaceCombobox = () => {
                     data.append("role", w.role);
                     data.append("id", String(w.workspaceId));
                     await updateCookiesAction(data);
+                    router.refresh();
 
                     updatePermissionsClient(parsePermissions(w.permissions));
                     changeValue(w.workspace.name);
