@@ -90,7 +90,7 @@ export const GeneralSection = () => {
             render={({ field }) => (
               <FormItem className="flex-row items-center">
                 <FormLabel className="min-w-24">Tax (%)</FormLabel>
-                <Input {...field} className="max-w-32" />
+                <Input {...field} value={field.value ?? undefined} className="max-w-32" />
               </FormItem>
             )}
           />
@@ -101,7 +101,7 @@ export const GeneralSection = () => {
             render={({ field }) => (
               <FormItem className="flex-row items-center">
                 <FormLabel className="min-w-24">Discount (%)</FormLabel>
-                <Input {...field} className="max-w-32" />
+                <Input {...field} value={field.value ?? undefined} className="max-w-32" />
               </FormItem>
             )}
           />
