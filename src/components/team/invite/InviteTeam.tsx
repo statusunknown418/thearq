@@ -30,16 +30,18 @@ import { TextKBD } from "../../ui/kbd";
 
 export const InviteTeam = ({
   workspace,
-  workspaceId,
+  workspaceSlug,
 }: {
   workspace: RouterOutputs["workspaces"]["getBySlug"];
-  workspaceId: number;
+  workspaceSlug: string;
 }) => {
   const [open, setOpen] = useState(false);
 
   const utils = api.useUtils();
-  const { data } = api.workspaces.getBySlug.useQuery(
-    { slug: workspace.slug, id: workspaceId },
+  const {
+    data: { data },
+  } = api.workspaces.getBySlug.useQuery(
+    { slug: workspaceSlug },
     {
       initialData: workspace,
     },
@@ -53,7 +55,7 @@ export const InviteTeam = ({
 
   const rotateInviteLink = api.workspaces.rotateInviteLink.useMutation({
     onSuccess: async () => {
-      return utils.workspaces.getBySlug.invalidate({ slug: data.slug });
+      return utils.workspaces.getBySlug.invalidate({ slug: workspaceSlug });
     },
   });
 
@@ -70,7 +72,7 @@ export const InviteTeam = ({
           email: "",
         },
       ],
-      workspaceSlug: data.slug,
+      workspaceSlug: workspaceSlug,
     },
   });
 
@@ -92,11 +94,15 @@ export const InviteTeam = ({
   });
 
   const handleRotateInviteLink = () => {
-    toast.promise(rotateInviteLink.mutateAsync({ workspaceSlug: data.slug }), {
+    toast.promise(rotateInviteLink.mutateAsync({ workspaceSlug }), {
       loading: "Updating ...",
       success: "Invite link rotated!",
     });
   };
+
+  if (!data) {
+    return <div>Something happened with the invite</div>;
+  }
 
   return (
     <Alert>

@@ -110,6 +110,7 @@ export const workspacesRouter = createTRPCRouter({
       if (!workspaceId) {
         return {
           success: false,
+          data: null,
           error: {
             code: "NOT_FOUND",
             message: "No workspace found",
@@ -139,8 +140,12 @@ export const workspacesRouter = createTRPCRouter({
       }
 
       return {
-        ...workspace,
-        viewerPermissions: parsePermissions(viewer.permissions),
+        success: true,
+        error: null,
+        data: {
+          ...workspace,
+          viewerPermissions: parsePermissions(viewer.permissions),
+        },
       };
     }),
   getPermissions: protectedProcedure

@@ -16,8 +16,12 @@ export const Updater = ({ workspace }: { workspace: RouterOutputs["workspaces"][
   const selectWorkspace = useWorkspaceStore((s) => s.setActive);
 
   const memoizedUpdater = useCallback(() => {
-    updatePermissions(workspace.viewerPermissions);
-    selectWorkspace(workspace);
+    if (!workspace.data) {
+      return;
+    }
+
+    updatePermissions(workspace.data.viewerPermissions);
+    selectWorkspace(workspace.data);
   }, [selectWorkspace, updatePermissions, workspace]);
 
   useEffect(() => {

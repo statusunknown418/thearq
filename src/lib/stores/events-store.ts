@@ -67,6 +67,7 @@ export const createFakeEvent = (
         id: user.id ?? createId(),
         image: user.image ?? null,
         name: user.name ?? null,
+        recentWId: null,
       },
       description: "",
       userId: user.id ?? createId(),

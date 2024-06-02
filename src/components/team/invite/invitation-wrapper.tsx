@@ -24,7 +24,7 @@ export const InvitationWrapperRSC = async ({ slug }: { slug: string }) => {
     return <div>You must select a workspace first</div>;
   }
 
-  const w = await api.workspaces.getBySlug.query({ slug, id: Number(workspaceId) });
+  const w = await api.workspaces.getBySlug.query({ slug });
 
-  return <InviteTeam workspace={w} workspaceId={Number(workspaceId)} />;
+  return <InviteTeam workspace={w} workspaceSlug={slug} />;
 };
