@@ -159,12 +159,6 @@ export const workspacesRouter = createTRPCRouter({
       ),
     )
     .query(async ({ ctx }) => {
-      const t1 = performance.now();
-      const cacheWID = await redis.get(`${ctx.session.user.id}:${RECENT_WORKSPACE_KEY}`);
-      const t2 = performance.now();
-
-      console.log(cacheWID, { took: t2 - t1 });
-
       const workspace = await ctx.db.query.users.findFirst({
         where: (t, op) => op.eq(t.id, ctx.session.user.id),
         columns: {
@@ -200,7 +194,6 @@ export const workspacesRouter = createTRPCRouter({
       return {
         ...viewer,
         permissions: parsePermissions(viewer.permissions),
-        took: t2 - t1,
       };
     }),
   setRecent: protectedProcedure
