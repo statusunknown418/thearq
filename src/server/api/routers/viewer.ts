@@ -448,4 +448,42 @@ export const viewerRouter = createTRPCRouter({
 
       return totalHoursPerDay;
     }),
+  getPermissions: protectedProcedure.query(async ({ ctx }) => {
+    const recent = await ctx.db.query.users.findFirst({
+      where: (t, op) => op.eq(t.id, ctx.session.user.id),
+      columns: {
+        recentWId: true,
+      },
+    });
+
+    if (!recent) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "No workspace found",
+      });
+    }
+
+    const workspace = await ctx.db.query.usersOnWorkspaces.findFirst({
+      where: (t, op) =>
+        op.and(
+          op.eq(t.workspaceId, Number(recent.recentWId)),
+          op.eq(t.userId, ctx.session.user.id),
+        ),
+      columns: {
+        role: true,
+        permissions: true,
+        active: true,
+        owner: true,
+      },
+    });
+
+    if (!workspace) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "No workspace found",
+      });
+    }
+
+    return workspace;
+  }),
 });

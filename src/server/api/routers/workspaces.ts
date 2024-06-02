@@ -14,6 +14,7 @@ import {
 import { adminPermissions, parsePermissions } from "~/lib/stores/auth-store";
 import {
   createWorkspaceSchema,
+  users,
   usersOnWorkspaces,
   usersOnWorkspacesSchema,
   workspaceInvitations,
@@ -99,19 +100,30 @@ export const workspacesRouter = createTRPCRouter({
       parse(
         object({
           slug: string(),
-          id: number(),
         }),
         i,
       ),
     )
     .query(async ({ ctx, input }) => {
+      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+      if (!workspaceId) {
+        return {
+          success: false,
+          error: {
+            code: "NOT_FOUND",
+            message: "No workspace found",
+          },
+        };
+      }
+
       const [workspace, viewer] = await Promise.all([
         ctx.db.query.workspaces.findFirst({
           where: (t, op) => op.eq(t.slug, input.slug),
         }),
         ctx.db.query.usersOnWorkspaces.findFirst({
           where: (t, op) =>
-            op.and(op.eq(t.userId, ctx.session.user.id), op.eq(t.workspaceId, input.id)),
+            op.and(op.eq(t.userId, ctx.session.user.id), op.eq(t.workspaceId, Number(workspaceId))),
         }),
       ]);
 
@@ -141,9 +153,14 @@ export const workspacesRouter = createTRPCRouter({
       ),
     )
     .query(async ({ ctx }) => {
-      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const workspace = await ctx.db.query.users.findFirst({
+        where: (t, op) => op.eq(t.id, ctx.session.user.id),
+        columns: {
+          recentWId: true,
+        },
+      });
 
-      if (!workspaceId) {
+      if (!workspace) {
         return notFound();
       }
 
@@ -151,7 +168,7 @@ export const workspacesRouter = createTRPCRouter({
         where: (t, op) => {
           return op.and(
             op.eq(t.userId, ctx.session.user.id),
-            op.eq(t.workspaceId, Number(workspaceId)),
+            op.eq(t.workspaceId, Number(workspace.recentWId)),
           );
         },
         columns: {
@@ -178,17 +195,30 @@ export const workspacesRouter = createTRPCRouter({
       parse(
         object({
           workspaceSlug: string(),
+          workspaceId: number(),
         }),
         i,
       ),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const cookiesStore = cookies();
 
       cookiesStore.set(RECENT_WORKSPACE_KEY, input.workspaceSlug, {
         path: "/",
         sameSite: "lax",
       });
+
+      cookiesStore.set(RECENT_W_ID_KEY, input.workspaceId.toString(), {
+        path: "/",
+        sameSite: "lax",
+      });
+
+      await ctx.db
+        .update(users)
+        .set({
+          recentWId: input.workspaceId,
+        })
+        .where(eq(users.id, ctx.session.user.id));
 
       return {
         success: true,
@@ -269,6 +299,8 @@ export const workspacesRouter = createTRPCRouter({
         })
         .returning({
           newMember: usersOnWorkspaces.userId,
+          role: usersOnWorkspaces.role,
+          workspaceId: usersOnWorkspaces.workspaceId,
         });
 
       if (!newMember) {
@@ -299,8 +331,14 @@ export const workspacesRouter = createTRPCRouter({
           );
       });
 
+      await ctx.db
+        .update(users)
+        .set({ recentWId: workspace.id })
+        .where(eq(users.id, ctx.session.user.id));
+
       return {
         success: true,
+        data: newMember,
       };
     }),
   getInvitationDetails: publicProcedure

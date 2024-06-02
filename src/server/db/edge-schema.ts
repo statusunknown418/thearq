@@ -32,9 +32,11 @@ export const users = sqliteTable(
     email: text("email").notNull(),
     emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),
     image: text("image"),
+    recentWId: int("recentWId"),
   },
   (t) => ({
     emailIdx: index("user_email_idx").on(t.email),
+    recentWIdIdx: index("user_recentWId_idx").on(t.recentWId),
   }),
 );
 
@@ -182,6 +184,7 @@ export const workspaces = sqliteTable(
     globalLockingSchedule: text("lockingSchedule", { enum: lockingSchedules })
       .notNull()
       .default("monthly"),
+    planId: text("planId"),
     globalPaymentSchedule: text("paymentSchedule", { enum: globalPaymentSchedule }),
     /**
      * Default for times will be integer(4) similar to this
@@ -202,7 +205,7 @@ export const workspacesRelations = relations(workspaces, ({ many, one }) => ({
   invoices: many(invoices),
   invitations: many(workspaceInvitations),
   plan: one(workspacePlans, {
-    fields: [workspaces.id],
+    fields: [workspaces.planId],
     references: [workspacePlans.workspaceId],
   }),
 }));
@@ -519,6 +522,9 @@ export const workspacePlans = sqliteTable(
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
     active: integer("active", { mode: "boolean" }).default(true),
+    name: text("name").notNull(),
+    description: text("description"),
+    checkoutUrl: text("checkoutUrl").notNull(),
     startsAt: integer("startsAt", { mode: "timestamp" }),
     endsAt: integer("endsAt", { mode: "timestamp" }),
     createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),

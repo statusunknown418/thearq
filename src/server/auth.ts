@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 
 import { env } from "~/env";
 import { db } from "~/server/db";
+import { accounts, sessions, users, verificationTokens } from "./db/edge-schema";
 
 /**
  * Next auth v5
@@ -15,6 +16,7 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
+      recentWId: number;
     } & DefaultSession["user"];
   }
 }
@@ -29,6 +31,8 @@ export const {
     jwt: ({ token, user }) => {
       if (user) {
         token.id = user.id;
+        // @ts-expect-error `user.recentWId` is a custom property
+        token.recentWId = user.recentWId;
       }
 
       return token;
@@ -38,6 +42,7 @@ export const {
       user: {
         ...session.user,
         id: token.id as string,
+        recentWId: token.recentWId as number,
       },
     }),
     authorized: ({ auth, request }) => {
@@ -53,7 +58,15 @@ export const {
   session: {
     strategy: "jwt",
   },
-  adapter: DrizzleAdapter(db),
+  // @ts-expect-error DrizzleAdapter expects a TableFn<SqlFlavor> but we're using a table defined in our schema
+  adapter: DrizzleAdapter(db, (name: string) => {
+    return {
+      user: users,
+      account: accounts,
+      session: sessions,
+      verificationToken: verificationTokens,
+    }[name];
+  }),
   providers: [
     DiscordProvider({
       clientId: env.DISCORD_CLIENT_ID,
