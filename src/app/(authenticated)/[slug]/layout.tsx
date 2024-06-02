@@ -1,28 +1,10 @@
 import { Suspense, type ReactNode } from "react";
-import { SidebarWrapperRSC } from "~/components/layout/Sidebar/sidebar-wrapper";
-import { Separator } from "~/components/ui/separator";
-import { Skeleton } from "~/components/ui/skeleton";
+import { SidebarLoading, SidebarWrapperRSC } from "~/components/layout/Sidebar/sidebar-wrapper";
 
 export default function SlugWorkspaceLayout({ children }: { children: ReactNode }) {
   return (
     <section className="relative grid max-h-screen min-h-screen grid-cols-[210px_auto] gap-0 bg-secondary-background">
-      <Suspense
-        fallback={
-          <div className="flex flex-col justify-between gap-3 px-2 py-4">
-            <Skeleton className="h-8 w-full" />
-
-            <div className="flex flex-col gap-3">
-              <Skeleton className="h-8 w-full" />
-              <Separator />
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-full" />
-            </div>
-
-            <Skeleton className="h-8 w-full" />
-          </div>
-        }
-      >
+      <Suspense fallback={<SidebarLoading />}>
         <SidebarWrapperRSC />
       </Suspense>
 

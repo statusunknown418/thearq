@@ -46,8 +46,6 @@ export const NewWorkspace = () => {
       const action = new FormData();
       action.append("id", String(data.workspace.id));
       action.append("slug", data.workspace.slug);
-      action.append("permissions", JSON.stringify(data.permissions));
-      action.append("role", data.role);
 
       await Promise.all([updateCookiesAction(action), utils.workspaces.get.invalidate()]);
 

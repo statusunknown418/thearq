@@ -29,6 +29,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^3.4.2
         version: 3.4.2(react-hook-form@7.51.5(react@18.2.0))
+      '@lemonsqueezy/lemonsqueezy.js':
+        specifier: ^3.0.0
+        version: 3.0.0
       '@linear/sdk':
         specifier: ^19.3.0
         version: 19.3.0(encoding@0.1.13)
@@ -122,6 +125,9 @@ importers:
       '@remixicon/react':
         specifier: ^4.2.0
         version: 4.2.0(react@18.2.0)
+      '@suyalcinkaya/gauge':
+        specifier: ^0.1.0
+        version: 0.1.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@t3-oss/env-nextjs':
         specifier: ^0.7.3
         version: 0.7.3(typescript@5.4.5)(zod@3.23.8)
@@ -1077,6 +1083,10 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
+
+  '@lemonsqueezy/lemonsqueezy.js@3.0.0':
+    resolution: {integrity: sha512-EomAGkJLisI0/ptpe6a0plB++1Pqoe+FgMip4etfg2de05y58dkI+OA+HSdaFyXxpn1g0OtB50ofNVVoYQJX5A==}
+    engines: {node: '>=20'}
 
   '@libsql/client@0.6.0':
     resolution: {integrity: sha512-qhQzTG/y2IEVbL3+9PULDvlQFWJ/RnjFXECr/Nc3nRngGiiMysDaOV5VUzYk7DulUX98EA4wi+z3FspKrUplUA==}
@@ -2287,6 +2297,12 @@ packages:
 
   '@socket.io/component-emitter@3.1.2':
     resolution: {integrity: sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==}
+
+  '@suyalcinkaya/gauge@0.1.0':
+    resolution: {integrity: sha512-DjjcinO+9YjBXalsIcdNERf2oikvoCh9rI4zH1an74JSxpFYKE3fKL22lkjfvLkW2SVggQBuFIf9Gavs3s1bWQ==}
+    peerDependencies:
+      react: ^16.8 || ^17.0 || ^18.0
+      react-dom: ^16.8 || ^17.0 || ^18.0
 
   '@swc/core-darwin-arm64@1.3.101':
     resolution: {integrity: sha512-mNFK+uHNPRXSnfTOG34zJOeMl2waM4hF4a2NY7dkMXrPqw9CoJn4MwTXJcyMiSz1/BnNjjTCHF3Yhj0jPxmkzQ==}
@@ -4173,7 +4189,6 @@ packages:
 
   libsql@0.3.18:
     resolution: {integrity: sha512-lvhKr7WV3NLWRbXkjn/MeKqXOAqWKU0PX9QYrvDh7fneukapj+iUQ4qgJASrQyxcCrEsClXCQiiK5W6OoYPAlA==}
-    cpu: [x64, arm64, wasm32]
     os: [darwin, linux, win32]
 
   lilconfig@2.1.0:
@@ -6086,6 +6101,8 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.4.15
 
+  '@lemonsqueezy/lemonsqueezy.js@3.0.0': {}
+
   '@libsql/client@0.6.0':
     dependencies:
       '@libsql/core': 0.6.0
@@ -7434,6 +7451,11 @@ snapshots:
       selderee: 0.11.0
 
   '@socket.io/component-emitter@3.1.2': {}
+
+  '@suyalcinkaya/gauge@0.1.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
 
   '@swc/core-darwin-arm64@1.3.101':
     optional: true

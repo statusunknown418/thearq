@@ -1,25 +1,19 @@
 "use server";
 
 import { cookies } from "next/headers";
-import {
-  RECENT_WORKSPACE_KEY,
-  RECENT_W_ID_KEY,
-  USER_WORKSPACE_PERMISSIONS,
-  USER_WORKSPACE_ROLE,
-} from "~/lib/constants";
+import { RECENT_WORKSPACE_KEY, RECENT_W_ID_KEY, USER_WORKSPACE_ROLE } from "~/lib/constants";
 import { type Roles } from "~/server/db/edge-schema";
 
 /**
- * Simple action to set cookies as recent workspace and permissions
- * make sure to decodeURIComponent and parsePermissions when using the permissions
- * @param ctx slug, permissions, role, id
+ * Simple action to set cookies as recent workspace, permissions won't be handled here
+ * as that would be a high security risk.
+ * @param ctx slug, id
  * @returns
  */
 export const updateCookiesAction = async (ctx: FormData) => {
   const data = Object.fromEntries(ctx.entries()) as {
     slug: string;
     permissions: string;
-    role: Roles;
     id: string;
   };
 
@@ -33,16 +27,6 @@ export const updateCookiesAction = async (ctx: FormData) => {
   }
 
   store.set(RECENT_WORKSPACE_KEY, data.slug, {
-    httpOnly: true,
-    path: "/",
-    sameSite: "lax",
-  });
-  store.set(USER_WORKSPACE_PERMISSIONS, encodeURIComponent(data.permissions), {
-    httpOnly: true,
-    path: "/",
-    sameSite: "lax",
-  });
-  store.set(USER_WORKSPACE_ROLE, data.role, {
     httpOnly: true,
     path: "/",
     sameSite: "lax",

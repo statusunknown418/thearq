@@ -3,6 +3,7 @@ import { PiUsersDuotone } from "react-icons/pi";
 import { Main } from "~/components/layout/Main";
 import { PageHeader } from "~/components/layout/PageHeader";
 import { PersonDetailsSheet } from "~/components/team/PersonDetailsSheet";
+import { CapacityLoading, CapacityWrapperRSC } from "~/components/team/capacity/capacity-wrapper";
 import {
   InvitationLoading,
   InvitationWrapperRSC,
@@ -15,7 +16,7 @@ export default function WorkspacePeoplePage({ params }: { params: unknown }) {
   const { slug } = routes.people.$parseParams(params);
 
   return (
-    <Main className="gap-8">
+    <Main>
       <PageHeader className="items-start">
         <Button size={"icon"} subSize={"iconLg"}>
           <PiUsersDuotone size={20} />
@@ -41,10 +42,9 @@ export default function WorkspacePeoplePage({ params }: { params: unknown }) {
           <InvitationWrapperRSC slug={slug} />
         </Suspense>
 
-        <div>
-          <header>Capacity</header>
-          <p>You have X teammates left on your current plan</p>
-        </div>
+        <Suspense fallback={<CapacityLoading />}>
+          <CapacityWrapperRSC />
+        </Suspense>
       </section>
 
       <PersonDetailsSheet />

@@ -3,8 +3,8 @@ import { APP_URL } from "~/lib/constants";
 import { routes } from "~/lib/navigation";
 import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
-import { Button } from "../ui/button";
 import { SignIn } from "../common/SignIn";
+import { AcceptInvite } from "./AcceptInvite";
 
 export const InvitationDetailsWrapperRSC = async ({ params }: { params: unknown }) => {
   const {
@@ -21,7 +21,7 @@ export const InvitationDetailsWrapperRSC = async ({ params }: { params: unknown 
   if (details.error) {
     return (
       <div>
-        <h1>Something happened</h1>
+        <h1 className="text-xl">Something happened</h1>
 
         <p>{details.error}</p>
       </div>
@@ -30,7 +30,7 @@ export const InvitationDetailsWrapperRSC = async ({ params }: { params: unknown 
 
   return (
     details.data && (
-      <section className="grid grid-cols-1 place-items-center gap-6 rounded-3xl border bg-muted p-7">
+      <section className="grid grid-cols-1 place-items-center gap-6 rounded-xl border bg-secondary p-10">
         <Image
           src={details.data?.image}
           alt={details.data?.name}
@@ -39,20 +39,14 @@ export const InvitationDetailsWrapperRSC = async ({ params }: { params: unknown 
           className="rounded-lg"
         />
 
-        <h1 className="text-2xl">Join {details.data?.name}</h1>
+        <h1 className="text-2xl font-semibold">Join {details.data?.name}</h1>
         <p className="text-center text-muted-foreground">
           You have been invited to join {details.data?.name}. You will be able to join the workspace
           and collaborate with your team.
         </p>
 
         {session?.user ? (
-          <form
-            action={async () => {
-              "use server";
-            }}
-          >
-            <Button type="submit">Join</Button>
-          </form>
+          <AcceptInvite userEmail={session.user.email ?? ""} slug={workspace ?? ""} />
         ) : (
           <SignIn />
         )}

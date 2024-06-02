@@ -6,7 +6,6 @@ import { analyticsParamsCache } from "../summary/params-cache";
 
 export const DetailedChartsWrapperRSC = async () => {
   const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
-
   const { from, to } = analyticsParamsCache.all();
 
   const data = await api.viewer.getAnalyticsCharts.query({

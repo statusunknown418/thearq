@@ -6,16 +6,9 @@ import { type RouterOutputs } from "~/trpc/shared";
 
 const now = new Date();
 
-export const Totals = ({
-  initialData,
-  workspaceId,
-}: {
-  initialData: RouterOutputs["entries"]["getTotals"];
-  workspaceId: number;
-}) => {
+export const Totals = ({ initialData }: { initialData: RouterOutputs["entries"]["getTotals"] }) => {
   const { data } = api.entries.getTotals.useQuery(
     {
-      workspaceId,
       monthDate: dateToMonthDate(now),
     },
     {
