@@ -7,8 +7,8 @@ import { routes, settingsLinks } from "~/lib/navigation";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 import { cn } from "~/lib/utils";
 import { type Roles } from "~/server/db/edge-schema";
-import { Button } from "../ui/button";
-import { Separator } from "../ui/separator";
+import { Button } from "../../ui/button";
+import { Separator } from "../../ui/separator";
 
 export const SettingsNav = ({ role }: { role: Roles }) => {
   const segments = useSelectedLayoutSegments();

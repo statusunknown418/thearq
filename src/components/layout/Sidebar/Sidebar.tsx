@@ -1,6 +1,5 @@
 "use client";
 
-import { TriangleRightIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 import { IoIosCog } from "react-icons/io";
@@ -19,14 +18,18 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/comp
 import { routes, sidebarLinks } from "~/lib/navigation";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 import { cn } from "~/lib/utils";
-import { type Roles } from "~/server/db/edge-schema";
+import { type RouterOutputs } from "~/trpc/shared";
 import { Button } from "../../ui/button";
 import { CommandK } from "../CommandK";
 import { Hotkeys } from "../Hotkeys";
 import { UserDropdown } from "../UserDropdown";
 import { WorkspaceCombobox } from "../WorkspaceCombobox";
 
-export const Sidebar = ({ role }: { role: Roles }) => {
+export const Sidebar = ({
+  initialData,
+}: {
+  initialData: RouterOutputs["viewer"]["getPermissions"];
+}) => {
   const workspace = useWorkspaceStore((s) => s.active);
   const selectedSegment = useSelectedLayoutSegment();
 
@@ -42,7 +45,7 @@ export const Sidebar = ({ role }: { role: Roles }) => {
 
       <TooltipProvider>
         <ul className="flex h-full w-full flex-col gap-1 overflow-y-scroll py-1 text-muted-foreground">
-          {role === "admin" && (
+          {initialData.role === "admin" && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -152,11 +155,9 @@ export const Sidebar = ({ role }: { role: Roles }) => {
 
           <Separator className="my-3" />
 
-          {role === "admin" && (
+          {initialData.role === "admin" && (
             <div className="flex flex-col gap-1">
-              <h3 className="mb-2 inline-flex items-center pl-4 text-xs">
-                Manage <TriangleRightIcon />
-              </h3>
+              <h3 className="mb-2 inline-flex items-center pl-4 text-xs">Manage</h3>
 
               <Tooltip>
                 <TooltipTrigger asChild>

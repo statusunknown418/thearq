@@ -9,7 +9,6 @@ import { parsePermissions, useAuthStore } from "~/lib/stores/auth-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
-import { updateCookiesAction } from "../../lib/actions/cookies.actions";
 import { Button } from "../ui/button";
 import {
   Command,
@@ -26,6 +25,8 @@ export const WorkspaceCombobox = () => {
   const { data } = api.workspaces.get.useQuery(undefined, {
     refetchOnWindowFocus: false,
   });
+  const { mutate } = api.workspaces.setRecent.useMutation();
+
   const [value, changeValue] = useState("");
   const [open, change] = useState(false);
 
@@ -99,12 +100,8 @@ export const WorkspaceCombobox = () => {
                   key={w.workspaceId}
                   value={w.workspace.slug}
                   onSelect={async () => {
-                    const data = new FormData();
-                    data.append("slug", w.workspace.slug);
-                    data.append("permissions", w.permissions);
-                    data.append("role", w.role);
-                    data.append("id", String(w.workspaceId));
-                    await updateCookiesAction(data);
+                    mutate({ workspaceSlug: w.workspace.slug, workspaceId: w.workspaceId });
+
                     router.refresh();
 
                     updatePermissionsClient(parsePermissions(w.permissions));
