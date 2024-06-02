@@ -11,7 +11,7 @@ export const Capacity = ({ initialData }: { initialData: RouterOutputs["plans"][
   return (
     <Card className="flex flex-col items-center justify-center gap-2 p-5">
       <div className="flex items-center gap-8 px-10">
-        <Gauge value={usedPercentage} size="2xl" showValue showAnimation />
+        <Gauge value={usedPercentage} size="2xl" showAnimation showValue />
 
         <div className="flex flex-col gap-1">
           <h3 className="text-base font-medium">Capacity</h3>
