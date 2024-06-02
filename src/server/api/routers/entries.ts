@@ -3,11 +3,12 @@ import { startOfDay } from "date-fns";
 import { and } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { number, object, string, z } from "zod";
-import { LIVE_ENTRY_DURATION, RECENT_W_ID_KEY } from "~/lib/constants";
+import { LIVE_ENTRY_DURATION, RECENT_WORKSPACE_KEY, RECENT_W_ID_KEY } from "~/lib/constants";
 import { type TimeEntry } from "~/server/db/edge-schema";
 import { type RouterOutputs } from "~/trpc/shared";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { computeDuration, secondsToHoursDecimal } from "~/lib/dates";
+import { redis } from "~/server/upstash";
 
 export type CustomEvent = RouterOutputs["entries"]["getByMonth"][number] & {
   temp?: boolean;
@@ -70,6 +71,11 @@ export const entriesRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
+      const t1 = performance.now();
+      const cacheWID = await redis.get(`${ctx.session.user.id}:${RECENT_WORKSPACE_KEY}`);
+      const t2 = performance.now();
+
+      console.log(cacheWID, { took: t2 - t1 });
       /**
        * TODO: Make this a prepared statement
        */
@@ -105,6 +111,11 @@ export const entriesRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
+      const t1 = performance.now();
+      const cacheWID = await redis.get(`${ctx.session.user.id}:${RECENT_WORKSPACE_KEY}`);
+      const t2 = performance.now();
+
+      console.log(cacheWID, { took: t2 - t1 });
       const summary = await ctx.db.query.timeEntries.findMany({
         where: (t, op) =>
           and(
@@ -167,6 +178,7 @@ export const entriesRouter = createTRPCRouter({
         total,
         hoursByDay,
         entriesByDate,
+        cacheTook: t2 - t1,
       };
     }),
   getLiveEntry: protectedProcedure.query(async ({ ctx }) => {
@@ -213,12 +225,15 @@ export const entriesRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
+      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+      if (!wId) {
+        return null;
+      }
+
       const summary = await ctx.db.query.timeEntries.findMany({
         where: (t, op) =>
-          and(
-            op.eq(t.workspaceId, ctx.session.user.recentWId),
-            op.eq(t.monthDate, input.monthDate),
-          ),
+          and(op.eq(t.workspaceId, Number(wId)), op.eq(t.monthDate, input.monthDate)),
         with: {
           project: {
             columns: {

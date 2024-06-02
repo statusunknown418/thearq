@@ -16,7 +16,6 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
-      recentWId: number;
     } & DefaultSession["user"];
   }
 }
@@ -31,8 +30,6 @@ export const {
     jwt: ({ token, user }) => {
       if (user) {
         token.id = user.id;
-        // @ts-expect-error `user.recentWId` is a custom property
-        token.recentWId = user.recentWId;
       }
 
       return token;
@@ -42,7 +39,6 @@ export const {
       user: {
         ...session.user,
         id: token.id as string,
-        recentWId: token.recentWId as number,
       },
     }),
     authorized: ({ auth, request }) => {

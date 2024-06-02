@@ -22,6 +22,7 @@ import {
   type Roles,
 } from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+import { redis } from "~/server/upstash";
 
 export const workspacesRouter = createTRPCRouter({
   new: protectedProcedure
@@ -158,6 +159,12 @@ export const workspacesRouter = createTRPCRouter({
       ),
     )
     .query(async ({ ctx }) => {
+      const t1 = performance.now();
+      const cacheWID = await redis.get(`${ctx.session.user.id}:${RECENT_WORKSPACE_KEY}`);
+      const t2 = performance.now();
+
+      console.log(cacheWID, { took: t2 - t1 });
+
       const workspace = await ctx.db.query.users.findFirst({
         where: (t, op) => op.eq(t.id, ctx.session.user.id),
         columns: {
@@ -193,6 +200,7 @@ export const workspacesRouter = createTRPCRouter({
       return {
         ...viewer,
         permissions: parsePermissions(viewer.permissions),
+        took: t2 - t1,
       };
     }),
   setRecent: protectedProcedure
@@ -224,6 +232,11 @@ export const workspacesRouter = createTRPCRouter({
           recentWId: input.workspaceId,
         })
         .where(eq(users.id, ctx.session.user.id));
+
+      await redis.set(
+        `${ctx.session.user.id}:${RECENT_WORKSPACE_KEY}`,
+        input.workspaceId.toString(),
+      );
 
       return {
         success: true,

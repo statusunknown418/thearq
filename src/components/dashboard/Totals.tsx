@@ -16,6 +16,10 @@ export const Totals = ({ initialData }: { initialData: RouterOutputs["entries"][
     },
   );
 
+  if (!data) {
+    return <div>Something happened, please try again later</div>;
+  }
+
   return (
     <section className="flex gap-4">
       <article className="flex w-max flex-col gap-2 rounded-lg border bg-muted p-4 ">

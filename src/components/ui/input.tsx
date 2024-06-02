@@ -9,6 +9,7 @@ const inputVariants = cva(
     variants: {
       variant: {
         ghost: "!border-transparent !bg-transparent shadow-none",
+        number: "text-right max-w-20",
       },
     },
   },

@@ -11,13 +11,14 @@ export const Capacity = ({ initialData }: { initialData: RouterOutputs["plans"][
   return (
     <Card className="flex flex-col items-center justify-center gap-2 p-5">
       <div className="flex items-center gap-8 px-10">
-        <Gauge value={usedPercentage} size="2xl" showAnimation showValue />
+        <Gauge value={100 - usedPercentage} size="xl" showAnimation showValue />
 
-        <div className="flex flex-col gap-1">
+        <div className="flex max-w-xs flex-col gap-1">
           <h3 className="text-base font-medium">Capacity</h3>
 
           <p className="text-xs text-muted-foreground">
-            According to the plan you have selected, the amount of seats may vary
+            According to the plan you have selected, the amount of available and maximum seats may
+            vary
           </p>
 
           <p className="mt-4 text-tremor-default font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
