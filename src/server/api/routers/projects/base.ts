@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 import slugify from "slugify";
 import { nullable, number, object, parse, string } from "valibot";
 import { RECENT_W_ID_KEY, VERCEL_REQUEST_LOCATION } from "~/lib/constants";
-import { adminPermissions } from "~/lib/stores/auth-store";
+import { adminPermissions, memberPermissions } from "~/lib/stores/auth-store";
 import { projects, projectsSchema, usersOnProjects, type Roles } from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 
@@ -419,9 +419,10 @@ export const baseProjectsRouter = createTRPCRouter({
         userId: input.userId,
         workspaceId: Number(wId),
         role: "member",
-        permissions: JSON.stringify(adminPermissions),
-        billableRate: relation.defaultBillableRate,
-        weekCapacity: relation.defaultWeekCapacity,
+        permissions: JSON.stringify(memberPermissions),
+        billableRate: newUser.defaultBillableRate,
+        internalCost: newUser.internalCost,
+        weekCapacity: newUser.defaultWeekCapacity,
       });
     }),
 

@@ -14,10 +14,10 @@ export const Capacity = ({ initialData }: { initialData: RouterOutputs["plans"][
         <Gauge value={100 - usedPercentage} size="xl" showAnimation />
 
         <div className="flex max-w-xs flex-col gap-1">
-          <h3 className="text-base font-medium">Capacity</h3>
+          <h3 className="text-base font-medium">Seats left</h3>
 
           <p className="text-xs text-muted-foreground">
-            According to the plan you have selected, the amount of available and maximum seats may
+            According to the plan you have selected, the number of maximum people in a workspace may
             vary
           </p>
 

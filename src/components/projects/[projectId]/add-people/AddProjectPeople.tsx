@@ -1,5 +1,6 @@
 import { MinusIcon, PlusIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
+import Link from "next/link";
 import { useDeferredValue, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
@@ -32,7 +33,11 @@ export const AddProjectPeople = ({
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });
-  const { mutate, isLoading: isAdding } = api.projects.addProjectMember.useMutation({
+  const {
+    mutate,
+    isLoading: isAdding,
+    isSuccess,
+  } = api.projects.addProjectMember.useMutation({
     onSuccess: () => {
       void utils.projects.getTeam.invalidate();
       toast.success("User added to project");
@@ -132,7 +137,7 @@ export const AddProjectPeople = ({
 
               <span>{relation.user.name}</span>
 
-              {!!projectTeam.users.find((u) => u.userId === relation.userId) ? (
+              {!!projectTeam.users.find((u) => u.userId === relation.userId) || isSuccess ? (
                 <Button size="icon" variant="secondary" className="ml-auto">
                   <MinusIcon />
                 </Button>
@@ -155,6 +160,17 @@ export const AddProjectPeople = ({
             </li>
           ))}
         </ScrollArea>
+
+        <DialogDescription className="mt-2">
+          Keep in mind that when adding people to a project the values used for their billable rate
+          and internal cost are the ones set in the
+          <Link
+            href={"../team"}
+            className="ml-1 text-indigo-500 underline-offset-1 hover:underline dark:text-indigo-400"
+          >
+            workspace team settings.
+          </Link>
+        </DialogDescription>
       </DialogContent>
     </Dialog>
   );
