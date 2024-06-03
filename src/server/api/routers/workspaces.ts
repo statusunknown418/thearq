@@ -5,12 +5,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import slugify from "slugify";
 import { number, object, parse, string } from "valibot";
-import {
-  RECENT_WORKSPACE_KEY,
-  RECENT_W_ID_KEY,
-  USER_WORKSPACE_ROLE,
-  createWorkspaceInviteLink,
-} from "~/lib/constants";
+import { RECENT_WORKSPACE_KEY, RECENT_W_ID_KEY, createWorkspaceInviteLink } from "~/lib/constants";
 import { adminPermissions, parsePermissions } from "~/lib/stores/auth-store";
 import {
   createWorkspaceSchema,
@@ -19,10 +14,9 @@ import {
   usersOnWorkspacesSchema,
   workspaceInvitations,
   workspaces,
-  type Roles,
 } from "~/server/db/edge-schema";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { redis } from "~/server/upstash";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const workspacesRouter = createTRPCRouter({
   new: protectedProcedure
@@ -387,11 +381,29 @@ export const workspacesRouter = createTRPCRouter({
 
   updateMemberDetails: protectedProcedure
     .input((i) => parse(usersOnWorkspacesSchema, i))
-    .mutation(({ ctx, input }) => {
-      const allowed = cookies().get(USER_WORKSPACE_ROLE)?.value as Roles;
+    .mutation(async ({ ctx, input }) => {
       const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
 
-      if (!allowed || allowed !== "admin" || !workspaceId) {
+      if (!workspaceId) {
+        throw new TRPCError({
+          code: "UNPROCESSABLE_CONTENT",
+          message: "No workspace selected",
+        });
+      }
+
+      const relation = await ctx.db.query.usersOnWorkspaces.findFirst({
+        where: (t, op) => {
+          return op.and(
+            op.eq(t.userId, ctx.session.user.id),
+            op.eq(t.workspaceId, Number(workspaceId)),
+          );
+        },
+        columns: {
+          role: true,
+        },
+      });
+
+      if (!relation || relation.role !== "admin") {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "You are not allowed to perform this action",

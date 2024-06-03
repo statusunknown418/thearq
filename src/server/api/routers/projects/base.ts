@@ -317,46 +317,111 @@ export const baseProjectsRouter = createTRPCRouter({
         });
       }
 
-      return ctx.db.transaction(async (trx) => {
-        const allowed = await trx.query.projects.findFirst({
-          where: (t, { eq, and }) => {
-            return and(eq(t.id, input.projectId), eq(t.ownerId, ctx.session.user.id));
-          },
-          with: {
-            users: true,
-          },
+      const allowed = await ctx.db.query.projects.findFirst({
+        where: (t, { eq, and }) => {
+          return and(eq(t.id, input.projectId), eq(t.ownerId, ctx.session.user.id));
+        },
+        with: {
+          users: true,
+        },
+      });
+
+      if (!allowed?.id) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Project not found",
         });
+      }
 
-        if (!allowed?.id) {
-          trx.rollback();
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Project not found",
-          });
-        }
+      if (allowed.users.find((u) => u.userId === ctx.session.user.id)?.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You are not allowed to update this project",
+        });
+      }
 
-        if (allowed.users.find((u) => u.userId === ctx.session.user.id)?.role !== "admin") {
-          trx.rollback();
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "You are not allowed to update this project",
-          });
-        }
+      return await ctx.db
+        .update(usersOnProjects)
+        .set({
+          billableRate: input.billableRate,
+          weekCapacity: input.weekCapacity,
+          internalCost: input.internalCost,
+          role: input.role as Roles,
+        })
+        .where(
+          and(eq(usersOnProjects.projectId, allowed.id), eq(usersOnProjects.userId, input.userId)),
+        );
+    }),
 
-        return await trx
-          .update(usersOnProjects)
-          .set({
-            billableRate: input.billableRate,
-            weekCapacity: input.weekCapacity,
-            internalCost: input.internalCost,
-            role: input.role as Roles,
-          })
-          .where(
-            and(
-              eq(usersOnProjects.projectId, allowed.id),
-              eq(usersOnProjects.userId, input.userId),
-            ),
-          );
+  addProjectMember: protectedProcedure
+    .input((i) =>
+      parse(
+        object({
+          userId: string(),
+          projectId: number(),
+        }),
+        i,
+      ),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+      if (!wId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No workspace selected",
+        });
+      }
+
+      const relationPromise = ctx.db.query.usersOnWorkspaces.findFirst({
+        where: (t, { eq, and }) => {
+          return and(eq(t.userId, ctx.session.user.id), eq(t.workspaceId, Number(wId)));
+        },
+        with: {
+          user: true,
+        },
+      });
+
+      const newUserPromise = ctx.db.query.usersOnWorkspaces.findFirst({
+        where: (t, { eq, and }) => {
+          return and(eq(t.userId, input.userId), eq(t.workspaceId, Number(wId)));
+        },
+        with: {
+          user: true,
+        },
+      });
+
+      const [relation, newUser] = await Promise.all([relationPromise, newUserPromise]);
+
+      if (!relation) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Project not found",
+        });
+      }
+
+      if (relation.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You are not allowed to update this project",
+        });
+      }
+
+      if (!newUser) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      return ctx.db.insert(usersOnProjects).values({
+        projectId: input.projectId,
+        userId: input.userId,
+        workspaceId: Number(wId),
+        role: "member",
+        permissions: JSON.stringify(adminPermissions),
+        billableRate: relation.defaultBillableRate,
+        weekCapacity: relation.defaultWeekCapacity,
       });
     }),
 
