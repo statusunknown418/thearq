@@ -120,7 +120,7 @@ export const PersonDetailsSheet = () => {
 
                     <SelectContent>
                       <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="manager">Manager</SelectItem>
+                      {/* <SelectItem value="manager">Manager</SelectItem> */}
                       <SelectItem value="member">Member</SelectItem>
                     </SelectContent>
                   </Select>

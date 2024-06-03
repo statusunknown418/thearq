@@ -24,6 +24,7 @@ import { parseLongCurrency } from "~/lib/parsers";
 import { useProjectPersonSheetStore } from "~/lib/stores/sheets-store";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
+import { AddProjectPeople } from "../add-people/AddProjectPeople";
 import { useProjectsQS } from "../project-cache";
 
 type ProjectTeamColumn = RouterOutputs["projects"]["getTeam"]["users"][number];
@@ -113,14 +114,18 @@ export const ProjectTeamTable = ({
 
   return (
     <div className="grid grid-cols-1 gap-4 rounded-xl border bg-secondary-background p-5">
-      <Input
-        placeholder="Find by name"
-        value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-        onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)}
-        className="max-w-sm"
-      />
+      <div className="flex items-center justify-between">
+        <Input
+          placeholder="Find by name"
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)}
+          className="max-w-sm"
+        />
 
-      <div className="rounded-lg border bg-background">
+        <AddProjectPeople projectTeam={initialData} />
+      </div>
+
+      <section className="rounded-lg border bg-background">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -170,7 +175,7 @@ export const ProjectTeamTable = ({
             )}
           </TableBody>
         </Table>
-      </div>
+      </section>
 
       <div className="flex-1 text-xs text-muted-foreground">
         {initialData.users.length} {initialData.users.length === 1 ? "person" : "people"} assigned
