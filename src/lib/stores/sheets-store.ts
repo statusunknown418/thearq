@@ -5,8 +5,8 @@ import { receiveAmount } from "../parsers";
 export type DetailsSheetsStore = {
   open: boolean;
   openChange: (open: boolean) => void;
-  details: RouterOutputs["teams"]["getByWorkspace"][number] | null;
-  setDetails: (details: RouterOutputs["teams"]["getByWorkspace"][number]) => void;
+  details: RouterOutputs["teams"]["getByWorkspace"]["table"][number] | null;
+  setDetails: (details: RouterOutputs["teams"]["getByWorkspace"]["table"][number]) => void;
   clear: () => void;
 };
 
