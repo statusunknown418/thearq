@@ -318,28 +318,36 @@ export const workspacesRouter = createTRPCRouter({
         };
       }
 
-      await ctx.db.transaction(async (trx) => {
-        await trx
+      await Promise.all([
+        ctx.db
           .update(workspaces)
           .set({
             seatCount: workspace.seatCount + 1,
           })
-          .where(eq(workspaces.id, workspace.id));
-
-        await trx
+          .where(eq(workspaces.id, workspace.id)),
+        ctx.db
           .delete(workspaceInvitations)
           .where(
             and(
               eq(workspaceInvitations.workspaceId, workspace.id),
               eq(workspaceInvitations.email, input.userEmail),
             ),
-          );
+          ),
+        ctx.db
+          .update(users)
+          .set({ recentWId: workspace.id })
+          .where(eq(users.id, ctx.session.user.id)),
+      ]);
+
+      cookies().set(RECENT_WORKSPACE_KEY, workspace.slug, {
+        path: "/",
+        sameSite: "lax",
       });
 
-      await ctx.db
-        .update(users)
-        .set({ recentWId: workspace.id })
-        .where(eq(users.id, ctx.session.user.id));
+      cookies().set(RECENT_W_ID_KEY, workspace.id.toString(), {
+        path: "/",
+        sameSite: "lax",
+      });
 
       return {
         success: true,

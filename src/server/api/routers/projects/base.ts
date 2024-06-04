@@ -353,7 +353,7 @@ export const baseProjectsRouter = createTRPCRouter({
         );
     }),
 
-  addProjectMember: protectedProcedure
+  addUser: protectedProcedure
     .input((i) =>
       parse(
         object({
@@ -424,6 +424,52 @@ export const baseProjectsRouter = createTRPCRouter({
         internalCost: newUser.internalCost,
         weekCapacity: newUser.defaultWeekCapacity,
       });
+    }),
+
+  removeUser: protectedProcedure
+    .input((i) => parse(object({ userId: string(), projectId: number() }), i))
+
+    .mutation(async ({ ctx, input }) => {
+      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+      if (!wId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No workspace selected",
+        });
+      }
+
+      const allowed = await ctx.db.query.projects.findFirst({
+        where: (t, { eq, and }) => {
+          return and(eq(t.id, input.projectId), eq(t.ownerId, ctx.session.user.id));
+        },
+        with: {
+          users: true,
+        },
+      });
+
+      if (!allowed?.id) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Project not found",
+        });
+      }
+
+      if (allowed.users.find((u) => u.userId === ctx.session.user.id)?.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You are not allowed to update this project",
+        });
+      }
+
+      return await ctx.db
+        .delete(usersOnProjects)
+        .where(
+          and(
+            eq(usersOnProjects.projectId, input.projectId),
+            eq(usersOnProjects.userId, input.userId),
+          ),
+        );
     }),
 
   getByClient: protectedProcedure
