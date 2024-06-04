@@ -209,7 +209,8 @@ export const entriesRouter = createTRPCRouter({
   getTotals: protectedProcedure
     .input(
       object({
-        monthDate: string(),
+        from: string(),
+        to: string(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -221,7 +222,11 @@ export const entriesRouter = createTRPCRouter({
 
       const summary = await ctx.db.query.timeEntries.findMany({
         where: (t, op) =>
-          and(op.eq(t.workspaceId, Number(wId)), op.eq(t.monthDate, input.monthDate)),
+          and(
+            op.eq(t.workspaceId, Number(wId)),
+            op.gte(t.start, new Date(input.from)),
+            op.lte(t.start, new Date(input.to)),
+          ),
         with: {
           project: {
             columns: {

@@ -1,15 +1,17 @@
 "use client";
 
-import { dateToMonthDate, secondsToHoursDecimal } from "~/lib/dates";
+import { secondsToHoursDecimal } from "~/lib/dates";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
-
-const now = new Date();
+import { useDashboardQS } from "./dashboard-cache";
 
 export const Totals = ({ initialData }: { initialData: RouterOutputs["entries"]["getTotals"] }) => {
+  const [state] = useDashboardQS();
+
   const { data } = api.entries.getTotals.useQuery(
     {
-      monthDate: dateToMonthDate(now),
+      from: state.from,
+      to: state.to,
     },
     {
       initialData,

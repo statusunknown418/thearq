@@ -8,10 +8,18 @@ import {
   type ColumnDef,
 } from "@tanstack/react-table";
 import Image from "next/image";
-import { PiArrowSquareOutDuotone } from "react-icons/pi";
+import { PiArrowSquareOutDuotone, PiList, PiTrash } from "react-icons/pi";
+import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
+import { Loader } from "~/components/ui/loader";
 import {
   Table,
   TableBody,
@@ -26,6 +34,7 @@ import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 import { AddProjectPeople } from "../add-people/AddProjectPeople";
 import { useProjectsQS } from "../project-cache";
+import { useAuthStore } from "~/lib/stores/auth-store";
 
 type ProjectTeamColumn = RouterOutputs["projects"]["getTeam"]["users"][number];
 const columns: ColumnDef<ProjectTeamColumn>[] = [
@@ -80,7 +89,58 @@ const columns: ColumnDef<ProjectTeamColumn>[] = [
       return <Badge variant={"secondary"}>{parseLongCurrency(row.getValue("internalCost"))}</Badge>;
     },
   },
+  {
+    id: "actions",
+    size: 40,
+    header: undefined,
+    cell: ({ row }) => {
+      return <RowActions row={row.original} />;
+    },
+  },
 ];
+
+const RowActions = ({ row }: { row: ProjectTeamColumn }) => {
+  const user = useAuthStore((s) => s.user);
+
+  const utils = api.useUtils();
+  const { mutate: removeUser, isLoading } = api.projects.removeUser.useMutation({
+    onSuccess: () => {
+      toast.success("User removed from project");
+      void utils.projects.getTeam.invalidate();
+    },
+    onError: (error) => {
+      toast.error("Failed to remove user from project", {
+        description: error.message,
+      });
+    },
+  });
+
+  const shouldAllow = !!user?.id && row.userId === user.id;
+
+  if (shouldAllow) {
+    return null;
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <PiList size={16} />
+        </Button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent>
+        <DropdownMenuItem
+          disabled={isLoading}
+          onClick={() => removeUser({ projectId: row.projectId, userId: row.userId })}
+        >
+          {isLoading ? <Loader /> : <PiTrash size={16} />}
+          Remove user
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
 
 export const ProjectTeamTable = ({
   id,

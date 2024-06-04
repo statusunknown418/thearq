@@ -15,11 +15,19 @@ import {
   PiCalendarX,
   PiInfo,
   PiMapTrifold,
+  PiTrash,
   PiXCircle,
   PiXSquare,
 } from "react-icons/pi";
+import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
 import {
   Table,

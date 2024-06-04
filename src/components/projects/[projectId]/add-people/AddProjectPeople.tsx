@@ -1,4 +1,4 @@
-import { MinusIcon, PlusIcon } from "@radix-ui/react-icons";
+import { PlusIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import Link from "next/link";
 import { useDeferredValue, useMemo, useState } from "react";
@@ -33,6 +33,7 @@ export const AddProjectPeople = ({
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });
+
   const {
     mutate,
     isLoading: isAdding,
@@ -137,26 +138,23 @@ export const AddProjectPeople = ({
 
               <span>{relation.user.name}</span>
 
-              {!!projectTeam.users.find((u) => u.userId === relation.userId) || isSuccess ? (
-                <Button size="icon" variant="secondary" className="ml-auto">
-                  <MinusIcon />
-                </Button>
-              ) : (
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="ml-auto"
-                  disabled={isAdding}
-                  onClick={() => {
-                    mutate({
-                      projectId: projectTeam.id,
-                      userId: relation.userId,
-                    });
-                  }}
-                >
-                  {isAdding ? <Loader /> : <PlusIcon />}
-                </Button>
-              )}
+              {!!projectTeam.users.find((u) => u.userId === relation.userId) ||
+                (isSuccess && (
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    className="ml-auto"
+                    disabled={isAdding}
+                    onClick={() => {
+                      mutate({
+                        projectId: projectTeam.id,
+                        userId: relation.userId,
+                      });
+                    }}
+                  >
+                    {isAdding ? <Loader /> : <PlusIcon />}
+                  </Button>
+                ))}
             </li>
           ))}
         </ScrollArea>
