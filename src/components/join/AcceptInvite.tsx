@@ -24,6 +24,13 @@ export const AcceptInvite = ({ userEmail, slug }: { userEmail: string; slug: str
 
   return (
     <>
+      {error?.message && (
+        <p className="rounded-lg border border-destructive/50 bg-destructive/5 p-4 text-center text-xs text-destructive">
+          Oops, something happened, the link may have be invalid or you are already a member of this
+          workspace.
+        </p>
+      )}
+
       <Button
         size="lg"
         onClick={() =>
@@ -36,13 +43,6 @@ export const AcceptInvite = ({ userEmail, slug }: { userEmail: string; slug: str
         {isLoading && <Loader />}
         Join
       </Button>
-
-      {error?.message && (
-        <p className="text-destructive">
-          Oops, something happened, the link may be expired or you are already a member of this
-          workspace
-        </p>
-      )}
     </>
   );
 };

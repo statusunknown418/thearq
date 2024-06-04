@@ -8,10 +8,18 @@ import {
   type ColumnDef,
 } from "@tanstack/react-table";
 import Image from "next/image";
-import { PiArrowSquareOutDuotone, PiInfinity } from "react-icons/pi";
+import { PiArrowSquareOutDuotone, PiDotsThreeVertical, PiInfinity, PiTrash } from "react-icons/pi";
+import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
+import { Loader } from "~/components/ui/loader";
 import {
   Table,
   TableBody,
@@ -28,7 +36,7 @@ import { type RouterOutputs } from "~/trpc/shared";
 
 export type TeamTableData = RouterOutputs["teams"]["getByWorkspace"];
 
-export type TeamTableColumn = RouterOutputs["teams"]["getByWorkspace"][number];
+export type TeamTableColumn = RouterOutputs["teams"]["getByWorkspace"]["table"][number];
 export const columns: ColumnDef<TeamTableColumn>[] = [
   {
     id: "avatar",
@@ -122,9 +130,71 @@ export const columns: ColumnDef<TeamTableColumn>[] = [
       </span>
     ),
   },
+  {
+    id: "actions",
+    size: 50,
+    cell: ({ row }) => {
+      return <RowActions row={row.original} />;
+    },
+  },
 ];
 
-export const TeamTable = ({ data }: { data: TeamTableData }) => {
+const RowActions = ({ row }: { row: TeamTableColumn }) => {
+  const utils = api.useUtils();
+
+  const { mutate: removeUser, isLoading } = api.teams.removeUser.useMutation({
+    onMutate: async (data) => {
+      const snapshot = utils.teams.getByWorkspace.getData();
+
+      if (!snapshot) {
+        return;
+      }
+
+      const newData = {
+        table: snapshot.table.filter((d) => d.userId !== data.userId),
+        allowed: snapshot.allowed,
+      };
+
+      utils.teams.getByWorkspace.setData(undefined, newData);
+      return snapshot;
+    },
+    onSuccess: async () => {
+      toast.success("User removed");
+    },
+    onError: (err, _vars, ctx) => {
+      utils.teams.getByWorkspace.setData(undefined, ctx);
+
+      toast.error("Failed to remove user", {
+        description: err.message,
+      });
+    },
+  });
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="secondary" size="icon">
+          <PiDotsThreeVertical size={16} />
+        </Button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent>
+        <DropdownMenuItem
+          disabled={isLoading}
+          onClick={(e) => {
+            e.stopPropagation();
+            removeUser({ userId: row.userId });
+          }}
+        >
+          {isLoading ? <Loader /> : <PiTrash size={16} />}
+          Remove user
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+export const TeamTable = ({ data, allowed }: { data: TeamTableData; allowed: boolean }) => {
   const updateDetails = useDetailsSheetStore((s) => s.setDetails);
 
   const { data: tableData } = api.teams.getByWorkspace.useQuery(undefined, {
@@ -133,8 +203,18 @@ export const TeamTable = ({ data }: { data: TeamTableData }) => {
   });
 
   const table = useReactTable({
-    data: tableData,
-    columns,
+    data: tableData.table,
+    columns: columns.map((c) => {
+      if (c.id === "actions" && !allowed) {
+        return {
+          ...c,
+          cell: () => null,
+          accessor: () => null,
+        };
+      }
+
+      return c;
+    }),
     getCoreRowModel: getCoreRowModel<TeamTableColumn>(),
     getFilteredRowModel: getFilteredRowModel(),
     /**
@@ -174,7 +254,9 @@ export const TeamTable = ({ data }: { data: TeamTableData }) => {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  onClick={() => updateDetails(row.original)}
+                  onClick={() => {
+                    !!allowed && updateDetails(row.original);
+                  }}
                   className="cursor-pointer"
                 >
                   {row.getVisibleCells().map((cell) => (
@@ -196,7 +278,7 @@ export const TeamTable = ({ data }: { data: TeamTableData }) => {
       </div>
 
       <div className="flex-1 text-xs text-muted-foreground">
-        {data.length} teammate{data.length === 1 ? "" : "s"} in this workspace
+        {data.table.length} teammate{data.table.length === 1 ? "" : "s"} in this workspace
       </div>
     </div>
   );

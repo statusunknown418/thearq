@@ -155,116 +155,118 @@ export const Sidebar = ({
 
           <Separator className="my-3" />
 
-          {initialData.role === "admin" && (
-            <div className="flex flex-col gap-1">
-              <h3 className="mb-2 inline-flex items-center pl-4 text-xs">Manage</h3>
+          <div className="flex flex-col gap-1">
+            {initialData.role === "admin" && (
+              <>
+                <h3 className="mb-2 inline-flex items-center pl-4 text-xs">Manage</h3>
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    asChild
-                    variant={"ghost"}
-                    className={cn(
-                      "group justify-start",
-                      "data-[active=true]:bg-popover data-[active=true]:text-foreground",
-                      "border border-transparent data-[active=true]:border-border",
-                    )}
-                    data-active={selectedSegment === sidebarLinks.invoices}
-                  >
-                    <Link href={routes.invoices({ slug: workspace?.slug ?? "" })}>
-                      <PiPaperclip
-                        size={20}
-                        className="group-data-[active=true]:text-orange-500 dark:group-data-[active=true]:text-orange-400"
-                        data-active={selectedSegment === sidebarLinks.invoices}
-                      />
-                      Invoices
-                    </Link>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="right">
-                  Navigate <KBD>Shift</KBD> + <KBD>I</KBD>
-                </TooltipContent>
-              </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      asChild
+                      variant={"ghost"}
+                      className={cn(
+                        "group justify-start",
+                        "data-[active=true]:bg-popover data-[active=true]:text-foreground",
+                        "border border-transparent data-[active=true]:border-border",
+                      )}
+                      data-active={selectedSegment === sidebarLinks.invoices}
+                    >
+                      <Link href={routes.invoices({ slug: workspace?.slug ?? "" })}>
+                        <PiPaperclip
+                          size={20}
+                          className="group-data-[active=true]:text-orange-500 dark:group-data-[active=true]:text-orange-400"
+                          data-active={selectedSegment === sidebarLinks.invoices}
+                        />
+                        Invoices
+                      </Link>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    Navigate <KBD>Shift</KBD> + <KBD>I</KBD>
+                  </TooltipContent>
+                </Tooltip>
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    asChild
-                    variant={"ghost"}
-                    className={cn(
-                      "group justify-start",
-                      "data-[active=true]:bg-popover data-[active=true]:text-foreground",
-                      "border border-transparent data-[active=true]:border-border",
-                    )}
-                    data-active={selectedSegment === sidebarLinks.quotes}
-                  >
-                    <Link href={routes.quotes({ slug: workspace?.slug ?? "" })}>
-                      <PiCalculatorDuotone
-                        size={20}
-                        className="group-data-[active=true]:text-teal-500 dark:group-data-[active=true]:text-teal-400"
-                      />
-                      Quotes
-                    </Link>
-                  </Button>
-                </TooltipTrigger>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      asChild
+                      variant={"ghost"}
+                      className={cn(
+                        "group justify-start",
+                        "data-[active=true]:bg-popover data-[active=true]:text-foreground",
+                        "border border-transparent data-[active=true]:border-border",
+                      )}
+                      data-active={selectedSegment === sidebarLinks.quotes}
+                    >
+                      <Link href={routes.quotes({ slug: workspace?.slug ?? "" })}>
+                        <PiCalculatorDuotone
+                          size={20}
+                          className="group-data-[active=true]:text-teal-500 dark:group-data-[active=true]:text-teal-400"
+                        />
+                        Quotes
+                      </Link>
+                    </Button>
+                  </TooltipTrigger>
 
-                <TooltipContent side="right">
-                  Navigate <KBD>Shift</KBD> + <KBD>Q</KBD>
-                </TooltipContent>
-              </Tooltip>
+                  <TooltipContent side="right">
+                    Navigate <KBD>Shift</KBD> + <KBD>Q</KBD>
+                  </TooltipContent>
+                </Tooltip>
+              </>
+            )}
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    asChild
-                    variant={"ghost"}
-                    className={cn(
-                      "group justify-start",
-                      "data-[active=true]:bg-popover data-[active=true]:text-foreground",
-                      "border border-transparent data-[active=true]:border-border",
-                    )}
-                    data-active={selectedSegment === sidebarLinks.team}
-                  >
-                    <Link href={routes.people({ slug: workspace?.slug ?? "" })}>
-                      <PiUsersDuotone
-                        size={20}
-                        className="group-data-[active=true]:text-green-600 dark:group-data-[active=true]:text-green-500"
-                      />
-                      Team
-                    </Link>
-                  </Button>
-                </TooltipTrigger>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  asChild
+                  variant={"ghost"}
+                  className={cn(
+                    "group justify-start",
+                    "data-[active=true]:bg-popover data-[active=true]:text-foreground",
+                    "border border-transparent data-[active=true]:border-border",
+                  )}
+                  data-active={selectedSegment === sidebarLinks.team}
+                >
+                  <Link href={routes.people({ slug: workspace?.slug ?? "" })}>
+                    <PiUsersDuotone
+                      size={20}
+                      className="group-data-[active=true]:text-green-600 dark:group-data-[active=true]:text-green-500"
+                    />
+                    Team
+                  </Link>
+                </Button>
+              </TooltipTrigger>
 
-                <TooltipContent side="right">
-                  Navigate <KBD>Shift</KBD> + <KBD>P</KBD>
-                </TooltipContent>
-              </Tooltip>
+              <TooltipContent side="right">
+                Navigate <KBD>Shift</KBD> + <KBD>P</KBD>
+              </TooltipContent>
+            </Tooltip>
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    asChild
-                    variant={"ghost"}
-                    className={cn(
-                      "group justify-start",
-                      "data-[active=true]:bg-popover data-[active=true]:text-foreground",
-                      "border border-transparent data-[active=true]:border-border",
-                    )}
-                    data-active={selectedSegment === sidebarLinks.settings}
-                  >
-                    <Link href={routes.settings({ slug: workspace?.slug ?? "" })}>
-                      <IoIosCog size={20} />
-                      Settings
-                    </Link>
-                  </Button>
-                </TooltipTrigger>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  asChild
+                  variant={"ghost"}
+                  className={cn(
+                    "group justify-start",
+                    "data-[active=true]:bg-popover data-[active=true]:text-foreground",
+                    "border border-transparent data-[active=true]:border-border",
+                  )}
+                  data-active={selectedSegment === sidebarLinks.settings}
+                >
+                  <Link href={routes.settings({ slug: workspace?.slug ?? "" })}>
+                    <IoIosCog size={20} />
+                    Settings
+                  </Link>
+                </Button>
+              </TooltipTrigger>
 
-                <TooltipContent side="right">
-                  Navigate <KBD>Shift</KBD> + <KBD>X</KBD>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          )}
+              <TooltipContent side="right">
+                Navigate <KBD>Shift</KBD> + <KBD>X</KBD>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </ul>
       </TooltipProvider>
 

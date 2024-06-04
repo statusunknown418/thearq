@@ -9,5 +9,5 @@ export const TeamTableLoading = () => {
 export const TeamTableWrapperRSC = async () => {
   const team = await api.teams.getByWorkspace.query();
 
-  return <TeamTable data={team} />;
+  return <TeamTable data={team} allowed={team.allowed} />;
 };

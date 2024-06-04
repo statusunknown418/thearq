@@ -37,7 +37,7 @@ export const AddProjectPeople = ({
     mutate,
     isLoading: isAdding,
     isSuccess,
-  } = api.projects.addProjectMember.useMutation({
+  } = api.projects.addUser.useMutation({
     onSuccess: () => {
       void utils.projects.getTeam.invalidate();
       toast.success("User added to project");
@@ -54,7 +54,7 @@ export const AddProjectPeople = ({
 
   const computedData = useMemo(
     () =>
-      data
+      data?.table
         ?.filter((u) => u.userId !== user?.id)
         .filter((u) => u.user?.name?.toLowerCase().includes(deferred.toLowerCase())),
 
