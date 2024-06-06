@@ -107,6 +107,7 @@ const RowActions = ({ row }: { row: ProjectTeamColumn }) => {
     onSuccess: () => {
       toast.success("User removed from project");
       void utils.projects.getTeam.invalidate();
+      void utils.teams.getByWorkspace.invalidate();
     },
     onError: (error) => {
       toast.error("Failed to remove user from project", {
@@ -132,7 +133,10 @@ const RowActions = ({ row }: { row: ProjectTeamColumn }) => {
       <DropdownMenuContent>
         <DropdownMenuItem
           disabled={isLoading}
-          onClick={() => removeUser({ projectId: row.projectId, userId: row.userId })}
+          onClick={(e) => {
+            e.stopPropagation();
+            removeUser({ projectId: row.projectId, userId: row.userId });
+          }}
         >
           {isLoading ? <Loader /> : <PiTrash size={16} />}
           Remove user

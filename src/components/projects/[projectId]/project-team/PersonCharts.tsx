@@ -1,6 +1,6 @@
 "use client";
 import { DonutChart } from "@tremor/react";
-import { PiClockCountdown, PiEmpty } from "react-icons/pi";
+import { PiClockCountdown, PiMoneyWavy } from "react-icons/pi";
 import { Skeleton } from "~/components/ui/skeleton";
 import { secondsToHoursDecimal } from "~/lib/dates";
 import { parseLongCurrency } from "~/lib/parsers";
@@ -52,7 +52,7 @@ export const PersonCharts = () => {
           />
         ) : (
           <div className="flex aspect-square h-full flex-col items-center justify-center gap-2 rounded-full border-4 p-4 text-xs text-muted-foreground">
-            <PiEmpty size={20} />
+            <PiMoneyWavy size={20} />
             No revenue data yet
           </div>
         )}
@@ -61,7 +61,7 @@ export const PersonCharts = () => {
       <div className="flex h-full w-full flex-col items-center gap-4">
         <p className="text-muted-foreground">Hours breakdown</p>
 
-        {!!data?.totalBillableHours && !!data?.totalNonBillableHours ? (
+        {!!data?.totalBillableHours || !!data?.totalNonBillableHours ? (
           <DonutChart
             data={[
               {

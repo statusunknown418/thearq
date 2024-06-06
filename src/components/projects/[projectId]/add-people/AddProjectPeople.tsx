@@ -2,6 +2,7 @@ import { PlusIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import Link from "next/link";
 import { useDeferredValue, useMemo, useState } from "react";
+import { PiCheck } from "react-icons/pi";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import {
@@ -29,10 +30,7 @@ export const AddProjectPeople = ({
   const user = useAuthStore((s) => s.user);
 
   const utils = api.useUtils();
-  const { data, isLoading } = api.teams.getByWorkspace.useQuery(undefined, {
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  });
+  const { data, isLoading } = api.teams.getByWorkspace.useQuery();
 
   const {
     mutate,
@@ -58,7 +56,6 @@ export const AddProjectPeople = ({
       data?.table
         ?.filter((u) => u.userId !== user?.id)
         .filter((u) => u.user?.name?.toLowerCase().includes(deferred.toLowerCase())),
-
     [data, deferred, user?.id],
   );
 
@@ -138,23 +135,22 @@ export const AddProjectPeople = ({
 
               <span>{relation.user.name}</span>
 
-              {!!projectTeam.users.find((u) => u.userId === relation.userId) ||
-                (isSuccess && (
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    className="ml-auto"
-                    disabled={isAdding}
-                    onClick={() => {
-                      mutate({
-                        projectId: projectTeam.id,
-                        userId: relation.userId,
-                      });
-                    }}
-                  >
-                    {isAdding ? <Loader /> : <PlusIcon />}
-                  </Button>
-                ))}
+              {!projectTeam.users.find((u) => u.userId === relation.userId) && (
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="ml-auto"
+                  disabled={isAdding}
+                  onClick={() => {
+                    mutate({
+                      projectId: projectTeam.id,
+                      userId: relation.userId,
+                    });
+                  }}
+                >
+                  {isAdding ? <Loader /> : isSuccess ? <PiCheck /> : <PlusIcon />}
+                </Button>
+              )}
             </li>
           ))}
         </ScrollArea>
