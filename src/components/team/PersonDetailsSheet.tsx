@@ -44,7 +44,6 @@ export const PersonDetailsSheet = () => {
 
   const update = api.workspaces.updateMemberDetails.useMutation({
     onSuccess: async () => {
-      change(false);
       await Promise.all([
         utils.teams.getByWorkspace.invalidate(),
         utils.viewer.getAnalyticsCharts.invalidate(),

@@ -8,7 +8,7 @@
 
     --background: 0 0% 99%;
     --foreground: 240 10% 3.9%;
-    --secondary-background: 240 4% 97%;
+    --secondary-background: 240 4% 97.7%;
 
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
@@ -33,7 +33,7 @@
 
     --border: 240 5.9% 87%;
     --border-contrast: 240 5.9% 83%;
-    --input: 240 5.9% 95%;
+    --input: 240 5.9% 99%;
     --ring: 240 10% 3.9%;
 
     --radius: 0.75rem;

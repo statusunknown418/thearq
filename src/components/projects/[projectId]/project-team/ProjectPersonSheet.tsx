@@ -3,7 +3,7 @@ import { valibotResolver } from "@hookform/resolvers/valibot";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { PiFloppyDisk } from "react-icons/pi";
+import { PiCurrencyDollarBold, PiFloppyDisk } from "react-icons/pi";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import {
@@ -49,7 +49,6 @@ export const ProjectPersonSheet = () => {
 
   const update = api.projects.updateMember.useMutation({
     onSuccess: async () => {
-      change(false);
       await utils.projects.getTeam.invalidate();
     },
   });
@@ -162,13 +161,19 @@ export const ProjectPersonSheet = () => {
                   <FormItem>
                     <FormLabel>Billable rate (Default)</FormLabel>
 
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
+                    <div className="flex items-center">
+                      <span className="flex h-9 w-12 items-center justify-center rounded-l-md border-y border-l">
+                        <PiCurrencyDollarBold size={16} />
+                      </span>
+                      <FormControl>
+                        <Input {...field} variant="number" className="min-w-40 rounded-l-none" />
+                      </FormControl>
+                    </div>
 
                     <FormDescription>
-                      This is the default billable rate for this person. It can be customized per
-                      project.
+                      This is the default billable rate for this person. It will be used for all{" "}
+                      <span className="font-semibold underline underline-offset-2">new</span>{" "}
+                      projects created (can be customized per project).
                     </FormDescription>
 
                     <FormMessage />
@@ -181,15 +186,21 @@ export const ProjectPersonSheet = () => {
                 name="internalCost"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Internal cost</FormLabel>
+                    <FormLabel>Internal cost (Default)</FormLabel>
 
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
+                    <div className="flex items-center">
+                      <span className="flex h-9 w-12 items-center justify-center rounded-l-md border-y border-l">
+                        <PiCurrencyDollarBold size={16} />
+                      </span>
+                      <FormControl>
+                        <Input {...field} variant="number" className="min-w-40 rounded-l-none" />
+                      </FormControl>
+                    </div>
 
                     <FormDescription>
-                      This is the person&apos;s cost to the company. It is used to calculate the
-                      profitability of the projects.
+                      This is the person&apos;s cost to the company. It will be used for all{" "}
+                      <span className="italic">new</span> projects created (can be customized per
+                      project).
                     </FormDescription>
 
                     <FormMessage />
@@ -210,13 +221,21 @@ export const ProjectPersonSheet = () => {
                       />
                     </div>
 
-                    <FormControl>
-                      <Input
-                        {...field}
-                        value={field.value === null ? Infinity : field.value}
-                        disabled={field.value === Infinity || field.value === null}
-                      />
-                    </FormControl>
+                    <div className="flex items-center">
+                      <FormControl>
+                        <Input
+                          {...field}
+                          variant="number"
+                          className="min-w-40 rounded-r-none"
+                          value={field.value === null ? Infinity : field.value}
+                          disabled={field.value === Infinity || field.value === null}
+                        />
+                      </FormControl>
+
+                      <span className="flex h-9 min-w-max items-center justify-center rounded-r-md border-y border-r px-2 text-xs font-medium">
+                        hours
+                      </span>
+                    </div>
 
                     <FormDescription>
                       You can limit the number of hours this person can work in a week. If left

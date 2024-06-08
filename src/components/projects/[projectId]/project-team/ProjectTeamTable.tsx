@@ -8,7 +8,12 @@ import {
   type ColumnDef,
 } from "@tanstack/react-table";
 import Image from "next/image";
-import { PiArrowSquareOutDuotone, PiDotsThreeVerticalBold, PiTrash } from "react-icons/pi";
+import {
+  PiArrowSquareOutDuotone,
+  PiDotsThreeVerticalBold,
+  PiInfinityBold,
+  PiTrash,
+} from "react-icons/pi";
 import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -35,6 +40,7 @@ import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 import { AddProjectPeople } from "../add-people/AddProjectPeople";
 import { useProjectsQS } from "../project-cache";
+import { cn } from "~/lib/utils";
 
 type ProjectTeamColumn = RouterOutputs["projects"]["getTeam"]["users"][number];
 const columns: ColumnDef<ProjectTeamColumn>[] = [
@@ -42,7 +48,7 @@ const columns: ColumnDef<ProjectTeamColumn>[] = [
     id: "avatar",
     header: undefined,
     accessorFn: (row) => row.user.image,
-    size: 40,
+    size: 60,
     cell: ({ row }) => (
       <Image
         src={row.getValue("avatar")}
@@ -70,7 +76,27 @@ const columns: ColumnDef<ProjectTeamColumn>[] = [
     accessorFn: (row) => row.role,
     header: "Role",
     cell: ({ row }) => {
-      return <Badge variant={"secondary"}>{row.getValue("role")}</Badge>;
+      return (
+        <Badge variant={row.original.role === "admin" ? "primary" : "secondary"}>
+          {row.getValue("role")}
+        </Badge>
+      );
+    },
+  },
+  {
+    id: "weekCapacity",
+    accessorFn: (row) => row.weekCapacity,
+    header: "Week Capacity",
+    cell: ({ row }) => {
+      if (row.original.weekCapacity === null) {
+        return (
+          <Badge variant={"secondary"}>
+            <PiInfinityBold size={16} /> hours
+          </Badge>
+        );
+      }
+
+      return <Badge variant={"secondary"}>{row.getValue("weekCapacity")} hours</Badge>;
     },
   },
   {
@@ -78,7 +104,7 @@ const columns: ColumnDef<ProjectTeamColumn>[] = [
     accessorFn: (row) => row.billableRate,
     header: "Rate",
     cell: ({ row }) => {
-      return <Badge variant={"secondary"}>{parseLongCurrency(row.getValue("billableRate"))}</Badge>;
+      return <p className="font-semibold">{parseLongCurrency(row.getValue("billableRate"))}</p>;
     },
   },
   {
@@ -86,7 +112,16 @@ const columns: ColumnDef<ProjectTeamColumn>[] = [
     accessorFn: (row) => row.internalCost,
     header: "Internal Cost",
     cell: ({ row }) => {
-      return <Badge variant={"secondary"}>{parseLongCurrency(row.getValue("internalCost"))}</Badge>;
+      return (
+        <p
+          className={cn(
+            "font-semibold tabular-nums",
+            row.original.billableRate < row.original.internalCost && "text-destructive",
+          )}
+        >
+          {parseLongCurrency(row.getValue("internalCost"))}
+        </p>
+      );
     },
   },
   {

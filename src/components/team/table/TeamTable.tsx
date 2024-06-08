@@ -93,7 +93,7 @@ export const columns: ColumnDef<TeamTableColumn>[] = [
     accessorKey: "defaultWeekCapacity",
     header: "Week Capacity",
     cell: ({ row }) => (
-      <Badge className="font-mono tabular-nums">
+      <Badge className="tabular-nums">
         {row.getValue("defaultWeekCapacity") === null ? (
           <PiInfinity size={16} />
         ) : (
@@ -109,10 +109,8 @@ export const columns: ColumnDef<TeamTableColumn>[] = [
     size: 200,
     minSize: 180,
     cell: ({ row }) => (
-      <span className="font-mono tabular-nums">
-        <Badge variant={"secondary"} className="text-sm">
-          {parseCompactCurrency(row.getValue("defaultBillableRate"))}
-        </Badge>
+      <span className="font-semibold tabular-nums">
+        {parseCompactCurrency(row.getValue("defaultBillableRate"))}
       </span>
     ),
   },
@@ -122,18 +120,14 @@ export const columns: ColumnDef<TeamTableColumn>[] = [
     size: 200,
     minSize: 180,
     cell: ({ row }) => (
-      <span className="font-mono tabular-nums">
-        <Badge
-          className="text-sm"
-          variant={
-            row.original.defaultBillableRate < row.original.defaultInternalCost
-              ? "destructive"
-              : "secondary"
-          }
-        >
-          {parseCompactCurrency(row.getValue("defaultInternalCost"))}
-        </Badge>
-      </span>
+      <p
+        className={cn(
+          "font-semibold tabular-nums",
+          row.original.defaultBillableRate < row.original.defaultInternalCost && "text-destructive",
+        )}
+      >
+        {parseCompactCurrency(row.getValue("defaultInternalCost"))}
+      </p>
     ),
   },
   {
