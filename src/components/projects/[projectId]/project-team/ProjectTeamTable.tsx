@@ -8,7 +8,7 @@ import {
   type ColumnDef,
 } from "@tanstack/react-table";
 import Image from "next/image";
-import { PiArrowSquareOutDuotone, PiList, PiTrash } from "react-icons/pi";
+import { PiArrowSquareOutDuotone, PiDotsThreeVerticalBold, PiTrash } from "react-icons/pi";
 import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -29,12 +29,12 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { parseLongCurrency } from "~/lib/parsers";
+import { useAuthStore } from "~/lib/stores/auth-store";
 import { useProjectPersonSheetStore } from "~/lib/stores/sheets-store";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 import { AddProjectPeople } from "../add-people/AddProjectPeople";
 import { useProjectsQS } from "../project-cache";
-import { useAuthStore } from "~/lib/stores/auth-store";
 
 type ProjectTeamColumn = RouterOutputs["projects"]["getTeam"]["users"][number];
 const columns: ColumnDef<ProjectTeamColumn>[] = [
@@ -126,7 +126,7 @@ const RowActions = ({ row }: { row: ProjectTeamColumn }) => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon">
-          <PiList size={16} />
+          <PiDotsThreeVerticalBold size={16} />
         </Button>
       </DropdownMenuTrigger>
 

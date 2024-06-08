@@ -67,7 +67,7 @@ export const PersonDetailsSheet = () => {
         defaultWeekCapacity:
           input.defaultWeekCapacity === Infinity ? null : input.defaultWeekCapacity,
         defaultBillableRate: sendAmount(input.defaultBillableRate ?? 0),
-        internalCost: sendAmount(input.internalCost ?? 0),
+        defaultInternalCost: sendAmount(input.defaultInternalCost ?? 0),
       }),
       {
         loading: "Saving...",
@@ -163,7 +163,7 @@ export const PersonDetailsSheet = () => {
 
             <FormField
               control={form.control}
-              name="internalCost"
+              name="defaultInternalCost"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Internal cost (Default)</FormLabel>

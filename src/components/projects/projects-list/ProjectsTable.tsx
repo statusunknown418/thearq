@@ -15,19 +15,11 @@ import {
   PiCalendarX,
   PiInfo,
   PiMapTrifold,
-  PiTrash,
   PiXCircle,
   PiXSquare,
 } from "react-icons/pi";
-import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
 import {
   Table,
@@ -43,6 +35,7 @@ import { routes } from "~/lib/navigation";
 import { useCommandsStore } from "~/lib/stores/commands-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 import { cn } from "~/lib/utils";
+import { type Roles } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 
@@ -240,17 +233,17 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
 
 export const ProjectsTable = ({
   initialData,
+  role,
 }: {
   initialData: RouterOutputs["projects"]["getAll"];
+  role: Roles;
 }) => {
   const { data: projects } = api.projects.getAll.useQuery(undefined, {
     initialData,
   });
 
   const router = useRouter();
-
   const workspace = useWorkspaceStore((s) => s.active);
-  const shouldSeeDetails = projects.some((p) => p.role === "admin");
 
   const table = useReactTable({
     data: projects,
@@ -264,11 +257,11 @@ export const ProjectsTable = ({
   });
 
   if (projects.length === 0) {
-    return <ProjectsEmptyState />;
+    return <ProjectsEmptyState role={role} />;
   }
 
   const onRowClick = (row: ProjectsTableColumn) => {
-    if (!shouldSeeDetails) {
+    if (row.role !== "admin") {
       return;
     }
 
@@ -314,7 +307,9 @@ export const ProjectsTable = ({
                       onClick={() => onRowClick(cell.row.original)}
                       className={cn(
                         "px-4",
-                        shouldSeeDetails ? "cursor-pointer" : "cursor-not-allowed",
+                        row.original.role === "admin"
+                          ? "cursor-pointer"
+                          : "cursor-not-allowed bg-secondary-background",
                       )}
                       style={{
                         maxWidth: `${cell.column.getSize()}px`,
@@ -346,17 +341,21 @@ export const ProjectsTable = ({
   );
 };
 
-export const ProjectsEmptyState = () => {
+export const ProjectsEmptyState = ({ role }: { role: Roles }) => {
   const setCommand = useCommandsStore((s) => s.setCommand);
 
   return (
     <div className="flex flex-col items-center justify-center gap-2 rounded-xl border bg-secondary-background px-5 py-10">
       <PiMapTrifold size={24} className="text-muted-foreground" />
       <h2 className="text-lg font-bold">No projects found</h2>
+
       <p className="text-center text-muted-foreground">
         Start by creating a new project, assign members, and set details.
       </p>
-      <Button onClick={() => setCommand("new-project")}>Create a project</Button>
+
+      {role === "admin" && (
+        <Button onClick={() => setCommand("new-project")}>Create a project</Button>
+      )}
     </div>
   );
 };

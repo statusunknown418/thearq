@@ -19,7 +19,7 @@ export const useDetailsSheetStore = create<DetailsSheetsStore>((set) => ({
       details: {
         ...details,
         defaultBillableRate: receiveAmount(details.defaultBillableRate),
-        internalCost: receiveAmount(details.internalCost),
+        defaultInternalCost: receiveAmount(details.defaultInternalCost),
       },
       open: true,
     }),

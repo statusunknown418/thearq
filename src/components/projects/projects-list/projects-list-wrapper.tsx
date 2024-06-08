@@ -7,7 +7,10 @@ export const ProjectsListLoading = () => {
 };
 
 export const ProjectsListRSC = async () => {
-  const projects = await api.projects.getAll.query();
+  const [projects, viewer] = await Promise.all([
+    api.projects.getAll.query(),
+    api.viewer.getPermissions.query(),
+  ]);
 
-  return <ProjectsTable initialData={projects} />;
+  return <ProjectsTable initialData={projects} role={viewer.role} />;
 };

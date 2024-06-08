@@ -8,7 +8,12 @@ import {
   type ColumnDef,
 } from "@tanstack/react-table";
 import Image from "next/image";
-import { PiArrowSquareOutDuotone, PiDotsThreeVertical, PiInfinity, PiTrash } from "react-icons/pi";
+import {
+  PiArrowSquareOutDuotone,
+  PiDotsThreeVerticalBold,
+  PiInfinity,
+  PiTrash,
+} from "react-icons/pi";
 import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -30,6 +35,7 @@ import {
 } from "~/components/ui/table";
 import { parseCompactCurrency } from "~/lib/parsers";
 import { useDetailsSheetStore } from "~/lib/stores/sheets-store";
+import { cn } from "~/lib/utils";
 import { type Roles } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
@@ -120,7 +126,7 @@ export const columns: ColumnDef<TeamTableColumn>[] = [
         <Badge
           className="text-sm"
           variant={
-            row.original.defaultBillableRate < row.original.internalCost
+            row.original.defaultBillableRate < row.original.defaultInternalCost
               ? "destructive"
               : "secondary"
           }
@@ -173,8 +179,8 @@ const RowActions = ({ row }: { row: TeamTableColumn }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="secondary" size="icon">
-          <PiDotsThreeVertical size={16} />
+        <Button variant="ghost" size="icon">
+          <PiDotsThreeVerticalBold size={16} />
         </Button>
       </DropdownMenuTrigger>
 
@@ -232,7 +238,7 @@ export const TeamTable = ({ data, allowed }: { data: TeamTableData; allowed: boo
         className="max-w-sm"
       />
 
-      <div className="rounded-lg border bg-background">
+      <div className="overflow-hidden rounded-lg border bg-background">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -257,7 +263,9 @@ export const TeamTable = ({ data, allowed }: { data: TeamTableData; allowed: boo
                   onClick={() => {
                     !!allowed && updateDetails(row.original);
                   }}
-                  className="cursor-pointer"
+                  className={cn(
+                    !!allowed ? "cursor-pointer" : "cursor-not-allowed bg-secondary-background",
+                  )}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

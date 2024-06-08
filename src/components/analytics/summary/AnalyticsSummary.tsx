@@ -61,7 +61,7 @@ export const AnalyticsSummary = ({
       <div className="flex gap-4">
         <Card className="max-w-xs" decoration="left" decorationColor="indigo">
           <h4 className="text-tremor-default text-muted-foreground">Earnings</h4>
-          <p className="mt-1.5 text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
+          <p className="mt-1.5 text-tremor-metric text-tremor-content-strong dark:text-dark-tremor-content-strong">
             {parseCompactCurrency(data?.totalEarnings)}
           </p>
 
@@ -115,7 +115,7 @@ export const AnalyticsSummary = ({
 
         <Card className="max-w-xs">
           <h4 className="text-tremor-default text-muted-foreground">Tracked time</h4>
-          <p className="mt-1.5 text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
+          <p className="mt-1.5 text-tremor-metric text-tremor-content-strong dark:text-dark-tremor-content-strong">
             {data?.totalHours.toFixed(2)}{" "}
             <span className="text-base font-normal text-muted-foreground">hours</span>
           </p>

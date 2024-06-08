@@ -30,5 +30,7 @@ export const sendAmount = (value: number) => {
 };
 
 export const parseNumber = (value: number) => {
-  return Intl.NumberFormat(undefined, {}).format(value);
+  return Intl.NumberFormat(undefined, {
+    maximumFractionDigits: 2,
+  }).format(value);
 };

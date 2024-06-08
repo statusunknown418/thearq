@@ -3,6 +3,7 @@
 import { useCallback, useEffect } from "react";
 import { useAuthStore } from "~/lib/stores/auth-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
+import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 
 /**
@@ -14,6 +15,7 @@ import { type RouterOutputs } from "~/trpc/shared";
 export const Updater = ({ workspace }: { workspace: RouterOutputs["workspaces"]["getBySlug"] }) => {
   const updatePermissions = useAuthStore((s) => s.updatePermissions);
   const selectWorkspace = useWorkspaceStore((s) => s.setActive);
+  const { mutate } = api.workspaces.setRecent.useMutation();
 
   const memoizedUpdater = useCallback(() => {
     if (!workspace.data) {
@@ -22,11 +24,11 @@ export const Updater = ({ workspace }: { workspace: RouterOutputs["workspaces"][
 
     updatePermissions(workspace.data.viewerPermissions);
     selectWorkspace(workspace.data);
-  }, [selectWorkspace, updatePermissions, workspace]);
+  }, [selectWorkspace, updatePermissions, workspace.data]);
 
   useEffect(() => {
     memoizedUpdater();
-  }, [memoizedUpdater]);
+  }, [memoizedUpdater, mutate, workspace.data]);
 
   return <div />;
 };
