@@ -117,7 +117,7 @@ export const columns: ColumnDef<TeamTableColumn>[] = [
     ),
   },
   {
-    accessorKey: "internalCost",
+    accessorKey: "defaultInternalCost",
     header: "Internal Cost",
     size: 200,
     minSize: 180,
@@ -131,7 +131,7 @@ export const columns: ColumnDef<TeamTableColumn>[] = [
               : "secondary"
           }
         >
-          {parseCompactCurrency(row.getValue("internalCost"))}
+          {parseCompactCurrency(row.getValue("defaultInternalCost"))}
         </Badge>
       </span>
     ),
