@@ -1,11 +1,10 @@
 import { createId } from "@paralleldrive/cuid2";
 import { TRPCError } from "@trpc/server";
-import { toZonedTime } from "date-fns-tz";
 import { and, eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 import slugify from "slugify";
 import { nullable, number, object, parse, string } from "valibot";
-import { RECENT_W_ID_KEY, VERCEL_REQUEST_LOCATION } from "~/lib/constants";
+import { RECENT_W_ID_KEY } from "~/lib/constants";
 import { adminPermissions, memberPermissions } from "~/lib/stores/auth-store";
 import { projects, projectsSchema, usersOnProjects, type Roles } from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
@@ -63,7 +62,6 @@ export const baseProjectsRouter = createTRPCRouter({
     }),
   getAll: protectedProcedure.query(async ({ ctx }) => {
     const wId = cookies().get(RECENT_W_ID_KEY)?.value;
-    const location = ctx.headers.get(VERCEL_REQUEST_LOCATION);
 
     if (!wId) {
       throw new TRPCError({
@@ -74,7 +72,7 @@ export const baseProjectsRouter = createTRPCRouter({
 
     const data = await ctx.db.query.usersOnProjects.findMany({
       where: (t, { eq, and }) =>
-        and(eq(t.userId, ctx.session.user.id), eq(t.workspaceId, Number(wId))),
+        and(eq(t.workspaceId, Number(wId)), eq(t.userId, ctx.session.user.id)),
       with: {
         project: {
           columns: {
@@ -97,14 +95,7 @@ export const baseProjectsRouter = createTRPCRouter({
       },
     });
 
-    return data.map((d) => ({
-      ...d,
-      project: {
-        ...d.project,
-        startsAt: d.project.startsAt ? toZonedTime(d.project.startsAt, location ?? "UTC") : null,
-        endsAt: d.project.endsAt ? toZonedTime(d.project.endsAt, location ?? "UTC") : null,
-      },
-    }));
+    return data;
   }),
 
   create: protectedProcedure
@@ -255,42 +246,37 @@ export const baseProjectsRouter = createTRPCRouter({
         });
       }
 
-      const data = await ctx.db.transaction(async (trx) => {
-        const project = await trx.query.projects.findFirst({
-          where: (t, { eq }) => eq(t.shareableUrl, input.projectShareableId),
-          columns: {
-            id: true,
-            name: true,
-            identifier: true,
-          },
-          with: {
-            users: {
-              with: {
-                user: true,
-              },
+      const project = await ctx.db.query.projects.findFirst({
+        where: (t, { eq }) => eq(t.shareableUrl, input.projectShareableId),
+        columns: {
+          id: true,
+          name: true,
+          identifier: true,
+        },
+        with: {
+          users: {
+            with: {
+              user: true,
             },
           },
-        });
-
-        if (!project) {
-          trx.rollback();
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Project not found",
-          });
-        }
-
-        return project;
+        },
       });
 
-      if (data.users.find((u) => u.userId === ctx.session.user.id)?.role !== "admin") {
+      if (!project) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Project not found",
+        });
+      }
+
+      if (project.users.find((u) => u.userId === ctx.session.user.id)?.role !== "admin") {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "You are not allowed to view this project",
         });
       }
 
-      return data;
+      return project;
     }),
 
   updateMember: protectedProcedure
@@ -382,7 +368,7 @@ export const baseProjectsRouter = createTRPCRouter({
         },
       });
 
-      const newUserPromise = ctx.db.query.usersOnWorkspaces.findFirst({
+      const workspaceUserPromise = ctx.db.query.usersOnWorkspaces.findFirst({
         where: (t, { eq, and }) => {
           return and(eq(t.userId, input.userId), eq(t.workspaceId, Number(wId)));
         },
@@ -391,7 +377,7 @@ export const baseProjectsRouter = createTRPCRouter({
         },
       });
 
-      const [relation, newUser] = await Promise.all([relationPromise, newUserPromise]);
+      const [relation, workspaceUser] = await Promise.all([relationPromise, workspaceUserPromise]);
 
       if (!relation) {
         throw new TRPCError({
@@ -407,7 +393,7 @@ export const baseProjectsRouter = createTRPCRouter({
         });
       }
 
-      if (!newUser) {
+      if (!workspaceUser) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "User not found",
@@ -420,9 +406,9 @@ export const baseProjectsRouter = createTRPCRouter({
         workspaceId: Number(wId),
         role: "member",
         permissions: JSON.stringify(memberPermissions),
-        billableRate: newUser.defaultBillableRate,
-        internalCost: newUser.internalCost,
-        weekCapacity: newUser.defaultWeekCapacity,
+        billableRate: workspaceUser.defaultBillableRate,
+        internalCost: workspaceUser.defaultInternalCost,
+        weekCapacity: workspaceUser.defaultWeekCapacity,
       });
     }),
 

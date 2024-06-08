@@ -295,6 +295,17 @@ export const workspacesRouter = createTRPCRouter({
         };
       }
 
+      if (workspace.seatCount >= workspace.seatLimit) {
+        return {
+          success: false,
+          data: null,
+          error: {
+            code: "CONFLICT",
+            message: "Workspace is full",
+          },
+        };
+      }
+
       const [newMember] = await ctx.db
         .insert(usersOnWorkspaces)
         .values({
@@ -352,6 +363,7 @@ export const workspacesRouter = createTRPCRouter({
       return {
         success: true,
         data: newMember,
+        error: null,
       };
     }),
   getInvitationDetails: publicProcedure

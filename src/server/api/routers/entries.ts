@@ -4,7 +4,7 @@ import { and } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { number, object, string, z } from "zod";
 import { LIVE_ENTRY_DURATION, RECENT_W_ID_KEY } from "~/lib/constants";
-import { computeDuration, secondsToHoursDecimal } from "~/lib/dates";
+import { adjustEndDate, computeDuration, secondsToHoursDecimal } from "~/lib/dates";
 import { type TimeEntry } from "~/server/db/edge-schema";
 import { type RouterOutputs } from "~/trpc/shared";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
@@ -225,7 +225,7 @@ export const entriesRouter = createTRPCRouter({
           and(
             op.eq(t.workspaceId, Number(wId)),
             op.gte(t.start, new Date(input.from)),
-            op.lte(t.start, new Date(input.to)),
+            op.lte(t.end, adjustEndDate(input.to)),
           ),
         with: {
           project: {
@@ -233,6 +233,7 @@ export const entriesRouter = createTRPCRouter({
               color: true,
               name: true,
               identifier: true,
+              id: true,
             },
             with: {
               users: true,
@@ -248,6 +249,14 @@ export const entriesRouter = createTRPCRouter({
 
       const totalTime = summary.reduce((acc, entry) => {
         acc += entry.duration;
+        return acc;
+      }, 0);
+
+      const nonBillableTime = summary.reduce((acc, entry) => {
+        if (!entry.billable) {
+          acc += entry.duration;
+        }
+
         return acc;
       }, 0);
 
@@ -273,10 +282,63 @@ export const entriesRouter = createTRPCRouter({
         return acc;
       }, 0);
 
+      const totalInternalCost = summary.reduce((acc, entry) => {
+        const user = entry.workspace.users.find((u) => u.userId === entry.userId);
+
+        if (!user) {
+          return acc;
+        }
+
+        if (!acc) {
+          acc = 0;
+        }
+
+        if (!!entry.projectId && !!entry.project) {
+          const projectUser = entry.project?.users.find((u) => u.userId === entry.userId);
+
+          acc += secondsToHoursDecimal(entry.duration) * (projectUser?.internalCost ?? 0);
+          return acc;
+        }
+
+        acc += secondsToHoursDecimal(entry.duration) * user.defaultInternalCost;
+        return acc;
+      }, 0);
+
+      const groupedByProject = summary.reduce(
+        (acc, entry) => {
+          const project = entry.project;
+
+          if (!project) {
+            return acc;
+          }
+
+          if (!acc[project.id]) {
+            acc[project.id] = {
+              duration: 0,
+              project: project.name,
+            };
+          }
+
+          acc[project.id]!.duration += entry.duration;
+
+          return acc;
+        },
+        {} as Record<
+          number,
+          {
+            duration: number;
+            project: string;
+          }
+        >,
+      );
+
       return {
         totalTime,
         totalEarnings,
+        totalInternalCost,
         summary,
+        nonBillableTime,
+        groupedByProject: Object.entries(groupedByProject).map(([_id, value]) => value),
       };
     }),
 });
