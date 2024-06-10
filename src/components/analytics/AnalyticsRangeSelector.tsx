@@ -12,12 +12,17 @@ import {
 import { format, toDate } from "date-fns-tz";
 import * as React from "react";
 import { type DateRange } from "react-day-picker";
-import { PiArrowLeft, PiArrowRight } from "react-icons/pi";
+import { PiArrowLeft, PiArrowRight, PiCalendarBlankDuotone, PiCaretDownBold } from "react-icons/pi";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
-import { NOW } from "~/lib/dates";
+import { NOW, adjustEndDate } from "~/lib/dates";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 import { RangePicker } from "../ui/range-picker";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { useAnalyticsQS } from "./summary/params-cache";
 
 export function AnalyticsRangeSelector() {
@@ -28,8 +33,6 @@ export function AnalyticsRangeSelector() {
     from: state.from ? toDate(state.from) : undefined,
     to: state.to ? toDate(state.to) : undefined,
   });
-
-  const [quickSelect, setQuickSelect] = React.useState<string | undefined>(undefined);
 
   const onOpenChange = (v: boolean) => {
     if (!v) {
@@ -57,7 +60,7 @@ export function AnalyticsRangeSelector() {
     });
   };
 
-  const onQuickSelect = (v: string) => {
+  const onQuickSelect = (v: "last-7-days" | "last-14-days" | "last-month" | "month-to-date") => {
     let start: Date | undefined;
     let end: Date | undefined;
 
@@ -72,8 +75,8 @@ export function AnalyticsRangeSelector() {
     }
 
     if (v === "last-7-days") {
-      start = startOfWeek(toDate(NOW));
-      end = endOfWeek(toDate(NOW));
+      start = startOfWeek(addWeeks(toDate(NOW), -1));
+      end = endOfWeek(addWeeks(toDate(NOW), -1));
 
       void updateState({
         from: format(start, "yyyy-MM-dd"),
@@ -93,7 +96,7 @@ export function AnalyticsRangeSelector() {
 
     if (v === "last-month") {
       start = addMonths(startOfMonth(toDate(NOW)), -1);
-      end = addMonths(endOfMonth(toDate(NOW)), -1);
+      end = adjustEndDate(addMonths(endOfMonth(toDate(NOW)), -1));
 
       void updateState({
         from: format(start, "yyyy-MM-dd"),
@@ -108,7 +111,6 @@ export function AnalyticsRangeSelector() {
     const start = addDays(toDate(state?.from ?? NOW), -7);
     const end = addDays(toDate(state?.to ?? NOW), -7);
 
-    setQuickSelect(undefined);
     void updateState({
       from: format(start, "yyyy-MM-dd"),
       to: format(end, "yyyy-MM-dd"),
@@ -119,7 +121,6 @@ export function AnalyticsRangeSelector() {
     const start = addDays(toDate(state?.from ?? NOW), 7);
     const end = addDays(toDate(state?.to ?? NOW), 7);
 
-    setQuickSelect(undefined);
     void updateState({
       from: format(start, "yyyy-MM-dd"),
       to: format(end, "yyyy-MM-dd"),
@@ -159,18 +160,41 @@ export function AnalyticsRangeSelector() {
 
       <RangePicker open={open} onOpenChange={onOpenChange} onDateChange={setDate} date={date} />
 
-      <Select value={quickSelect} onValueChange={onQuickSelect}>
-        <SelectTrigger className="w-32 rounded-l-none border-l-0">
-          <SelectValue placeholder="Select a range" />
-        </SelectTrigger>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="secondary"
+            size="icon"
+            subSize={"iconMd"}
+            className="rounded-l-none border-l-0"
+          >
+            <PiCaretDownBold />
+          </Button>
+        </DropdownMenuTrigger>
 
-        <SelectContent>
-          <SelectItem value="last-7-days">This week</SelectItem>
-          <SelectItem value="last-14-days">Last 2 weeks</SelectItem>
-          <SelectItem value="last-month">Last month</SelectItem>
-          <SelectItem value="month-to-date">Month to date</SelectItem>
-        </SelectContent>
-      </Select>
+        <DropdownMenuContent align="end" className="min-w-52">
+          <DropdownMenuItem onSelect={() => onQuickSelect("last-7-days")}>
+            <PiCalendarBlankDuotone size={15} />
+            <span>Last week</span>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem onSelect={() => onQuickSelect("last-14-days")}>
+            <PiCalendarBlankDuotone size={15} />
+            <span>Last 2 weeks</span>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem onSelect={() => onQuickSelect("last-month")}>
+            <PiCalendarBlankDuotone size={15} />
+            <span>Last month</span>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem onSelect={() => onQuickSelect("month-to-date")}>
+            <PiCalendarBlankDuotone size={15} />
+
+            <span>Month to date</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </article>
   );
 }
