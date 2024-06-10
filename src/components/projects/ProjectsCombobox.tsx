@@ -32,9 +32,7 @@ export const ProjectsCombobox = ({
 
   const [open, setOpen] = useState(false);
 
-  const { data } = api.viewer.getAssignedProjects.useQuery(undefined, {
-    refetchOnMount: false,
-  });
+  const { data } = api.viewer.getAssignedProjects.useQuery();
 
   return (
     <FormField
@@ -133,9 +131,7 @@ export const ProjectsComboboxStandalone = ({
   onSelect?: () => void;
   size?: "sm" | "lg" | "default";
 }) => {
-  const { data } = api.viewer.getAssignedProjects.useQuery(undefined, {
-    refetchOnMount: false,
-  });
+  const { data } = api.viewer.getAssignedProjects.useQuery();
 
   const [field, setField] = useState<number[]>([]);
 
@@ -152,15 +148,20 @@ export const ProjectsComboboxStandalone = ({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant={field.length > 0 ? "default" : "secondary"} size={size} className="w-max">
+        <Button variant={field.length > 0 ? "secondary" : "outline"} size={size} className="w-max">
           <PiSquaresFourDuotone size={15} />
 
-          <span className="max-w-[10ch] justify-between overflow-hidden text-ellipsis whitespace-nowrap">
+          <span
+            className={cn(
+              "max-w-[10ch] justify-between overflow-hidden text-ellipsis whitespace-nowrap",
+              size === "sm" && "font-normal",
+            )}
+          >
             Project
           </span>
 
           {field.length > 0 && (
-            <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full border border-primary/50 bg-primary/10 p-1 text-xs">
+            <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full border border-primary/50 bg-primary/10 p-1 text-[11px]">
               {field.length}
             </span>
           )}

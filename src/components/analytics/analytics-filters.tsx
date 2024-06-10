@@ -4,9 +4,10 @@ import { ProjectsComboboxStandalone } from "../projects/ProjectsCombobox";
 export const AnalyticsFilters = () => {
   return (
     <div className="flex items-center gap-2">
-      <ProjectsComboboxStandalone />
+      <p className="text-xs text-muted-foreground">Filters</p>
+      <ProjectsComboboxStandalone size="sm" />
 
-      <ClientsComboboxStandalone />
+      <ClientsComboboxStandalone size="sm" />
     </div>
   );
 };

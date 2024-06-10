@@ -178,7 +178,9 @@ export const ClientsCombobox = ({
 
 export const ClientsComboboxStandalone = ({
   onSelect,
+  size = "default",
 }: {
+  size?: "sm" | "lg" | "default";
   showLabel?: boolean;
   onSelect?: () => void;
 }) => {
@@ -201,13 +203,22 @@ export const ClientsComboboxStandalone = ({
     <Popover open={combobox} onOpenChange={setCombobox}>
       <PopoverTrigger asChild>
         <Button
-          variant={field.length > 0 ? "default" : "secondary"}
+          variant={field.length > 0 ? "secondary" : "outline"}
           className={cn("w-max justify-between")}
+          size={size}
         >
           <PiUserDuotone size={15} />
-          <span>Client</span>
+          <span
+            className={cn(
+              "max-w-[10ch] justify-between overflow-hidden text-ellipsis whitespace-nowrap",
+              size === "sm" && "font-normal",
+            )}
+          >
+            Client
+          </span>
+
           {field.length > 0 && (
-            <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full border border-primary/50 bg-primary/10 p-1 text-xs">
+            <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full border border-primary/50 bg-primary/10 p-1 text-[11px]">
               {field.length}
             </span>
           )}

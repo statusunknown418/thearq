@@ -1,17 +1,21 @@
 "use client";
 
-import { Card, CategoryBar, DonutChart, Legend } from "@tremor/react";
+import { Card, CategoryBar, Legend, List, ListItem } from "@tremor/react";
 import { format, toDate } from "date-fns-tz";
-import { PiTrendDownBold, PiTrendUpBold } from "react-icons/pi";
+import Link from "next/link";
+import { PiArrowRight, PiTrendDownBold, PiTrendUpBold } from "react-icons/pi";
 import { secondsToHoursDecimal } from "~/lib/dates";
 import { parseCompactCurrency, parseLongCurrency, parseNumber } from "~/lib/parsers";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
-import { useDashboardQS } from "./dashboard-cache";
+import { Button } from "../../ui/button";
+import { useDashboardQS } from "../dashboard-cache";
+import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 
 export const Totals = ({ initialData }: { initialData: RouterOutputs["entries"]["getTotals"] }) => {
   const [state] = useDashboardQS();
+  const workspace = useWorkspaceStore((s) => s.active);
 
   const { data } = api.entries.getTotals.useQuery(
     {
@@ -37,11 +41,12 @@ export const Totals = ({ initialData }: { initialData: RouterOutputs["entries"][
       </p>
 
       <section className="flex gap-4">
-        <Card decoration="left" className="flex max-w-md flex-col gap-2">
-          <p className="text-muted-foreground">Total revenue</p>
+        <Card decoration="left" className="flex h-48 max-w-md flex-col gap-2">
+          <p className="text-muted-foreground">Gross revenue</p>
           <h2 className="flex text-tremor-metric">{parseLongCurrency(data.totalEarnings)}</h2>
 
           <CategoryBar
+            showAnimation
             showLabels={false}
             className="mt-4 w-full"
             colors={["emerald", "red"]}
@@ -86,6 +91,7 @@ export const Totals = ({ initialData }: { initialData: RouterOutputs["entries"][
           </p>
 
           <CategoryBar
+            showAnimation
             showLabels={false}
             className="mt-4 w-full"
             colors={["blue", "yellow"]}
@@ -102,22 +108,35 @@ export const Totals = ({ initialData }: { initialData: RouterOutputs["entries"][
           />
         </Card>
 
-        <Card className="flex items-center justify-between gap-4">
-          <DonutChart
-            showAnimation
-            animationDuration={1000}
-            showLabel={false}
-            data={data.groupedByProject}
-            valueFormatter={(value) => `${secondsToHoursDecimal(value).toFixed(2)} hours`}
-            index="project"
-            category="duration"
-            className="z-10 aspect-square h-36"
-          />
+        <Card className="flex max-w-xs flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <h2 className="text-muted-foreground">Top projects</h2>
 
-          <div className="flex w-full max-w-52 flex-col gap-2">
-            <h2 className="font-medium">Projects worked</h2>
-            <Legend categories={data.groupedByProject.map((p) => p.project)} />
+            <Button asChild variant={"link"}>
+              <Link href={`/${workspace?.slug}/projects`}>
+                See all
+                <PiArrowRight />
+              </Link>
+            </Button>
           </div>
+
+          <List className="mt-0">
+            {data.groupedByProject.map((p) => (
+              <ListItem key={p.id} className="h-8">
+                <div className="flex items-center gap-1">
+                  <div
+                    className="mr-1 h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: p.color || "#fff" }}
+                  />
+                  <p>{p.project}</p>
+                  <p className="text-base">&middot;</p>
+                  <p>{p.client ?? "No client"}</p>
+                </div>
+
+                <span>{secondsToHoursDecimal(p.duration).toFixed(2)} h</span>
+              </ListItem>
+            ))}
+          </List>
         </Card>
       </section>
     </>
