@@ -1,8 +1,17 @@
+import { Divider } from "@tremor/react";
 import { Suspense } from "react";
 import { UpdaterWrapperRSC } from "~/components/common/updater-wrapper";
 import { DashboardRangeSelector } from "~/components/dashboard/DashboardRangeSelector";
 import { dashboardCache } from "~/components/dashboard/dashboard-cache";
-import { TotalsWrapperRSC } from "~/components/dashboard/totals-wrapper";
+import {
+  DetailedTableLoading,
+  DetailedTableWrapperRSC,
+} from "~/components/dashboard/detailed/detailed-table-wrapper";
+import {
+  OverviewLoading,
+  OverviewWrapperRSC,
+} from "~/components/dashboard/overview/overview-wrapper";
+import { TotalsWrapperRSC } from "~/components/dashboard/totals/totals-wrapper";
 import { Main } from "~/components/layout/Main";
 import { PageHeader } from "~/components/layout/PageHeader";
 import { Loader } from "~/components/ui/loader";
@@ -31,6 +40,18 @@ export default function WorkspaceDashboardPage({
 
       <Suspense fallback={<Loader />}>
         <TotalsWrapperRSC />
+      </Suspense>
+
+      <Divider className="my-1 text-xs">Overview charts</Divider>
+
+      <Suspense fallback={<OverviewLoading />}>
+        <OverviewWrapperRSC />
+      </Suspense>
+
+      <Divider className="my-1 text-xs">Detailed table</Divider>
+
+      <Suspense fallback={<DetailedTableLoading />}>
+        <DetailedTableWrapperRSC />
       </Suspense>
 
       <Suspense>
