@@ -237,6 +237,7 @@ export const entriesRouter = createTRPCRouter({
             },
             with: {
               users: true,
+              client: true,
             },
           },
           workspace: {
@@ -316,6 +317,8 @@ export const entriesRouter = createTRPCRouter({
             acc[project.id] = {
               duration: 0,
               project: project.name,
+              client: project.client?.name,
+              color: project.color,
             };
           }
 
@@ -328,6 +331,8 @@ export const entriesRouter = createTRPCRouter({
           {
             duration: number;
             project: string;
+            client?: string;
+            color: string;
           }
         >,
       );
@@ -338,7 +343,13 @@ export const entriesRouter = createTRPCRouter({
         totalInternalCost,
         summary,
         nonBillableTime,
-        groupedByProject: Object.entries(groupedByProject).map(([_id, value]) => value),
+        groupedByProject: Object.entries(groupedByProject)
+          .map(([id, value]) => ({
+            id: id,
+            ...value,
+          }))
+          .sort((a, b) => b.duration - a.duration)
+          .slice(0, 3),
       };
     }),
 });
