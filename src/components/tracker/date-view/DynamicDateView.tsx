@@ -33,6 +33,7 @@ import { api } from "~/trpc/react";
 import { RealtimeCounter } from "./RealtimeCounter";
 import { NOW, computeDuration, convertTime, dateToMonthDate } from "~/lib/dates";
 import { Skeleton } from "~/components/ui/skeleton";
+import { useWorkspaceStore } from "~/lib/stores/workspace-store";
 
 const locales = {
   en: enUS,
@@ -41,11 +42,9 @@ const locales = {
 const DnDCalendar = withDragAndDrop<CustomEvent>(Calendar);
 
 export const DynamicDateView = ({
-  workspaceId,
   monthDate,
   location,
 }: {
-  workspaceId: number;
   monthDate: string;
   location: string;
 }) => {
@@ -57,6 +56,7 @@ export const DynamicDateView = ({
     locales,
   });
 
+  const workspaceId = useWorkspaceStore((s) => s.active)?.id;
   const auth = useAuthStore((s) => s.user);
   const [date, update] = useQueryDateState();
 
@@ -87,7 +87,7 @@ export const DynamicDateView = ({
 
   const utils = api.useUtils();
   const { data: events } = api.entries.getByMonth.useQuery(
-    { workspaceId, monthDate: dateToMonthDate(month) },
+    { monthDate: dateToMonthDate(month) },
     {
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
@@ -97,7 +97,7 @@ export const DynamicDateView = ({
   const { mutate } = api.tracker.update.useMutation({
     onMutate: async (input) => {
       await utils.entries.getByMonth.cancel();
-      const prev = utils.entries.getByMonth.getData({ workspaceId, monthDate });
+      const prev = utils.entries.getByMonth.getData({ monthDate });
 
       if (!prev || !auth) return;
 
@@ -107,17 +107,16 @@ export const DynamicDateView = ({
         integrationProvider: null,
       };
 
-      utils.entries.getByMonth.setData({ workspaceId, monthDate }, (prevState) => {
+      utils.entries.getByMonth.setData({ monthDate }, (prevState) => {
         if (!prevState) return [];
 
         return [...prevState.filter((e) => e.id !== updatedEvent.id), updatedEvent];
       });
 
-      return () => utils.entries.getByMonth.setData({ workspaceId, monthDate }, prev);
+      return () => utils.entries.getByMonth.setData({ monthDate }, prev);
     },
     onSettled: () => {
       return utils.entries.getByMonth.invalidate({
-        workspaceId,
         monthDate,
       });
     },
@@ -147,8 +146,8 @@ export const DynamicDateView = ({
 
       openTracker("auto-tracker");
 
-      if (!auth) {
-        return toast.error("You need to be logged in!");
+      if (!auth || !workspaceId) {
+        return toast.error("You need to be logged in and select a workspace!");
       }
 
       const fakeEvent = createFakeEvent("temporal", {

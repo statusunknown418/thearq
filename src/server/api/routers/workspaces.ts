@@ -5,7 +5,12 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import slugify from "slugify";
 import { number, object, parse, string } from "valibot";
-import { RECENT_WORKSPACE_KEY, RECENT_W_ID_KEY, createWorkspaceInviteLink } from "~/lib/constants";
+import {
+  RECENT_WORKSPACE_KEY,
+  RECENT_W_ID_KEY,
+  createWorkspaceInviteLink,
+  getRecentWorkspaceRedisKey,
+} from "~/lib/constants";
 import { adminPermissions, parsePermissions } from "~/lib/stores/auth-store";
 import {
   createWorkspaceSchema,
@@ -17,6 +22,7 @@ import {
 } from "~/server/db/edge-schema";
 import { redis } from "~/server/upstash";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+import { getRecentWorkspace } from "./viewer";
 
 export const workspacesRouter = createTRPCRouter({
   new: protectedProcedure
@@ -98,7 +104,7 @@ export const workspacesRouter = createTRPCRouter({
       ),
     )
     .query(async ({ ctx, input }) => {
-      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const workspaceId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!workspaceId) {
         return {
@@ -211,23 +217,10 @@ export const workspacesRouter = createTRPCRouter({
         sameSite: "lax",
       });
 
-      const t1 = performance.now();
-      await ctx.db
-        .update(users)
-        .set({
-          recentWId: input.workspaceId,
-        })
-        .where(eq(users.id, ctx.session.user.id));
-      const t2 = performance.now();
-
-      const t3 = performance.now();
       await redis.set(
-        `${ctx.session.user.id}:${RECENT_WORKSPACE_KEY}`,
+        getRecentWorkspaceRedisKey(ctx.session.user.id),
         input.workspaceId.toString(),
       );
-      const t4 = performance.now();
-
-      console.log("db", t2 - t1, "redis", t4 - t3);
 
       return {
         success: true,
@@ -406,7 +399,7 @@ export const workspacesRouter = createTRPCRouter({
   updateMemberDetails: protectedProcedure
     .input((i) => parse(usersOnWorkspacesSchema, i))
     .mutation(async ({ ctx, input }) => {
-      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const workspaceId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!workspaceId) {
         throw new TRPCError({

@@ -1,18 +1,21 @@
 import { LinearClient } from "@linear/sdk";
 import { TRPCError } from "@trpc/server";
 import { addDays, differenceInDays, format } from "date-fns";
-import { cookies } from "next/headers";
 import { Octokit } from "octokit";
 import { object, z } from "zod";
-import { INTEGRATIONS, RECENT_WORKSPACE_KEY, RECENT_W_ID_KEY } from "~/lib/constants";
+import { INTEGRATIONS, getRecentWorkspaceRedisKey } from "~/lib/constants";
 import { adjustEndDate, secondsToHoursDecimal } from "~/lib/dates";
 import { redis } from "~/server/upstash";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { type IntegrationCachingKey } from "./integrations";
 
+export const getRecentWorkspace = (user: string) => {
+  return redis.get<number>(getRecentWorkspaceRedisKey(user));
+};
+
 export const viewerRouter = createTRPCRouter({
-  getIntegrations: protectedProcedure.query(({ ctx }) => {
-    const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+  getIntegrations: protectedProcedure.query(async ({ ctx }) => {
+    const workspaceId = await getRecentWorkspace(ctx.session.user.id);
 
     return ctx.db.query.integrations.findMany({
       where: (t, op) => {
@@ -31,8 +34,8 @@ export const viewerRouter = createTRPCRouter({
     });
   }),
 
-  getAvailableIntegrations: protectedProcedure.query(({ ctx }) => {
-    const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+  getAvailableIntegrations: protectedProcedure.query(async ({ ctx }) => {
+    const workspaceId = await getRecentWorkspace(ctx.session.user.id);
 
     if (!workspaceId) {
       throw new TRPCError({
@@ -65,7 +68,7 @@ export const viewerRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const workspaceId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!workspaceId) {
         throw new TRPCError({
@@ -103,7 +106,7 @@ export const viewerRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const workspaceId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!workspaceId) {
         throw new TRPCError({
@@ -141,7 +144,7 @@ export const viewerRouter = createTRPCRouter({
     }),
 
   getAssignedProjects: protectedProcedure.query(async ({ ctx }) => {
-    const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+    const workspaceId = await getRecentWorkspace(ctx.session.user.id);
 
     if (!workspaceId) {
       throw new TRPCError({
@@ -191,23 +194,7 @@ export const viewerRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
-
-      const t1 = performance.now();
-      const recentId = await ctx.db.query.users.findFirst({
-        where: (t, op) => op.eq(t.id, ctx.session.user.id),
-        columns: {
-          recentWId: true,
-        },
-      });
-      const t2 = performance.now();
-
-      console.log("dbQuery", t2 - t1);
-
-      const redisRecent = await redis.get(`${ctx.session.user.id}:${RECENT_WORKSPACE_KEY}`);
-      const t3 = performance.now();
-
-      console.log("redis", t3 - t2);
+      const workspaceId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!workspaceId) {
         throw new TRPCError({
@@ -376,15 +363,14 @@ export const viewerRouter = createTRPCRouter({
   getAnalyticsCharts: protectedProcedure
     .input(
       object({
-        workspaceId: z.number(),
         startDate: z.string(),
         endDate: z.string(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const wId = await getRecentWorkspace(ctx.session.user.id);
 
-      if (!workspaceId) {
+      if (!wId) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "No workspace found",
@@ -394,7 +380,7 @@ export const viewerRouter = createTRPCRouter({
       const summary = await ctx.db.query.timeEntries.findMany({
         where: (t, op) => {
           return op.and(
-            op.eq(t.workspaceId, input.workspaceId),
+            op.eq(t.workspaceId, wId),
             op.eq(t.userId, ctx.session.user.id),
             op.gte(t.start, new Date(input.startDate)),
             op.lte(t.start, adjustEndDate(input.endDate)),

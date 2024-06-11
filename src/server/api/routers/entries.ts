@@ -1,13 +1,13 @@
 import { TRPCError } from "@trpc/server";
 import { startOfDay } from "date-fns";
 import { and } from "drizzle-orm";
-import { cookies } from "next/headers";
 import { number, object, string, z } from "zod";
-import { LIVE_ENTRY_DURATION, RECENT_W_ID_KEY } from "~/lib/constants";
+import { LIVE_ENTRY_DURATION } from "~/lib/constants";
 import { adjustEndDate, computeDuration, secondsToHoursDecimal } from "~/lib/dates";
 import { type TimeEntry } from "~/server/db/edge-schema";
 import { type RouterOutputs } from "~/trpc/shared";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { getRecentWorkspace } from "./viewer";
 
 export type CustomEvent = RouterOutputs["entries"]["getByMonth"][number] & {
   temp?: boolean;
@@ -24,7 +24,7 @@ export const entriesRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const wId = await getRecentWorkspace(ctx.session.user.id);
 
       if (input.selection === "none" || input.projectIds?.length === 0 || !wId) {
         return [];
@@ -64,12 +64,20 @@ export const entriesRouter = createTRPCRouter({
   getByMonth: protectedProcedure
     .input(
       object({
-        workspaceId: number(),
         projectId: number().optional(),
         monthDate: string(),
       }),
     )
     .query(async ({ ctx, input }) => {
+      const wId = await getRecentWorkspace(ctx.session.user.id);
+
+      if (!wId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No workspace found",
+        });
+      }
+
       /**
        * TODO: Make this a prepared statement
        */
@@ -77,7 +85,7 @@ export const entriesRouter = createTRPCRouter({
         where: (t, op) =>
           and(
             op.eq(t.userId, ctx.session.user.id),
-            op.eq(t.workspaceId, input.workspaceId),
+            op.eq(t.workspaceId, wId),
             op.eq(t.monthDate, input.monthDate),
             input.projectId ? op.eq(t.projectId, input.projectId) : undefined,
           ),
@@ -100,16 +108,24 @@ export const entriesRouter = createTRPCRouter({
   getSummary: protectedProcedure
     .input(
       object({
-        workspaceId: number(),
         monthDate: string(),
       }),
     )
     .query(async ({ ctx, input }) => {
+      const wId = await getRecentWorkspace(ctx.session.user.id);
+
+      if (!wId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No workspace found",
+        });
+      }
+
       const summary = await ctx.db.query.timeEntries.findMany({
         where: (t, op) =>
           and(
             op.eq(t.userId, ctx.session.user.id),
-            op.eq(t.workspaceId, input.workspaceId),
+            op.eq(t.workspaceId, wId),
             op.eq(t.monthDate, input.monthDate),
           ),
         with: {
@@ -170,7 +186,7 @@ export const entriesRouter = createTRPCRouter({
       };
     }),
   getLiveEntry: protectedProcedure.query(async ({ ctx }) => {
-    const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+    const workspaceId = await getRecentWorkspace(ctx.session.user.id);
 
     if (!workspaceId) {
       throw new TRPCError({
@@ -214,7 +230,7 @@ export const entriesRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const wId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!wId) {
         return null;

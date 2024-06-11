@@ -1,15 +1,14 @@
+import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { object, string } from "zod";
-import { RECENT_W_ID_KEY } from "~/lib/constants";
 import { usersOnWorkspaces } from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { TRPCError } from "@trpc/server";
+import { getRecentWorkspace } from "./viewer";
 
 export const teamsRouter = createTRPCRouter({
   getByWorkspace: protectedProcedure.query(async ({ ctx }) => {
-    const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+    const workspaceId = await getRecentWorkspace(ctx.session.user.id);
 
     if (!workspaceId) {
       return notFound();
@@ -50,7 +49,15 @@ export const teamsRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const wId = await getRecentWorkspace(ctx.session.user.id);
+
+      if (!wId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No workspace selected",
+        });
+      }
+
       const userId = input.userId;
 
       if (userId === ctx.session.user.id) {

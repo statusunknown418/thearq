@@ -1,11 +1,10 @@
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { cookies } from "next/headers";
-import { RECENT_W_ID_KEY } from "~/lib/constants";
+import { getRecentWorkspace } from "./viewer";
 
 export const plansRouter = createTRPCRouter({
   getPlan: protectedProcedure.query(async ({ ctx }) => {
-    const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+    const wId = await getRecentWorkspace(ctx.session.user.id);
 
     if (!wId) {
       throw new TRPCError({ code: "UNAUTHORIZED", message: "No workspace selected" });

@@ -31,10 +31,10 @@ import { Textarea } from "~/components/ui/textarea";
 import { Toggle } from "~/components/ui/toggle";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import { computeDuration, dateToMonthDate } from "~/lib/dates";
+import { useHotkeys } from "~/lib/hooks/use-hotkeys";
 import { useCommandsStore } from "~/lib/stores/commands-store";
 import { createFakeEvent, useEventsStore } from "~/lib/stores/events-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
-import { useHotkeys } from "~/lib/hooks/use-hotkeys";
 import { type CustomEvent } from "~/server/api/routers/entries";
 import { timeEntrySchema, type NewTimeEntry } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
@@ -108,12 +108,12 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
 
       if (!workspaceId) return;
 
-      const prev = utils.entries.getByMonth.getData({ workspaceId, monthDate });
+      const prev = utils.entries.getByMonth.getData({ monthDate });
 
       if (!prev || !auth?.user || !workspaceId) return;
 
       clearEvents();
-      return utils.entries.getByMonth.setData({ workspaceId, monthDate }, (oldData) => {
+      return utils.entries.getByMonth.setData({ monthDate }, (oldData) => {
         if (!oldData) return [];
 
         return prev.filter((e) => e.id !== entry.id);
@@ -162,7 +162,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
 
       if (!workspaceId) return;
 
-      const prev = utils.entries.getByMonth.getData({ workspaceId, monthDate });
+      const prev = utils.entries.getByMonth.getData({ monthDate });
 
       if (!prev || !auth?.user || !workspaceId) return;
 
@@ -174,7 +174,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
       });
 
       clearEvents();
-      return utils.entries.getByMonth.setData({ workspaceId, monthDate }, () => [
+      return utils.entries.getByMonth.setData({ monthDate }, () => [
         ...prev,
         computedEvent as CustomEvent,
       ]);

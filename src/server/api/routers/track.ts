@@ -1,11 +1,11 @@
 import { TRPCError } from "@trpc/server";
 import { and, eq, isNull } from "drizzle-orm";
-import { cookies } from "next/headers";
 import { date, minValue, number, object, omit, parse } from "valibot";
-import { RECENT_W_ID_KEY, type Integration } from "~/lib/constants";
+import { type Integration } from "~/lib/constants";
+import { dateToMonthDate } from "~/lib/dates";
 import { timeEntries, timeEntrySchema, timeEntrySelect } from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { dateToMonthDate } from "~/lib/dates";
+import { getRecentWorkspace } from "./viewer";
 
 export const autoTrackerSchema = omit(timeEntrySchema, ["duration", "end", "workspaceId"]);
 export const manualTrackerSchema = omit(timeEntrySchema, ["workspaceId"]);
@@ -14,7 +14,7 @@ export const trackerRouter = createTRPCRouter({
   start: protectedProcedure
     .input((i) => parse(autoTrackerSchema, i))
     .mutation(async ({ ctx, input }) => {
-      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const workspaceId = await getRecentWorkspace(ctx.session.user.id);
       const integrationProvider = input.integrationProvider as Integration | null;
 
       if (!workspaceId) {
@@ -70,7 +70,7 @@ export const trackerRouter = createTRPCRouter({
   stop: protectedProcedure
     .input((i) => parse(object({ id: number(), end: date(), duration: number([minValue(0)]) }), i))
     .mutation(async ({ ctx, input }) => {
-      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const workspaceId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!workspaceId) {
         throw new TRPCError({
@@ -104,13 +104,13 @@ export const trackerRouter = createTRPCRouter({
 
   manual: protectedProcedure
     .input((i) => parse(manualTrackerSchema, i))
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       const {
         session: { user },
       } = ctx;
 
       const integrationProvider = input.integrationProvider as Integration | null;
-      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const workspaceId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!workspaceId) {
         throw new TRPCError({

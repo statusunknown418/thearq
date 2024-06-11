@@ -1,14 +1,13 @@
 import { TRPCError } from "@trpc/server";
-import { cookies } from "next/headers";
+import { and, eq } from "drizzle-orm";
 import { object, parse, string } from "valibot";
-import { RECENT_W_ID_KEY } from "~/lib/constants";
 import { clients, clientsSchema } from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { and, eq } from "drizzle-orm";
+import { getRecentWorkspace } from "./viewer";
 
 export const clientsRouter = createTRPCRouter({
   getByWorkspace: protectedProcedure.query(async ({ ctx }) => {
-    const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+    const workspaceId = await getRecentWorkspace(ctx.session.user.id);
 
     if (!workspaceId) {
       throw new TRPCError({
@@ -24,7 +23,7 @@ export const clientsRouter = createTRPCRouter({
   create: protectedProcedure
     .input((i) => parse(clientsSchema, i))
     .mutation(async ({ ctx, input }) => {
-      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const workspaceId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!workspaceId) {
         throw new TRPCError({
@@ -54,7 +53,7 @@ export const clientsRouter = createTRPCRouter({
       ),
     )
     .query(async ({ ctx, input }) => {
-      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const workspaceId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!workspaceId) {
         throw new TRPCError({
@@ -84,7 +83,7 @@ export const clientsRouter = createTRPCRouter({
   update: protectedProcedure
     .input((i) => parse(clientsSchema, i))
     .mutation(async ({ ctx, input }) => {
-      const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const workspaceId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!workspaceId) {
         throw new TRPCError({

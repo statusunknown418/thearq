@@ -32,3 +32,5 @@ export const USER_WORKSPACE_ROLE = "user-workspace-role";
 export const LIVE_ENTRY_DURATION = -1;
 
 export const VERCEL_REQUEST_LOCATION = "x-vercel-ip-timezone";
+
+export const getRecentWorkspaceRedisKey = (userId: string) => `${userId}:${RECENT_WORKSPACE_KEY}`;

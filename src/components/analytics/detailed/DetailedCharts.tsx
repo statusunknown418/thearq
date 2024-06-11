@@ -8,21 +8,17 @@ import { useAnalyticsQS } from "../summary/params-cache";
 
 export const DetailedCharts = ({
   initialData,
-  workspaceId,
 }: {
-  workspaceId: number;
   initialData: RouterOutputs["viewer"]["getAnalyticsCharts"];
 }) => {
   const [state] = useAnalyticsQS();
 
   const { data, isRefetching } = api.viewer.getAnalyticsCharts.useQuery(
     {
-      workspaceId,
       startDate: state.from,
       endDate: state.to,
     },
     {
-      enabled: !!workspaceId,
       initialData,
       refetchOnReconnect: false,
       refetchOnWindowFocus: false,

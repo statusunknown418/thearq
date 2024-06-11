@@ -1,10 +1,9 @@
-import { object, string } from "zod";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { cookies } from "next/headers";
-import { RECENT_W_ID_KEY } from "~/lib/constants";
 import { TRPCError } from "@trpc/server";
 import { parse } from "valibot";
+import { object, string } from "zod";
 import { invoices, invoicesSchema } from "~/server/db/edge-schema";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { getRecentWorkspace } from "./viewer";
 
 export const invoicesRouter = createTRPCRouter({
   get: protectedProcedure
@@ -15,7 +14,7 @@ export const invoicesRouter = createTRPCRouter({
       }),
     )
     .query(async ({ input, ctx }) => {
-      const wId = cookies().get(RECENT_W_ID_KEY);
+      const wId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!wId) {
         throw new TRPCError({
@@ -39,7 +38,7 @@ export const invoicesRouter = createTRPCRouter({
   create: protectedProcedure
     .input((i) => parse(invoicesSchema, i))
     .mutation(async ({ input, ctx }) => {
-      const wId = cookies().get(RECENT_W_ID_KEY);
+      const wId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!wId) {
         throw new TRPCError({

@@ -1,19 +1,18 @@
 import { createId } from "@paralleldrive/cuid2";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
-import { cookies } from "next/headers";
 import slugify from "slugify";
 import { nullable, number, object, parse, string } from "valibot";
-import { RECENT_W_ID_KEY } from "~/lib/constants";
 import { adminPermissions, memberPermissions } from "~/lib/stores/auth-store";
 import { projects, projectsSchema, usersOnProjects, type Roles } from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
+import { getRecentWorkspace } from "../viewer";
 
 export const baseProjectsRouter = createTRPCRouter({
   getDetails: protectedProcedure
     .input((i) => parse(object({ shareableUrl: string() }), i))
     .query(async ({ ctx, input }) => {
-      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const wId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!input.shareableUrl) {
         throw new TRPCError({
@@ -61,7 +60,7 @@ export const baseProjectsRouter = createTRPCRouter({
       return project;
     }),
   getAll: protectedProcedure.query(async ({ ctx }) => {
-    const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+    const wId = await getRecentWorkspace(ctx.session.user.id);
 
     if (!wId) {
       throw new TRPCError({
@@ -101,7 +100,7 @@ export const baseProjectsRouter = createTRPCRouter({
   create: protectedProcedure
     .input((i) => parse(projectsSchema, i))
     .mutation(async ({ ctx, input }) => {
-      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const wId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!wId) {
         throw new TRPCError({
@@ -168,7 +167,7 @@ export const baseProjectsRouter = createTRPCRouter({
   edit: protectedProcedure
     .input((i) => parse(projectsSchema, i))
     .mutation(async ({ ctx, input }) => {
-      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const wId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!input.id) {
         throw new TRPCError({
@@ -206,7 +205,7 @@ export const baseProjectsRouter = createTRPCRouter({
   delete: protectedProcedure
     .input((i) => parse(object({ id: number() }), i))
     .mutation(async ({ ctx, input }) => {
-      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const wId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!input.id) {
         throw new TRPCError({
@@ -237,7 +236,7 @@ export const baseProjectsRouter = createTRPCRouter({
       ),
     )
     .query(async ({ ctx, input }) => {
-      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const wId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!wId) {
         throw new TRPCError({
@@ -294,7 +293,7 @@ export const baseProjectsRouter = createTRPCRouter({
       ),
     )
     .mutation(async ({ ctx, input }) => {
-      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const wId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!wId) {
         throw new TRPCError({
@@ -350,7 +349,7 @@ export const baseProjectsRouter = createTRPCRouter({
       ),
     )
     .mutation(async ({ ctx, input }) => {
-      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const wId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!wId) {
         throw new TRPCError({
@@ -416,7 +415,7 @@ export const baseProjectsRouter = createTRPCRouter({
     .input((i) => parse(object({ userId: string(), projectId: number() }), i))
 
     .mutation(async ({ ctx, input }) => {
-      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const wId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!wId) {
         throw new TRPCError({
@@ -468,7 +467,7 @@ export const baseProjectsRouter = createTRPCRouter({
       ),
     )
     .query(async ({ ctx, input }) => {
-      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const wId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!wId) {
         throw new TRPCError({

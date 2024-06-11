@@ -6,6 +6,8 @@ import { Button } from "~/components/ui/button";
 import { KBD } from "~/components/ui/kbd";
 import { Loader } from "~/components/ui/loader";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
+import { dateToMonthDate } from "~/lib/dates";
+import { useHotkeys } from "~/lib/hooks/use-hotkeys";
 import {
   computeMonthDays,
   header,
@@ -13,18 +15,14 @@ import {
   toPrevMonthDate,
   useDynamicMonthStore,
 } from "~/lib/stores/dynamic-dates-store";
-import { useHotkeys } from "~/lib/hooks/use-hotkeys";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 import { DateCell } from "./DateCell";
-import { dateToMonthDate } from "~/lib/dates";
 
 export const EntriesViews = ({
-  workspaceId,
   initialData,
 }: {
-  workspaceId: number;
   initialData: RouterOutputs["entries"]["getSummary"];
 }) => {
   const month = useDynamicMonthStore((s) => s.month);
@@ -40,7 +38,6 @@ export const EntriesViews = ({
 
   const { data, isLoading } = api.entries.getSummary.useQuery(
     {
-      workspaceId,
       monthDate: dateToMonthDate(month),
     },
     {

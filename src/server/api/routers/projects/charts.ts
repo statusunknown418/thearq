@@ -1,11 +1,10 @@
 import { TRPCError } from "@trpc/server";
 import { addDays, differenceInDays, endOfMonth, startOfMonth } from "date-fns";
 import { format } from "date-fns-tz";
-import { cookies } from "next/headers";
 import { number, object, parse, string } from "valibot";
-import { RECENT_W_ID_KEY } from "~/lib/constants";
 import { adjustEndDate as adjustedEndDate, secondsToHoursDecimal } from "~/lib/dates";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
+import { getRecentWorkspace } from "../viewer";
 
 export const chartsRouter = createTRPCRouter({
   getRevenueCharts: protectedProcedure
@@ -20,7 +19,7 @@ export const chartsRouter = createTRPCRouter({
       ),
     )
     .query(async ({ ctx, input }) => {
-      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const wId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!wId) {
         throw new TRPCError({
@@ -174,7 +173,7 @@ export const chartsRouter = createTRPCRouter({
       ),
     )
     .query(async ({ ctx, input }) => {
-      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const wId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!wId) {
         throw new TRPCError({
@@ -308,7 +307,7 @@ export const chartsRouter = createTRPCRouter({
       ),
     )
     .query(async ({ ctx, input }) => {
-      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const wId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!wId) {
         throw new TRPCError({
@@ -379,7 +378,7 @@ export const chartsRouter = createTRPCRouter({
       ),
     )
     .query(async ({ ctx, input }) => {
-      const wId = cookies().get(RECENT_W_ID_KEY)?.value;
+      const wId = await getRecentWorkspace(ctx.session.user.id);
 
       if (!wId) {
         throw new TRPCError({
