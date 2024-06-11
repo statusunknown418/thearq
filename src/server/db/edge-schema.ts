@@ -382,7 +382,7 @@ export const projects = sqliteTable(
     identifier: text("identifier"),
     type: text("type", { enum: projectTypes }).notNull().default("hourly"),
     budgetHours: int("budget"),
-    budgetResetsPerMonth: int("budgetResetsPerMonth", { mode: "boolean" }).default(true),
+    budgetResetsPerMonth: int("budgetResetsPerMonth", { mode: "boolean" }).default(false),
     projectHourlyRate: int("projectHourlyRate"),
     ownerId: text("ownerId").notNull(),
     startsAt: integer("startsAt", { mode: "timestamp" }),
