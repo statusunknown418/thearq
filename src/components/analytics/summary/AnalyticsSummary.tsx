@@ -149,7 +149,7 @@ export const AnalyticsSummary = ({
           </div>
         </Card>
 
-        <Card className="relative flex max-w-full items-center justify-center gap-4">
+        <Card className="relative flex items-center justify-center gap-4">
           <Button variant={"link"} size={"sm"} asChild>
             <Link href="./projects" className="absolute right-4 top-4">
               All projects <PiArrowRight />
@@ -163,7 +163,7 @@ export const AnalyticsSummary = ({
             valueFormatter={(v) => `${v.toFixed(2)} hours`}
             category="duration"
             index="name"
-            className="z-10 w-64"
+            className="z-10 w-52"
             colors={["blue", "cyan", "indigo", "violet", "fuchsia"]}
             noDataText={`No projects tracked for this period.`}
           />

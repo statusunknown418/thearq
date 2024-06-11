@@ -26,15 +26,11 @@ const LazCalendarWrapperRSC = dynamic(() =>
 export default function WorkspaceTrackerPage() {
   return (
     <Main>
-      <PageHeader className="items-start">
-        <TrackerTrigger />
+      <PageHeader>
+        <section className="flex flex-grow items-center gap-3">
+          <TrackerTrigger />
 
-        <section className="flex flex-grow gap-2">
-          <div className="flex flex-col gap-0.5">
-            <h1 className="text-xl font-semibold">Tracker</h1>
-
-            <p className="text-muted-foreground">Here&apos;s an overview of your time entries</p>
-          </div>
+          <h1 className="text-lg font-semibold">Tracker</h1>
         </section>
 
         <Suspense fallback={<LiveEntryWrapperLoading />}>

@@ -128,10 +128,7 @@ export const StartLiveEntry = ({
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={handleSubmit}
-        className="ml-auto flex items-center gap-2 self-center rounded-2xl bg-secondary p-2 shadow dark:border"
-      >
+      <form onSubmit={handleSubmit} className="ml-auto flex items-center gap-2 self-center">
         <TooltipProvider delayDuration={0}>
           <Tooltip>
             <TooltipTrigger asChild>

@@ -28,12 +28,7 @@ export default function WorkspaceDashboardPage({
   return (
     <Main>
       <PageHeader>
-        <div>
-          <h1 className="text-xl font-bold">Workspace overview</h1>
-          <p className="text-muted-foreground">
-            The most important metrics for your workspace, all in one place, at a glance.
-          </p>
-        </div>
+        <h1 className="text-lg font-semibold">Workspace overview</h1>
 
         <DashboardRangeSelector />
       </PageHeader>

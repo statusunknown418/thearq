@@ -61,6 +61,7 @@ export const columns: ColumnDef<TeamTableColumn>[] = [
   },
   {
     id: "name",
+    size: 400,
     accessorFn: (row) => row.user.name,
     header: "Name",
     cell: ({ row }) => {
@@ -72,6 +73,15 @@ export const columns: ColumnDef<TeamTableColumn>[] = [
     },
   },
   {
+    id: "email",
+    accessorFn: (row) => row.user.email,
+    header: () => <span className="text-left">Email</span>,
+    cell: ({ row }) => (
+      <span className="text-left text-muted-foreground">{row.getValue("email")}</span>
+    ),
+    maxSize: 300,
+  },
+  {
     accessorKey: "role",
     header: "Role",
     cell: ({ row }) => (
@@ -81,17 +91,9 @@ export const columns: ColumnDef<TeamTableColumn>[] = [
     ),
   },
   {
-    id: "email",
-    accessorFn: (row) => row.user.email,
-    header: () => <span className="text-left">Email</span>,
-    cell: ({ row }) => (
-      <span className="text-left text-muted-foreground">{row.getValue("email")}</span>
-    ),
-    maxSize: 250,
-  },
-  {
     accessorKey: "defaultWeekCapacity",
     header: "Week Capacity",
+    size: 60,
     cell: ({ row }) => (
       <Badge className="tabular-nums">
         {row.getValue("defaultWeekCapacity") === null ? (
@@ -106,8 +108,6 @@ export const columns: ColumnDef<TeamTableColumn>[] = [
   {
     accessorKey: "defaultBillableRate",
     header: "Billable Rate",
-    size: 200,
-    minSize: 180,
     cell: ({ row }) => (
       <span className="font-semibold tabular-nums">
         {parseCompactCurrency(row.getValue("defaultBillableRate"))}

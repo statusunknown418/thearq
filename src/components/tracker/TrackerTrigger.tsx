@@ -13,8 +13,8 @@ export const TrackerTrigger = () => {
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button size={"icon"} subSize={"iconLg"} onClick={() => setOpen("auto-tracker")}>
-            <PiTimerDuotone size={24} />
+          <Button size={"icon"} subSize={"iconBase"} onClick={() => setOpen("auto-tracker")}>
+            <PiTimerDuotone size={20} />
           </Button>
         </TooltipTrigger>
 

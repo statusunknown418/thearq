@@ -85,10 +85,10 @@ export const ProjectRevenueCharts = ({
           <p className="text-muted-foreground">Detailed profits & costs</p>
 
           <div className="mt-2 flex items-center gap-4">
-            <p className="text-tremor-metric font-semibold text-emerald-500">
+            <p className="text-tremor-metric font-semibold text-emerald-600 dark:text-emerald-500">
               {parseCompactCurrency(data.revenue)}
             </p>
-            <p className="text-tremor-metric font-semibold text-red-500">
+            <p className="text-tremor-metric font-semibold text-red-600 dark:text-red-500">
               {parseCompactCurrency(data.cost)}
             </p>
           </div>
@@ -112,8 +112,8 @@ export const ProjectRevenueCharts = ({
                 "flex items-center gap-1",
                 data.revenue && data.grossRevenue
                   ? data.revenue > data.cost
-                    ? "text-emerald-500"
-                    : "text-red-500"
+                    ? "text-emerald-600"
+                    : "text-red-600"
                   : "text-muted-foreground",
               )}
             >
@@ -123,7 +123,7 @@ export const ProjectRevenueCharts = ({
                 <PiTrendDownBold size={15} />
               )}
               {data.revenue && data.grossRevenue
-                ? `${parseNumber((data.revenue / data.grossRevenue) * 100)}%`
+                ? `${parseNumber((data.grossRevenue / data.revenue) * 100)}%`
                 : "N/A"}{" "}
               {data.revenue && data.grossRevenue
                 ? data.cost > data.revenue

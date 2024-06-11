@@ -13,15 +13,7 @@ export default function WorkspaceProjectsPage() {
       <PageHeader>
         <ProjectTrigger />
 
-        <div className="flex gap-2">
-          <div className="flex flex-col gap-0.5">
-            <h1 className="text-xl font-bold">Projects</h1>
-
-            <p className="text-muted-foreground">
-              Manage your client projects and team members all in one place.
-            </p>
-          </div>
-        </div>
+        <h1 className="text-lg font-semibold">Projects</h1>
       </PageHeader>
 
       <Suspense fallback={<ProjectsListLoading />}>

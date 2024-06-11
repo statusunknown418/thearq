@@ -9,7 +9,6 @@ import {
   InvitationWrapperRSC,
 } from "~/components/team/invite/invitation-wrapper";
 import { TeamTableLoading, TeamTableWrapperRSC } from "~/components/team/table/table-wrapper";
-import { Button } from "~/components/ui/button";
 import { routes } from "~/lib/navigation";
 
 export default function WorkspacePeoplePage({ params }: { params: unknown }) {
@@ -17,20 +16,10 @@ export default function WorkspacePeoplePage({ params }: { params: unknown }) {
 
   return (
     <Main>
-      <PageHeader className="items-start">
-        <Button size={"icon"} subSize={"iconLg"}>
-          <PiUsersDuotone size={20} />
-        </Button>
+      <PageHeader>
+        <PiUsersDuotone size={24} className="text-indigo-500" />
 
-        <section className="flex gap-2">
-          <div className="flex flex-col gap-0.5">
-            <h1 className="text-xl font-semibold">Team</h1>
-
-            <p className="text-muted-foreground">
-              Manage team rates, internal costs and invite more people to your workspace.
-            </p>
-          </div>
-        </section>
+        <h1 className="text-lg font-semibold">Team</h1>
       </PageHeader>
 
       <Suspense fallback={<TeamTableLoading />}>

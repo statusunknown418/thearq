@@ -13,7 +13,7 @@ export const ProjectTrigger = () => {
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button size={"icon"} subSize={"iconLg"} onClick={() => setCommand("new-project")}>
+          <Button size={"icon"} onClick={() => setCommand("new-project")}>
             <PiKanbanDuotone size={20} />
           </Button>
         </TooltipTrigger>

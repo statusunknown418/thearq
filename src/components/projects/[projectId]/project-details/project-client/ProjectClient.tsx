@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { PiArrowLeft, PiTriangleDuotone, PiUserCircleDashed, PiUserDuotone } from "react-icons/pi";
+import { PiArrowLeft, PiUserCircleDashed, PiUserDuotone } from "react-icons/pi";
 import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -93,9 +93,7 @@ export const ProjectClientDetails = ({
   }
 
   return (
-    <div className="relative flex h-max flex-col gap-6 rounded-lg border p-5 shadow-lg shadow-black/50">
-      <PiTriangleDuotone size={18} className="absolute -left-4 top-[30%] -rotate-90 text-border" />
-
+    <div className="relative flex h-max flex-col gap-6 rounded-lg border bg-secondary-background p-5">
       <div className="flex items-center justify-between">
         <Badge variant={"secondary"} className="w-max tracking-wide  text-muted-foreground">
           <PiUserDuotone size={15} />

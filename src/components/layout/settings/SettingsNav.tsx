@@ -16,7 +16,7 @@ export const SettingsNav = ({ role }: { role: Roles }) => {
 
   return (
     <aside className="min-w-[200px] border-r text-xs">
-      <ul className="grid grid-cols-1 gap-4 p-4">
+      <ul className="grid grid-cols-1 gap-4 px-4 py-2">
         {role === "admin" && (
           <>
             <ul className="flex flex-col gap-1 *:ml-3">

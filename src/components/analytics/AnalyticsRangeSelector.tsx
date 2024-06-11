@@ -137,7 +137,7 @@ export function AnalyticsRangeSelector() {
   }, [state.from, state.to]);
 
   return (
-    <article className="ml-auto flex items-center gap-0 self-start">
+    <article className="ml-auto flex items-center gap-0">
       <Button
         variant="outline"
         size={"icon"}

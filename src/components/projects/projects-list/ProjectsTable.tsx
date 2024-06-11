@@ -47,8 +47,7 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
   {
     id: "identifier",
     header: "Identifier",
-    size: 20,
-    maxSize: 20,
+    size: 60,
     accessorFn: (row) => row.project.identifier,
     cell: ({ row }) => {
       return (
@@ -61,14 +60,14 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
   {
     id: "name",
     header: "Name",
-    maxSize: 200,
+    size: 300,
     accessorFn: (row) => row.project.name,
     cell: ({ row }) => {
       return (
         <TooltipProvider delayDuration={0}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <p className="max-w-[20ch] justify-start overflow-hidden text-ellipsis whitespace-nowrap px-0 text-sm font-medium text-indigo-500 dark:text-indigo-400">
+              <p className="max-w-[40ch] justify-start overflow-hidden text-ellipsis whitespace-nowrap px-0 text-sm font-medium text-indigo-500 dark:text-indigo-400">
                 {row.getValue("name")}
               </p>
             </TooltipTrigger>
@@ -98,7 +97,7 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
         <TooltipProvider delayDuration={0}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <p className="min-w-max max-w-[20ch] justify-start overflow-hidden text-ellipsis whitespace-nowrap px-0 text-sm font-medium text-emerald-500 dark:text-emerald-400">
+              <p className="min-w-max max-w-[20ch] justify-start overflow-hidden text-ellipsis whitespace-nowrap px-0 text-sm">
                 {row.original.project.client?.name ?? "No client"}
               </p>
             </TooltipTrigger>
@@ -153,7 +152,7 @@ const columns: ColumnDef<ProjectsTableColumn>[] = [
     cell: ({ row }) => (
       <Badge
         variant={row.original.project.type === "hourly" ? "default" : "secondary"}
-        className="text-xs font-normal"
+        className="text-xs font-medium"
       >
         {row.getValue("type")}
       </Badge>
@@ -287,7 +286,11 @@ export const ProjectsTable = ({
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} className="px-4">
+                  <TableHead
+                    key={header.id}
+                    className="px-4"
+                    style={{ width: `${header.column.getSize()}px` }}
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(header.column.columnDef.header, header.getContext())}

@@ -126,14 +126,16 @@ export const Totals = ({ initialData }: { initialData: RouterOutputs["entries"][
                 <div className="flex items-center gap-1">
                   <div
                     className="mr-1 h-2.5 w-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: p.color || "#fff" }}
+                    style={{ backgroundColor: p.color || "#000" }}
                   />
                   <p>{p.project}</p>
                   <p className="text-base">&middot;</p>
                   <p>{p.client ?? "No client"}</p>
                 </div>
 
-                <span>{secondsToHoursDecimal(p.duration).toFixed(2)} h</span>
+                <span className="text-foreground">
+                  {secondsToHoursDecimal(p.duration).toFixed(2)} h
+                </span>
               </ListItem>
             ))}
           </List>

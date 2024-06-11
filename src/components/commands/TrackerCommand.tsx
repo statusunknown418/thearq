@@ -259,6 +259,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
 
             <div className="mt-2 flex flex-wrap justify-between gap-4">
               <FormField
+                control={form.control}
                 name="description"
                 render={({ field }) => (
                   <FormItem className="flex-grow">
