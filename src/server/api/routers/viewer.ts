@@ -4,7 +4,7 @@ import { addDays, differenceInDays, format } from "date-fns";
 import { cookies } from "next/headers";
 import { Octokit } from "octokit";
 import { object, z } from "zod";
-import { INTEGRATIONS, RECENT_W_ID_KEY } from "~/lib/constants";
+import { INTEGRATIONS, RECENT_WORKSPACE_KEY, RECENT_W_ID_KEY } from "~/lib/constants";
 import { adjustEndDate, secondsToHoursDecimal } from "~/lib/dates";
 import { redis } from "~/server/upstash";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
@@ -186,13 +186,28 @@ export const viewerRouter = createTRPCRouter({
   getAnalyticsMetrics: protectedProcedure
     .input(
       object({
-        workspaceId: z.number(),
         from: z.string().optional(),
         to: z.string().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
       const workspaceId = cookies().get(RECENT_W_ID_KEY)?.value;
+
+      const t1 = performance.now();
+      const recentId = await ctx.db.query.users.findFirst({
+        where: (t, op) => op.eq(t.id, ctx.session.user.id),
+        columns: {
+          recentWId: true,
+        },
+      });
+      const t2 = performance.now();
+
+      console.log("dbQuery", t2 - t1);
+
+      const redisRecent = await redis.get(`${ctx.session.user.id}:${RECENT_WORKSPACE_KEY}`);
+      const t3 = performance.now();
+
+      console.log("redis", t3 - t2);
 
       if (!workspaceId) {
         throw new TRPCError({
@@ -202,13 +217,13 @@ export const viewerRouter = createTRPCRouter({
       }
 
       const workspacePromise = ctx.db.query.workspaces.findFirst({
-        where: (t, op) => op.and(op.eq(t.id, input.workspaceId)),
+        where: (t, op) => op.and(op.eq(t.id, Number(workspaceId))),
       });
 
       const summaryPromise = ctx.db.query.timeEntries.findMany({
         where: (t, op) => {
           return op.and(
-            op.eq(t.workspaceId, input.workspaceId),
+            op.eq(t.workspaceId, Number(workspaceId)),
             op.eq(t.userId, ctx.session.user.id),
             input.from ? op.gte(t.start, new Date(input.from)) : undefined,
             input.to ? op.lte(t.start, adjustEndDate(input.to)) : undefined,
@@ -240,7 +255,7 @@ export const viewerRouter = createTRPCRouter({
         where: (t, op) => {
           return op.and(
             op.eq(t.userId, ctx.session.user.id),
-            op.eq(t.workspaceId, input.workspaceId),
+            op.eq(t.workspaceId, Number(workspaceId)),
           );
         },
       });

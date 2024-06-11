@@ -30,42 +30,40 @@ export const workspacesRouter = createTRPCRouter({
             ? input.image
             : `https://api.dicebear.com/7.x/initials/svg?seed=${input.name}`;
 
-        const workspace = await ctx.db.transaction(async (trx) => {
-          const [w] = await trx
-            .insert(workspaces)
-            .values({
-              name: input.name,
-              createdById: ctx.session.user.id,
-              inviteLink: createWorkspaceInviteLink(slug, inviteId),
-              slug,
-              image,
-            })
-            .returning()
-            .execute();
+        const [w] = await ctx.db
+          .insert(workspaces)
+          .values({
+            name: input.name,
+            createdById: ctx.session.user.id,
+            inviteLink: createWorkspaceInviteLink(slug, inviteId),
+            slug,
+            image,
+          })
+          .returning()
+          .execute();
 
-          if (!w?.id) {
-            trx.rollback();
-            return;
-          }
-
-          await trx.insert(usersOnWorkspaces).values({
-            workspaceId: w.id,
-            active: true,
-            allowedToSeeDetails: true,
-            userId: ctx.session.user.id,
-            role: "admin",
-            permissions: JSON.stringify(adminPermissions),
-            /**
-             * @description Only valid when the user is the one creating a workspace
-             * member invitations rely on permissions/role and will NOT be owners
-             */
-            owner: true,
+        if (!w?.id) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to create relation",
           });
+        }
 
-          return w;
+        await ctx.db.insert(usersOnWorkspaces).values({
+          workspaceId: w.id,
+          active: true,
+          allowedToSeeDetails: true,
+          userId: ctx.session.user.id,
+          role: "admin",
+          permissions: JSON.stringify(adminPermissions),
+          /**
+           * @description Only valid when the user is the one creating a workspace
+           * member invitations rely on permissions/role and will NOT be owners
+           */
+          owner: true,
         });
 
-        if (!workspace) {
+        if (!w) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: "Failed to create workspace",
@@ -74,7 +72,7 @@ export const workspacesRouter = createTRPCRouter({
 
         return {
           success: true,
-          workspace,
+          workspace: w,
           role: "admin",
           permissions: adminPermissions,
         };
@@ -213,17 +211,23 @@ export const workspacesRouter = createTRPCRouter({
         sameSite: "lax",
       });
 
+      const t1 = performance.now();
       await ctx.db
         .update(users)
         .set({
           recentWId: input.workspaceId,
         })
         .where(eq(users.id, ctx.session.user.id));
+      const t2 = performance.now();
 
+      const t3 = performance.now();
       await redis.set(
         `${ctx.session.user.id}:${RECENT_WORKSPACE_KEY}`,
         input.workspaceId.toString(),
       );
+      const t4 = performance.now();
+
+      console.log("db", t2 - t1, "redis", t4 - t3);
 
       return {
         success: true,

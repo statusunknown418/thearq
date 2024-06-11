@@ -25,22 +25,18 @@ export const AnalyticsSummaryLoading = () => {
 
 export const AnalyticsSummary = ({
   initialData,
-  workspaceId,
 }: {
   initialData: RouterOutputs["viewer"]["getAnalyticsMetrics"];
-  workspaceId: number;
 }) => {
   const [state] = useAnalyticsQS();
 
   const { data, isRefetching, isLoading } = api.viewer.getAnalyticsMetrics.useQuery(
     {
-      workspaceId: workspaceId,
       from: state.from,
       to: state.to,
     },
     {
       initialData,
-      enabled: !!workspaceId,
       refetchOnReconnect: false,
       refetchOnWindowFocus: false,
     },

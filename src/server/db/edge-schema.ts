@@ -314,7 +314,6 @@ export const timeEntries = sqliteTable(
   (t) => ({
     userIdIdx: index("timeEntries_userId_idx").on(t.userId),
     workspaceIdIdx: index("timeEntries_workspaceId_idx").on(t.workspaceId),
-    durationIdx: index("timeEntries_duration_idx").on(t.duration),
     trackedAtIdx: index("timeEntries_trackedAt_idx").on(t.trackedAt),
     startIdx: index("timeEntries_start_idx").on(t.start),
     endIdx: index("timeEntries_end_idx").on(t.end),
