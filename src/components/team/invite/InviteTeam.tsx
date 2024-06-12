@@ -1,11 +1,11 @@
 "use client";
-import { valibotResolver } from "@hookform/resolvers/valibot";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusIcon, TrashIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { PiArrowsClockwise, PiLinkDuotone, PiPaperPlaneTilt } from "react-icons/pi";
 import { toast } from "sonner";
-import { type Output } from "valibot";
+import { type z } from "zod";
 import { Button } from "~/components/ui/button";
 import { CopyButton } from "~/components/ui/copy-button";
 import {
@@ -64,8 +64,8 @@ export const InviteTeam = ({
     form.reset();
   };
 
-  const form = useForm<Output<typeof sendInviteSchema>>({
-    resolver: valibotResolver(sendInviteSchema),
+  const form = useForm<z.infer<typeof sendInviteSchema>>({
+    resolver: zodResolver(sendInviteSchema),
     defaultValues: {
       userEmails: [
         {

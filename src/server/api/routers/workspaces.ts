@@ -4,7 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import slugify from "slugify";
-import { number, object, parse, string } from "valibot";
+import { z } from "zod";
 import {
   RECENT_WORKSPACE_KEY,
   RECENT_W_ID_KEY,
@@ -25,67 +25,65 @@ import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { getRecentWorkspace } from "./viewer";
 
 export const workspacesRouter = createTRPCRouter({
-  new: protectedProcedure
-    .input((i) => parse(createWorkspaceSchema, i))
-    .mutation(async ({ ctx, input }) => {
-      try {
-        const slug = slugify(input.slug, { lower: true });
-        const inviteId = createId();
-        const image =
-          input.image.length > 0
-            ? input.image
-            : `https://api.dicebear.com/7.x/initials/svg?seed=${input.name}`;
+  new: protectedProcedure.input(createWorkspaceSchema).mutation(async ({ ctx, input }) => {
+    try {
+      const slug = slugify(input.slug, { lower: true });
+      const inviteId = createId();
+      const image =
+        input.image.length > 0
+          ? input.image
+          : `https://api.dicebear.com/7.x/initials/svg?seed=${input.name}`;
 
-        const [w] = await ctx.db
-          .insert(workspaces)
-          .values({
-            name: input.name,
-            createdById: ctx.session.user.id,
-            inviteLink: createWorkspaceInviteLink(slug, inviteId),
-            slug,
-            image,
-          })
-          .returning()
-          .execute();
+      const [w] = await ctx.db
+        .insert(workspaces)
+        .values({
+          name: input.name,
+          createdById: ctx.session.user.id,
+          inviteLink: createWorkspaceInviteLink(slug, inviteId),
+          slug,
+          image,
+        })
+        .returning()
+        .execute();
 
-        if (!w?.id) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to create relation",
-          });
-        }
-
-        await ctx.db.insert(usersOnWorkspaces).values({
-          workspaceId: w.id,
-          active: true,
-          allowedToSeeDetails: true,
-          userId: ctx.session.user.id,
-          role: "admin",
-          permissions: JSON.stringify(adminPermissions),
-          /**
-           * @description Only valid when the user is the one creating a workspace
-           * member invitations rely on permissions/role and will NOT be owners
-           */
-          owner: true,
+      if (!w?.id) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create relation",
         });
-
-        if (!w) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to create workspace",
-          });
-        }
-
-        return {
-          success: true,
-          workspace: w,
-          role: "admin",
-          permissions: adminPermissions,
-        };
-      } catch (e) {
-        throw e;
       }
-    }),
+
+      await ctx.db.insert(usersOnWorkspaces).values({
+        workspaceId: w.id,
+        active: true,
+        allowedToSeeDetails: true,
+        userId: ctx.session.user.id,
+        role: "admin",
+        permissions: JSON.stringify(adminPermissions),
+        /**
+         * @description Only valid when the user is the one creating a workspace
+         * member invitations rely on permissions/role and will NOT be owners
+         */
+        owner: true,
+      });
+
+      if (!w) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create workspace",
+        });
+      }
+
+      return {
+        success: true,
+        workspace: w,
+        role: "admin",
+        permissions: adminPermissions,
+      };
+    } catch (e) {
+      throw e;
+    }
+  }),
   get: protectedProcedure.query(({ ctx }) => {
     return ctx.db.query.usersOnWorkspaces.findMany({
       where: (t, op) => op.eq(t.userId, ctx.session.user.id),
@@ -95,13 +93,10 @@ export const workspacesRouter = createTRPCRouter({
     });
   }),
   getBySlug: protectedProcedure
-    .input((i) =>
-      parse(
-        object({
-          slug: string(),
-        }),
-        i,
-      ),
+    .input(
+      z.object({
+        slug: z.string(),
+      }),
     )
     .query(async ({ ctx, input }) => {
       const workspaceId = await getRecentWorkspace(ctx.session.user.id);
@@ -148,13 +143,10 @@ export const workspacesRouter = createTRPCRouter({
       };
     }),
   getPermissions: protectedProcedure
-    .input((i) =>
-      parse(
-        object({
-          slug: string(),
-        }),
-        i,
-      ),
+    .input(
+      z.object({
+        slug: z.string(),
+      }),
     )
     .query(async ({ ctx }) => {
       const workspace = await ctx.db.query.users.findFirst({
@@ -195,14 +187,11 @@ export const workspacesRouter = createTRPCRouter({
       };
     }),
   setRecent: protectedProcedure
-    .input((i) =>
-      parse(
-        object({
-          workspaceSlug: string(),
-          workspaceId: number(),
-        }),
-        i,
-      ),
+    .input(
+      z.object({
+        workspaceSlug: z.string(),
+        workspaceId: z.number(),
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const cookiesStore = cookies();
@@ -227,13 +216,10 @@ export const workspacesRouter = createTRPCRouter({
       };
     }),
   rotateInviteLink: protectedProcedure
-    .input((i) =>
-      parse(
-        object({
-          workspaceSlug: string(),
-        }),
-        i,
-      ),
+    .input(
+      z.object({
+        workspaceSlug: z.string(),
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const workspace = await ctx.db.query.workspaces.findFirst({
@@ -268,14 +254,11 @@ export const workspacesRouter = createTRPCRouter({
       };
     }),
   acceptInvitation: protectedProcedure
-    .input((i) =>
-      parse(
-        object({
-          userEmail: string(),
-          workspaceSlug: string(),
-        }),
-        i,
-      ),
+    .input(
+      z.object({
+        userEmail: z.string(),
+        workspaceSlug: z.string(),
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const workspace = await ctx.db.query.workspaces.findFirst({
@@ -364,13 +347,10 @@ export const workspacesRouter = createTRPCRouter({
       };
     }),
   getInvitationDetails: publicProcedure
-    .input((i) =>
-      parse(
-        object({
-          link: string(),
-        }),
-        i,
-      ),
+    .input(
+      z.object({
+        link: z.string(),
+      }),
     )
     .query(async ({ ctx, input }) => {
       const invite = await ctx.db.query.workspaces.findFirst({
@@ -397,7 +377,7 @@ export const workspacesRouter = createTRPCRouter({
     }),
 
   updateMemberDetails: protectedProcedure
-    .input((i) => parse(usersOnWorkspacesSchema, i))
+    .input(usersOnWorkspacesSchema)
     .mutation(async ({ ctx, input }) => {
       const workspaceId = await getRecentWorkspace(ctx.session.user.id);
 

@@ -1,5 +1,5 @@
 "use client";
-import { valibotResolver } from "@hookform/resolvers/valibot";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { PiArrowLeft } from "react-icons/pi";
@@ -47,7 +47,7 @@ export const ProjectHeader = ({
   );
 
   const form = useForm<ProjectSchema>({
-    resolver: valibotResolver(projectsSchema),
+    resolver: zodResolver(projectsSchema),
     defaultValues: {
       id: data?.id,
       name: data?.name,

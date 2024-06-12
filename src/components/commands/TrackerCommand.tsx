@@ -1,9 +1,8 @@
-import { valibotResolver } from "@hookform/resolvers/valibot";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { addHours } from "date-fns";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import {
   PiArrowRight,
@@ -68,7 +67,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
   const setOpen = useCommandsStore((s) => s.setCommand);
   const clear = useCommandsStore((s) => s.clear);
   const clearEvents = useEventsStore((s) => s.clear);
-  const workspaceId = useWorkspaceStore((s) => s.active?.id);
+  const workspaceId = useWorkspaceStore((s) => s.active)?.id;
 
   const { data: auth } = useSession({
     required: true,
@@ -89,7 +88,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
   };
 
   const form = useForm<NewTimeEntry>({
-    resolver: valibotResolver(timeEntrySchema),
+    resolver: zodResolver(timeEntrySchema),
     defaultValues: !!defaultValues
       ? defaultValues
       : {
@@ -170,7 +169,7 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
         end: input.end ?? null,
         start: input.start,
         auth: auth.user,
-        workspaceId,
+        workspaceId: workspaceId,
       });
 
       clearEvents();
@@ -226,12 +225,6 @@ export const TrackerCommand = ({ defaultValues }: { defaultValues?: CustomEvent 
     clear();
     form.reset({});
   });
-
-  useEffect(() => {
-    if (workspaceId) {
-      form.setValue("workspaceId", workspaceId);
-    }
-  }, [form, workspaceId]);
 
   useHotkeys(
     [

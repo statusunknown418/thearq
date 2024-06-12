@@ -87,6 +87,5 @@ export const createFakeEvent = (
     end: new Date(),
     monthDate: "",
     description: "",
-    workspaceId,
   } satisfies NewTimeEntry;
 };

@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
-import { object, parse, string } from "valibot";
+import { z } from "zod";
 import { clients, clientsSchema } from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { getRecentWorkspace } from "./viewer";
@@ -20,38 +20,29 @@ export const clientsRouter = createTRPCRouter({
       where: (t, op) => op.eq(t.workspaceId, Number(workspaceId)),
     });
   }),
-  create: protectedProcedure
-    .input((i) => parse(clientsSchema, i))
-    .mutation(async ({ ctx, input }) => {
-      const workspaceId = await getRecentWorkspace(ctx.session.user.id);
+  create: protectedProcedure.input(clientsSchema).mutation(async ({ ctx, input }) => {
+    const workspaceId = await getRecentWorkspace(ctx.session.user.id);
 
-      if (!workspaceId) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "No workspace selected",
-        });
-      }
+    if (!workspaceId) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "No workspace selected",
+      });
+    }
 
-      const [newClient] = await ctx.db
-        .insert(clients)
-        .values({
-          ...input,
-          workspaceId: Number(workspaceId),
-        })
-        .returning();
+    const [newClient] = await ctx.db
+      .insert(clients)
+      .values({
+        ...input,
+        workspaceId: Number(workspaceId),
+      })
+      .returning();
 
-      return newClient;
-    }),
+    return newClient;
+  }),
 
   getByProject: protectedProcedure
-    .input((i) =>
-      parse(
-        object({
-          shareableId: string(),
-        }),
-        i,
-      ),
-    )
+    .input(z.object({ shareableId: z.string() }))
     .query(async ({ ctx, input }) => {
       const workspaceId = await getRecentWorkspace(ctx.session.user.id);
 
@@ -80,30 +71,28 @@ export const clientsRouter = createTRPCRouter({
       return project.client;
     }),
 
-  update: protectedProcedure
-    .input((i) => parse(clientsSchema, i))
-    .mutation(async ({ ctx, input }) => {
-      const workspaceId = await getRecentWorkspace(ctx.session.user.id);
+  update: protectedProcedure.input(clientsSchema).mutation(async ({ ctx, input }) => {
+    const workspaceId = await getRecentWorkspace(ctx.session.user.id);
 
-      if (!workspaceId) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "No workspace selected",
-        });
-      }
+    if (!workspaceId) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "No workspace selected",
+      });
+    }
 
-      if (!input.id) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Client ID is required",
-        });
-      }
+    if (!input.id) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Client ID is required",
+      });
+    }
 
-      const updatedClient = await ctx.db
-        .update(clients)
-        .set(input)
-        .where(and(eq(clients.id, input.id), eq(clients.workspaceId, Number(workspaceId))));
+    const updatedClient = await ctx.db
+      .update(clients)
+      .set(input)
+      .where(and(eq(clients.id, input.id), eq(clients.workspaceId, Number(workspaceId))));
 
-      return updatedClient;
-    }),
+    return updatedClient;
+  }),
 });

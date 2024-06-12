@@ -1,6 +1,6 @@
 "use client";
 
-import { valibotResolver } from "@hookform/resolvers/valibot";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { invoicesSchema, type InvoiceSchema } from "~/server/db/edge-schema";
 import { Form } from "../ui/form";
@@ -24,7 +24,7 @@ export const InvoiceForm = () => {
   });
 
   const form = useForm<InvoiceSchema>({
-    resolver: valibotResolver(invoicesSchema),
+    resolver: zodResolver(invoicesSchema),
     defaultValues: {
       clientId: client ?? undefined,
       includeHours: "all",
@@ -49,7 +49,7 @@ export const InvoiceForm = () => {
   return (
     <Form {...form}>
       <section className="grid h-full grid-cols-1 gap-4">
-        <form className="col-span-3 flex  flex-col gap-4" onSubmit={onSubmit}>
+        <form className="col-span-3 flex flex-col gap-4" onSubmit={onSubmit}>
           <Stepper />
 
           {renderers[step as keyof typeof renderers]}

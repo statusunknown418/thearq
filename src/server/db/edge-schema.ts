@@ -1,25 +1,8 @@
 import { relations } from "drizzle-orm";
 import { index, int, integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { createInsertSchema } from "drizzle-valibot";
+import { createInsertSchema as zodInsertSchema } from "drizzle-zod";
 import { type AdapterAccount } from "next-auth/adapters";
-import {
-  array,
-  coerce,
-  custom,
-  email,
-  forward,
-  literal,
-  maxLength,
-  merge,
-  minLength,
-  number,
-  object,
-  omit,
-  optional,
-  string,
-  union,
-  type Output,
-} from "valibot";
+import { z } from "zod";
 import { type Integration } from "~/lib/constants";
 import { dateToMonthDate } from "~/lib/dates";
 import { memberPermissions } from "~/lib/stores/auth-store";
@@ -153,14 +136,9 @@ export const workspaceInvitationRelations = relations(workspaceInvitations, ({ o
   }),
 }));
 
-export const sendInviteSchema = object({
-  userEmails: array(
-    object({
-      email: string([email()]),
-    }),
-    [maxLength(4)],
-  ),
-  workspaceSlug: string(),
+export const sendInviteSchema = z.object({
+  userEmails: z.array(z.object({ email: z.string().email() })),
+  workspaceSlug: z.string(),
 });
 
 const globalPaymentSchedule = ["monthly", "weekly", "bi-monthly"] as const;
@@ -210,20 +188,21 @@ export const workspacesRelations = relations(workspaces, ({ many, one }) => ({
   }),
 }));
 
-export const workspacesSchema = createInsertSchema(workspaces);
-export type Workspace = Output<typeof workspacesSchema>;
+export const workspacesSchema = zodInsertSchema(workspaces);
+export type Workspace = z.infer<typeof workspacesSchema>;
 
-export const createWorkspaceSchema = omit(
-  createInsertSchema(workspaces, {
-    slug: string([
-      minLength(3, "Workspace identifier must be at least 3 characters long"),
-      maxLength(255),
-    ]),
-    name: string([minLength(1, "It needs a name don't you think?"), maxLength(255)]),
-    image: string([maxLength(255)]),
-  }),
-  ["id", "inviteLink", "seatCount", "seatLimit", "createdAt", "createdById"],
-);
+export const createWorkspaceSchema = zodInsertSchema(workspaces, {
+  slug: z.string().min(3, "Workspace identifier must be at least 3 characters long"),
+  name: z.string().min(1, "It needs a name don't you think?").max(255),
+  image: z.string().max(255),
+}).omit({
+  id: true,
+  inviteLink: true,
+  seatCount: true,
+  seatLimit: true,
+  createdAt: true,
+  createdById: true,
+});
 
 export const roles = ["admin", "manager", "member"] as const;
 export type Roles = (typeof roles)[number];
@@ -256,15 +235,15 @@ export const usersOnWorkspaces = sqliteTable(
   }),
 );
 
-export type UsersOnWorkspacesSchema = Output<typeof usersOnWorkspacesSchema>;
-export const usersOnWorkspacesSchema = omit(
-  createInsertSchema(usersOnWorkspaces, {
-    defaultBillableRate: coerce(number("Rate must be a number"), (v) => Number(v)),
-    defaultInternalCost: coerce(number("Cost must be a number"), (v) => Number(v)),
-    defaultWeekCapacity: coerce(number("Week capacity must be a number"), (v) => Number(v)),
-  }),
-  ["owner"],
-);
+export type UsersOnWorkspacesSchema = z.infer<typeof usersOnWorkspacesSchema>;
+
+export const usersOnWorkspacesSchema = zodInsertSchema(usersOnWorkspaces, {
+  defaultBillableRate: z.coerce.number(),
+  defaultInternalCost: z.coerce.number(),
+  defaultWeekCapacity: z.coerce.number(),
+}).omit({
+  owner: true,
+});
 
 export const usersOnWorkspacesRelations = relations(usersOnWorkspaces, ({ one, many }) => ({
   user: one(users, { fields: [usersOnWorkspaces.userId], references: [users.id] }),
@@ -322,28 +301,22 @@ export const timeEntries = sqliteTable(
   }),
 );
 
-export const timeEntrySchema = omit(
-  createInsertSchema(timeEntries, {
-    description: string([minLength(1, "Description must be at least 1 character long")]),
-  }),
-  ["locked", "userId", "id"],
-  [
-    forward(
-      custom((input) => {
-        if (input.start && input.end) {
-          return input.start < input.end;
-        }
+export const timeEntrySchema = zodInsertSchema(timeEntries, {
+  description: z.string().min(1, "Description must be at least 1 character long"),
+}).omit({
+  locked: true,
+  userId: true,
+  id: true,
+  workspaceId: true,
+});
 
-        return true;
-      }, 'The "start" date must be before the "end" date'),
-      ["end"],
-    ),
-  ],
-);
-export type NewTimeEntry = Output<typeof timeEntrySchema>;
+export type NewTimeEntry = z.infer<typeof timeEntrySchema>;
 
-export const timeEntrySelect = createInsertSchema(timeEntries);
-export type TimeEntry = Output<typeof timeEntrySelect>;
+export const timeEntrySelect = zodInsertSchema(timeEntries).omit({
+  userId: true,
+  workspaceId: true,
+});
+export type TimeEntry = z.infer<typeof timeEntrySelect>;
 
 export const timeEntriesRelations = relations(timeEntries, ({ one }) => ({
   user: one(users, {
@@ -402,26 +375,24 @@ export const projects = sqliteTable(
   }),
 );
 
-export const projectsSchema = omit(
-  createInsertSchema(projects, {
-    name: string([minLength(3, "Name must be at least 3 characters long")]),
-    budgetHours: coerce(number("Budget must be a number"), (v) => Number(v)),
-  }),
-  ["workspaceId", "shareableUrl", "ownerId"],
-  [
-    forward(
-      custom((input) => {
-        if (input.startsAt && input.endsAt) {
-          return input.startsAt < input.endsAt;
-        }
+export const projectsSchema = zodInsertSchema(projects, {
+  name: z.string().min(3, "Name must be at least 3 characters long"),
+  budgetHours: z.coerce.number(),
+})
+  .omit({
+    workspaceId: true,
+    shareableUrl: true,
+    ownerId: true,
+  })
+  .refine((input) => {
+    if (input.startsAt && input.endsAt) {
+      return input.startsAt < input.endsAt;
+    }
 
-        return true;
-      }, "The end date must be after the start date"),
-      ["endsAt"],
-    ),
-  ],
-);
-export type ProjectSchema = Output<typeof projectsSchema>;
+    return true;
+  }, "The end date must be after the start date");
+
+export type ProjectSchema = z.infer<typeof projectsSchema>;
 
 export const projectRelations = relations(projects, ({ one, many }) => ({
   workspace: one(workspaces, {
@@ -453,8 +424,10 @@ export const clients = sqliteTable(
   }),
 );
 
-export const clientsSchema = omit(createInsertSchema(clients), ["workspaceId"]);
-export type ClientSchema = Output<typeof clientsSchema>;
+export const clientsSchema = zodInsertSchema(clients).omit({
+  workspaceId: true,
+});
+export type ClientSchema = z.infer<typeof clientsSchema>;
 
 export const clientsRelations = relations(clients, ({ one, many }) => ({
   workspace: one(workspaces, {
@@ -494,16 +467,17 @@ export const usersOnProjects = sqliteTable(
   }),
 );
 
-export const projectUserSchema = omit(
-  createInsertSchema(usersOnProjects, {
-    billableRate: coerce(number("Rate must be a number"), (v) => Number(v)),
-    internalCost: coerce(number("Cost must be a number"), (v) => Number(v)),
-    weekCapacity: coerce(number("Week capacity must be a number"), (v) => Number(v)),
-  }),
-  ["userId", "projectId", "workspaceId"],
-);
+export const userProjectSchema = zodInsertSchema(usersOnProjects, {
+  billableRate: z.coerce.number(),
+  internalCost: z.coerce.number(),
+  weekCapacity: z.coerce.number(),
+}).omit({
+  userId: true,
+  projectId: true,
+  workspaceId: true,
+});
 
-export type ProjectUserSchema = Output<typeof projectUserSchema>;
+export type ProjectUserSchema = z.infer<typeof userProjectSchema>;
 
 export const usersOnProjectsRelations = relations(usersOnProjects, ({ one }) => ({
   user: one(users, { fields: [usersOnProjects.userId], references: [users.id] }),
@@ -581,21 +555,6 @@ export const invoices = sqliteTable(
   }),
 );
 
-export const baseInvoiceSchema = omit(
-  createInsertSchema(invoices, {
-    subject: string([minLength(3, "Subject must be at least 3 characters long")]),
-    total: optional(number()),
-    items: array(
-      object({
-        description: string([minLength(3, "Description must be at least 3 characters long")]),
-        quantity: coerce(number("Quantity must be a number"), (v) => Number(v)),
-        unitPrice: coerce(number("Price must be a number"), (v) => Number(v)),
-      }),
-    ),
-  }),
-  ["workspaceId"],
-);
-
 export const invoicesToProjects = sqliteTable(
   "invoiceToProjects",
   {
@@ -624,14 +583,28 @@ export const invoicesToProjectsRelations = relations(invoicesToProjects, ({ one 
   }),
 }));
 
-const invoiceProjectsSchema = object({
-  projects: array(number()),
-  includeHours: union([literal("all"), literal("range"), literal("none")]),
+export const minInvoiceSchema = zodInsertSchema(invoices, {
+  subject: z.string().min(3, "Subject must be at least 3 characters long"),
+  total: z.number().optional(),
+  items: z.array(
+    z.object({
+      description: z.string().min(3, "Description must be at least 3 characters long"),
+      quantity: z.coerce.number(),
+      unitPrice: z.coerce.number(),
+    }),
+  ),
+}).omit({
+  workspaceId: true,
 });
 
-export const invoicesSchema = merge([baseInvoiceSchema, invoiceProjectsSchema]);
+export const projectsInvoiceSchema = z.object({
+  projects: z.array(z.number()),
+  includeHours: z.enum(["all", "range", "none"]),
+});
 
-export type InvoiceSchema = Output<typeof invoicesSchema>;
+export const invoicesSchema = projectsInvoiceSchema.merge(minInvoiceSchema);
+
+export type InvoiceSchema = z.infer<typeof invoicesSchema>;
 
 export const invoicesRelations = relations(invoices, ({ one, many }) => ({
   workspace: one(workspaces, {

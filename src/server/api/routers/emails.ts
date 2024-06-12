@@ -1,5 +1,4 @@
 import { TRPCError } from "@trpc/server";
-import { parse } from "valibot";
 import { sendInviteSchema, workspaceInvitations } from "~/server/db/edge-schema";
 import { WorkspaceInvitationEmail } from "~/server/emails/WorkspaceInvitation";
 import { resend } from "~/server/resend";
@@ -15,7 +14,7 @@ export const emailsRouter = createTRPCRouter({
    * may work fine in prod and without it
    */
   sendWorkspaceInvite: protectedProcedure
-    .input((i) => parse(sendInviteSchema, i))
+    .input(sendInviteSchema)
     .mutation(async ({ ctx, input }) => {
       const workspace = await ctx.db.query.workspaces.findFirst({
         where: (t, op) => op.eq(t.slug, input.workspaceSlug),

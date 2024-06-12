@@ -1,6 +1,6 @@
 "use client";
 
-import { valibotResolver } from "@hookform/resolvers/valibot";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { PiCurrencyDollarBold, PiFloppyDisk } from "react-icons/pi";
@@ -55,7 +55,7 @@ export const PersonDetailsSheet = () => {
   });
 
   const form = useForm<UsersOnWorkspacesSchema>({
-    resolver: valibotResolver(usersOnWorkspacesSchema),
+    resolver: zodResolver(usersOnWorkspacesSchema),
     defaultValues: details ?? {},
   });
 

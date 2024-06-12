@@ -1,6 +1,6 @@
 "use client";
 
-import { valibotResolver } from "@hookform/resolvers/valibot";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { PiSquaresFourDuotone, PiXCircle } from "react-icons/pi";
 import { toast } from "sonner";
@@ -72,7 +72,7 @@ export const ProjectDetails = ({
   );
 
   const form = useForm<ProjectSchema>({
-    resolver: valibotResolver(projectsSchema),
+    resolver: zodResolver(projectsSchema),
     defaultValues: data,
     mode: "onBlur",
   });
@@ -287,7 +287,7 @@ export const ProjectDetails = ({
           control={form.control}
           name="entriesLockingSchedule"
           render={({ field }) => (
-            <FormItem className="grid w-full grid-cols-5  gap-4">
+            <FormItem className="grid w-full grid-cols-5 gap-4">
               <Label className="inline-flex items-center gap-2 self-start">Entry locking</Label>
 
               <section className="col-span-4 flex flex-col gap-2">

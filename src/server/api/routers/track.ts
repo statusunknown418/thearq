@@ -1,74 +1,77 @@
 import { TRPCError } from "@trpc/server";
 import { and, eq, isNull } from "drizzle-orm";
-import { date, minValue, number, object, omit, parse } from "valibot";
+import { z } from "zod";
 import { type Integration } from "~/lib/constants";
 import { dateToMonthDate } from "~/lib/dates";
 import { timeEntries, timeEntrySchema, timeEntrySelect } from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { getRecentWorkspace } from "./viewer";
 
-export const autoTrackerSchema = omit(timeEntrySchema, ["duration", "end", "workspaceId"]);
-export const manualTrackerSchema = omit(timeEntrySchema, ["workspaceId"]);
+export const autoTrackerSchema = timeEntrySchema.omit({
+  duration: true,
+  end: true,
+});
+
+export const manualTrackerSchema = timeEntrySchema.refine((input) => {
+  if (input.start && input.end) {
+    return input.start < input.end;
+  }
+
+  return true;
+}, "The end date must be after the start date");
 
 export const trackerRouter = createTRPCRouter({
-  start: protectedProcedure
-    .input((i) => parse(autoTrackerSchema, i))
-    .mutation(async ({ ctx, input }) => {
-      const workspaceId = await getRecentWorkspace(ctx.session.user.id);
-      const integrationProvider = input.integrationProvider as Integration | null;
+  start: protectedProcedure.input(autoTrackerSchema).mutation(async ({ ctx, input }) => {
+    const workspaceId = await getRecentWorkspace(ctx.session.user.id);
+    const integrationProvider = input.integrationProvider as Integration | null;
 
-      if (!workspaceId) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "No workspace selected",
-        });
-      }
-
-      const {
-        session: { user },
-      } = ctx;
-
-      const entry = await ctx.db.transaction(async (trx) => {
-        const existingEntry = await trx.query.timeEntries.findFirst({
-          where: (t, { and, eq, isNull }) => {
-            return and(
-              eq(t.userId, user.id),
-              eq(t.workspaceId, Number(workspaceId)),
-              eq(t.duration, -1),
-              isNull(t.end),
-            );
-          },
-        });
-
-        if (existingEntry) {
-          trx.rollback();
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "You already have a live entry going on",
-          });
-        }
-
-        const [entry] = await trx
-          .insert(timeEntries)
-          .values({
-            ...input,
-            duration: -1,
-            start: new Date(),
-            end: null,
-            userId: user.id,
-            integrationProvider,
-            workspaceId: Number(workspaceId),
-          })
-          .returning();
-
-        return entry;
+    if (!workspaceId) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "No workspace selected",
       });
+    }
 
-      return entry;
-    }),
+    const {
+      session: { user },
+    } = ctx;
+
+    const existingEntry = await ctx.db.query.timeEntries.findFirst({
+      where: (t, { and, eq, isNull }) => {
+        return and(
+          eq(t.userId, user.id),
+          eq(t.workspaceId, Number(workspaceId)),
+          eq(t.duration, -1),
+          isNull(t.end),
+        );
+      },
+    });
+
+    if (existingEntry) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "You already have a live entry going on",
+      });
+    }
+
+    const [entry] = await ctx.db
+      .insert(timeEntries)
+      .values({
+        ...input,
+        duration: -1,
+        start: new Date(),
+        end: null,
+        userId: user.id,
+        integrationProvider,
+        workspaceId: Number(workspaceId),
+      })
+      .returning();
+
+    return entry;
+  }),
 
   stop: protectedProcedure
-    .input((i) => parse(object({ id: number(), end: date(), duration: number([minValue(0)]) }), i))
+    .input(z.object({ id: z.number(), end: z.date(), duration: z.number().min(0) }))
     .mutation(async ({ ctx, input }) => {
       const workspaceId = await getRecentWorkspace(ctx.session.user.id);
 
@@ -102,70 +105,66 @@ export const trackerRouter = createTRPCRouter({
       return entry;
     }),
 
-  manual: protectedProcedure
-    .input((i) => parse(manualTrackerSchema, i))
-    .mutation(async ({ ctx, input }) => {
-      const {
-        session: { user },
-      } = ctx;
+  manual: protectedProcedure.input(manualTrackerSchema).mutation(async ({ ctx, input }) => {
+    const {
+      session: { user },
+    } = ctx;
 
-      const integrationProvider = input.integrationProvider as Integration | null;
-      const workspaceId = await getRecentWorkspace(ctx.session.user.id);
+    const integrationProvider = input.integrationProvider as Integration | null;
+    const workspaceId = await getRecentWorkspace(user.id);
 
-      if (!workspaceId) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "No workspace selected",
-        });
-      }
+    if (!workspaceId) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "No workspace selected",
+      });
+    }
 
-      if (!input.start || !input.end) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Start and end date are required",
-        });
-      }
+    if (!input.start || !input.end) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Start and end date are required",
+      });
+    }
 
-      return ctx.db
-        .insert(timeEntries)
-        .values({
-          ...input,
-          integrationProvider,
-          userId: user.id,
-          duration: Number(input.duration),
-          start: new Date(input.start),
-          end: new Date(input.end),
-          monthDate: dateToMonthDate(new Date(input.start)),
-          workspaceId: Number(workspaceId),
-        })
-        .returning();
-    }),
-  update: protectedProcedure
-    .input((i) => parse(omit(timeEntrySelect, ["userId", "workspaceId"]), i))
-    .mutation(async ({ ctx, input }) => {
-      if (!input.id) {
-        return {
-          error: true,
-          message: "No id provided",
-        };
-      }
+    return ctx.db
+      .insert(timeEntries)
+      .values({
+        ...input,
+        integrationProvider,
+        userId: user.id,
+        duration: Number(input.duration),
+        start: new Date(input.start),
+        end: new Date(input.end),
+        monthDate: dateToMonthDate(new Date(input.start)),
+        workspaceId: Number(workspaceId),
+      })
+      .returning();
+  }),
+  update: protectedProcedure.input(timeEntrySelect).mutation(async ({ ctx, input }) => {
+    if (!input.id) {
+      return {
+        error: true,
+        message: "No id provided",
+      };
+    }
 
-      const integrationProvider = input.integrationProvider as Integration | null;
+    const integrationProvider = input.integrationProvider as Integration | null;
 
-      const updatedEntry = await ctx.db
-        .update(timeEntries)
-        .set({
-          ...input,
-          integrationProvider,
-        })
-        .where(eq(timeEntries.id, input.id))
-        .returning();
+    const updatedEntry = await ctx.db
+      .update(timeEntries)
+      .set({
+        ...input,
+        integrationProvider,
+      })
+      .where(eq(timeEntries.id, input.id))
+      .returning();
 
-      return updatedEntry;
-    }),
+    return updatedEntry;
+  }),
 
   remove: protectedProcedure
-    .input((i) => parse(object({ id: number() }), i))
+    .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
       const deletedEntry = await ctx.db
         .delete(timeEntries)

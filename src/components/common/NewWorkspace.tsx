@@ -1,13 +1,13 @@
 "use client";
 
-import { valibotResolver } from "@hookform/resolvers/valibot";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowDownIcon } from "@radix-ui/react-icons";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import slugify from "slugify";
 import { toast } from "sonner";
-import { type Output } from "valibot";
+import { type z } from "zod";
 import { Button } from "~/components/ui/button";
 import { DialogFooter } from "~/components/ui/dialog";
 import {
@@ -28,8 +28,8 @@ import { api } from "~/trpc/react";
 
 export const NewWorkspace = () => {
   const router = useRouter();
-  const form = useForm<Output<typeof createWorkspaceSchema>>({
-    resolver: valibotResolver(createWorkspaceSchema),
+  const form = useForm<z.infer<typeof createWorkspaceSchema>>({
+    resolver: zodResolver(createWorkspaceSchema),
     defaultValues: {
       name: "",
       slug: "",

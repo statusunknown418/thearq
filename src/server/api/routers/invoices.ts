@@ -1,5 +1,4 @@
 import { TRPCError } from "@trpc/server";
-import { parse } from "valibot";
 import { object, string } from "zod";
 import { invoices, invoicesSchema } from "~/server/db/edge-schema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
@@ -35,35 +34,33 @@ export const invoicesRouter = createTRPCRouter({
       return invoices;
     }),
 
-  create: protectedProcedure
-    .input((i) => parse(invoicesSchema, i))
-    .mutation(async ({ input, ctx }) => {
-      const wId = await getRecentWorkspace(ctx.session.user.id);
+  create: protectedProcedure.input(invoicesSchema).mutation(async ({ input, ctx }) => {
+    const wId = await getRecentWorkspace(ctx.session.user.id);
 
-      if (!wId) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "No workspace selected",
-        });
-      }
+    if (!wId) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "No workspace selected",
+      });
+    }
 
-      const baseTotal = input.items?.reduce((acc, curr) => acc + curr.quantity * curr.unitPrice, 0);
+    const baseTotal = input.items?.reduce((acc, curr) => acc + curr.quantity * curr.unitPrice, 0);
 
-      const computeTotal =
-        baseTotal &&
-        baseTotal -
-          ((input.discountPercentage ?? 0) * baseTotal) / 100 +
-          ((input.taxPercentage ?? 0) * baseTotal) / 100;
+    const computeTotal =
+      baseTotal &&
+      baseTotal -
+        ((input.discountPercentage ?? 0) * baseTotal) / 100 +
+        ((input.taxPercentage ?? 0) * baseTotal) / 100;
 
-      const invoice = await ctx.db
-        .insert(invoices)
-        .values({
-          ...input,
-          total: computeTotal ?? 0,
-          workspaceId: Number(wId),
-        })
-        .returning();
+    const invoice = await ctx.db
+      .insert(invoices)
+      .values({
+        ...input,
+        total: computeTotal ?? 0,
+        workspaceId: Number(wId),
+      })
+      .returning();
 
-      return invoice;
-    }),
+    return invoice;
+  }),
 });

@@ -1,5 +1,5 @@
 "use client";
-import { valibotResolver } from "@hookform/resolvers/valibot";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -34,7 +34,7 @@ import { Switch } from "~/components/ui/switch";
 import { sendAmount } from "~/lib/parsers";
 import { useAuthStore } from "~/lib/stores/auth-store";
 import { useProjectPersonSheetStore } from "~/lib/stores/sheets-store";
-import { projectUserSchema, type ProjectUserSchema } from "~/server/db/edge-schema";
+import { userProjectSchema, type ProjectUserSchema } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 import { useProjectsQS } from "../project-cache";
 import { PersonCharts } from "./PersonCharts";
@@ -55,7 +55,7 @@ export const ProjectPersonSheet = () => {
 
   const form = useForm<ProjectUserSchema>({
     defaultValues: details ?? {},
-    resolver: valibotResolver(projectUserSchema),
+    resolver: zodResolver(userProjectSchema),
   });
 
   const onSubmit = form.handleSubmit((input) => {

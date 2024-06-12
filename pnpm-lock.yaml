@@ -193,7 +193,10 @@ importers:
         version: 0.30.10(@libsql/client@0.6.2)(@types/react@18.3.3)(mysql2@3.10.0)(react@18.2.0)
       drizzle-valibot:
         specifier: ^0.2.0
-        version: 0.2.0(drizzle-orm@0.30.10(@libsql/client@0.6.2)(@types/react@18.3.3)(mysql2@3.10.0)(react@18.2.0))(valibot@0.30.0)
+        version: 0.2.0(drizzle-orm@0.30.10(@libsql/client@0.6.2)(@types/react@18.3.3)(mysql2@3.10.0)(react@18.2.0))(valibot@0.31.1)
+      drizzle-zod:
+        specifier: ^0.5.1
+        version: 0.5.1(drizzle-orm@0.30.10(@libsql/client@0.6.2)(@types/react@18.3.3)(mysql2@3.10.0)(react@18.2.0))(zod@3.23.8)
       embla-carousel-react:
         specifier: 8.0.2
         version: 8.0.2(react@18.2.0)
@@ -288,8 +291,8 @@ importers:
         specifier: ^0.4.3
         version: 0.4.3(preact@10.11.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       valibot:
-        specifier: ^0.30.0
-        version: 0.30.0
+        specifier: ^0.31.1
+        version: 0.31.1
       vaul:
         specifier: ^0.9.1
         version: 0.9.1(@types/react-dom@18.3.0)(@types/react@18.3.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -3394,6 +3397,12 @@ packages:
       drizzle-orm: '>=0.23.13'
       valibot: '>=0.20'
 
+  drizzle-zod@0.5.1:
+    resolution: {integrity: sha512-C/8bvzUH/zSnVfwdSibOgFjLhtDtbKYmkbPbUCq46QZyZCH6kODIMSOgZ8R7rVjoI+tCj3k06MRJMDqsIeoS4A==}
+    peerDependencies:
+      drizzle-orm: '>=0.23.13'
+      zod: '*'
+
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
@@ -5481,8 +5490,8 @@ packages:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
 
-  valibot@0.30.0:
-    resolution: {integrity: sha512-5POBdbSkM+3nvJ6ZlyQHsggisfRtyT4tVTo1EIIShs6qCdXJnyWU5TJ68vr8iTg5zpOLjXLRiBqNx+9zwZz/rA==}
+  valibot@0.31.1:
+    resolution: {integrity: sha512-2YYIhPrnVSz/gfT2/iXVTrSj92HwchCt9Cga/6hX4B26iCz9zkIsGTS0HjDYTZfTi1Un0X6aRvhBi1cfqs/i0Q==}
 
   vary@1.1.2:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
@@ -8548,10 +8557,15 @@ snapshots:
       mysql2: 3.10.0
       react: 18.2.0
 
-  drizzle-valibot@0.2.0(drizzle-orm@0.30.10(@libsql/client@0.6.2)(@types/react@18.3.3)(mysql2@3.10.0)(react@18.2.0))(valibot@0.30.0):
+  drizzle-valibot@0.2.0(drizzle-orm@0.30.10(@libsql/client@0.6.2)(@types/react@18.3.3)(mysql2@3.10.0)(react@18.2.0))(valibot@0.31.1):
     dependencies:
       drizzle-orm: 0.30.10(@libsql/client@0.6.2)(@types/react@18.3.3)(mysql2@3.10.0)(react@18.2.0)
-      valibot: 0.30.0
+      valibot: 0.31.1
+
+  drizzle-zod@0.5.1(drizzle-orm@0.30.10(@libsql/client@0.6.2)(@types/react@18.3.3)(mysql2@3.10.0)(react@18.2.0))(zod@3.23.8):
+    dependencies:
+      drizzle-orm: 0.30.10(@libsql/client@0.6.2)(@types/react@18.3.3)(mysql2@3.10.0)(react@18.2.0)
+      zod: 3.23.8
 
   eastasianwidth@0.2.0: {}
 
@@ -10964,7 +10978,7 @@ snapshots:
 
   uuid@9.0.1: {}
 
-  valibot@0.30.0: {}
+  valibot@0.31.1: {}
 
   vary@1.1.2: {}
 

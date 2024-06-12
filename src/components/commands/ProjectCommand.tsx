@@ -1,6 +1,6 @@
 "use client";
 
-import { valibotResolver } from "@hookform/resolvers/valibot";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   addDays,
   addMonths,
@@ -42,10 +42,10 @@ import { KBD } from "~/components/ui/kbd";
 import { Textarea } from "~/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import { NOW } from "~/lib/dates";
+import { useHotkeys } from "~/lib/hooks/use-hotkeys";
 import { routes } from "~/lib/navigation";
 import { useCommandsStore } from "~/lib/stores/commands-store";
 import { useWorkspaceStore } from "~/lib/stores/workspace-store";
-import { useHotkeys } from "~/lib/hooks/use-hotkeys";
 import { projectsSchema, type ProjectSchema } from "~/server/db/edge-schema";
 import { api } from "~/trpc/react";
 import { ClientsCombobox } from "../clients/ClientsCombobox";
@@ -89,7 +89,7 @@ export const ProjectCommand = () => {
   });
 
   const form = useForm<ProjectSchema>({
-    resolver: valibotResolver(projectsSchema),
+    resolver: zodResolver(projectsSchema),
     defaultValues: {
       name: "",
       description: "",

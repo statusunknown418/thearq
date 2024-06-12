@@ -1,16 +1,16 @@
 "use client";
 
-import { valibotResolver } from "@hookform/resolvers/valibot";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { PiPlayDuotone, PiStopDuotone, PiWarningCircleDuotone } from "react-icons/pi";
 import { toast } from "sonner";
-import { omit } from "valibot";
 import { Button } from "~/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { KBD } from "~/components/ui/kbd";
 import { Toggle } from "~/components/ui/toggle";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
+import { computeDuration } from "~/lib/dates";
 import { useHotkeys } from "~/lib/hooks/use-hotkeys";
 import { cn } from "~/lib/utils";
 import { timeEntrySchema, type NewTimeEntry } from "~/server/db/edge-schema";
@@ -18,7 +18,6 @@ import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/shared";
 import { ProjectsCombobox } from "../../projects/ProjectsCombobox";
 import { RealtimeCounter } from "../date-view/RealtimeCounter";
-import { computeDuration } from "~/lib/dates";
 
 export const StartLiveEntry = ({
   initialData,
@@ -86,7 +85,12 @@ export const StartLiveEntry = ({
   });
 
   const form = useForm<NewTimeEntry>({
-    resolver: valibotResolver(omit(timeEntrySchema, ["end", "duration", "workspaceId"])),
+    resolver: zodResolver(
+      timeEntrySchema.omit({
+        end: true,
+        duration: true,
+      }),
+    ),
     defaultValues: data
       ? { ...data }
       : {
