@@ -3,7 +3,7 @@
 import { Card, CategoryBar, Legend, List, ListItem } from "@tremor/react";
 import { format, toDate } from "date-fns-tz";
 import Link from "next/link";
-import { PiArrowRight, PiTrendDownBold, PiTrendUpBold } from "react-icons/pi";
+import { PiArrowRight, PiBoundingBox, PiTrendDownBold, PiTrendUpBold } from "react-icons/pi";
 import { secondsToHoursDecimal } from "~/lib/dates";
 import { parseCompactCurrency, parseLongCurrency, parseNumber } from "~/lib/parsers";
 import { cn } from "~/lib/utils";
@@ -32,6 +32,7 @@ export const Totals = ({ initialData }: { initialData: RouterOutputs["entries"][
   }
 
   const revenue = data.totalEarnings - data.totalInternalCost;
+  const profitPercentage = (revenue / data.totalEarnings) * 100;
 
   return (
     <>
@@ -42,8 +43,13 @@ export const Totals = ({ initialData }: { initialData: RouterOutputs["entries"][
 
       <section className="flex gap-4">
         <Card decoration="left" className="flex h-48 max-w-md flex-col gap-2">
-          <p className="text-muted-foreground">Gross revenue</p>
-          <h2 className="flex text-tremor-metric">{parseLongCurrency(data.totalEarnings)}</h2>
+          <p className="text-muted-foreground">Earnings</p>
+          <div className="flex items-end gap-2">
+            <h2 className="text-tremor-metric">{parseLongCurrency(revenue)}</h2>
+            <h3 className="mb-1 text-muted-foreground">
+              {parseLongCurrency(data.totalEarnings)} <span className="text-xs">gross revenue</span>
+            </h3>
+          </div>
 
           <CategoryBar
             showAnimation
@@ -75,9 +81,9 @@ export const Totals = ({ initialData }: { initialData: RouterOutputs["entries"][
                 <PiTrendDownBold size={15} />
               )}
 
-              {`${parseNumber((revenue / data.totalEarnings) * 100)}% `}
+              {`${isNaN(profitPercentage) ? "N/A" : `${parseNumber(profitPercentage)}%`} `}
 
-              {data.totalInternalCost > revenue ? "loss" : "profit"}
+              {data.totalInternalCost > data.totalEarnings ? "loss" : "profit"}
             </p>
           </div>
         </Card>
@@ -108,7 +114,7 @@ export const Totals = ({ initialData }: { initialData: RouterOutputs["entries"][
           />
         </Card>
 
-        <Card className="flex max-w-xs flex-col gap-2">
+        <Card className="flex min-w-[33%] max-w-xs flex-col gap-2">
           <div className="flex items-center justify-between">
             <h2 className="text-muted-foreground">Top projects</h2>
 
@@ -120,7 +126,14 @@ export const Totals = ({ initialData }: { initialData: RouterOutputs["entries"][
             </Button>
           </div>
 
-          <List className="mt-0">
+          <List className="mt-0 h-full">
+            {data.groupedByProject.length === 0 && (
+              <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-xs">
+                <PiBoundingBox size={16} />
+                <p>No projects found</p>
+              </div>
+            )}
+
             {data.groupedByProject.map((p) => (
               <ListItem key={p.id} className="h-8">
                 <div className="flex items-center gap-1">

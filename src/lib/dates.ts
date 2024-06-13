@@ -4,6 +4,7 @@ import {
   addMonths,
   addWeeks,
   differenceInDays,
+  endOfDay,
   format,
   formatDistance,
   startOfMonth,
@@ -103,5 +104,5 @@ export const paymentScheduleToDate = (schedule: GlobalPaymentSchedule) => {
  * @returns date + 1 day set to be at 00:00:00
  */
 export const adjustEndDate = (date: stringOrDate) => {
-  return addDays(new Date(date), 1);
+  return endOfDay(addDays(new Date(date), 1));
 };
