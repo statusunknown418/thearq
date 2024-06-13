@@ -111,56 +111,53 @@ export const baseProjectsRouter = createTRPCRouter({
     const prefix = input.identifier ? `${input.identifier}-` : "";
     const shareableUrl = slugify(`${prefix}${createdId}`);
 
-    const data = await ctx.db.transaction(async (trx) => {
-      let selectedWorkspace;
-
-      try {
-        selectedWorkspace = await trx.query.usersOnWorkspaces.findFirst({
-          where: (t, { eq }) => eq(t.workspaceId, Number(wId)),
-        });
-
-        if (selectedWorkspace?.role !== "admin") {
-          trx.rollback();
-        }
-      } catch (err) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You are not allowed to create a project",
-        });
-      }
-
-      const [project] = await trx
-        .insert(projects)
-        .values({
-          ...input,
-          workspaceId: Number(wId),
-          ownerId: ctx.session.user.id,
-          shareableUrl,
-        })
-        .returning();
-
-      if (!project) {
-        trx.rollback();
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Failed when creating a project",
-        });
-      }
-
-      await trx.insert(usersOnProjects).values({
-        projectId: project.id,
-        userId: ctx.session.user.id,
-        workspaceId: Number(wId),
-        role: "admin",
-        permissions: JSON.stringify(adminPermissions),
-        billableRate: selectedWorkspace?.defaultBillableRate,
-        weekCapacity: selectedWorkspace?.defaultWeekCapacity,
-      });
-
-      return project;
+    const selectedWorkspace = await ctx.db.query.usersOnWorkspaces.findFirst({
+      where: (t, { eq }) => eq(t.workspaceId, Number(wId)),
+      columns: {
+        role: true,
+        defaultBillableRate: true,
+        defaultWeekCapacity: true,
+        defaultInternalCost: true,
+      },
     });
 
-    return data;
+    if (selectedWorkspace?.role !== "admin") {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "You are not allowed to create a project",
+      });
+    }
+
+    const [project] = await ctx.db
+      .insert(projects)
+      .values({
+        ...input,
+        workspaceId: Number(wId),
+        ownerId: ctx.session.user.id,
+        shareableUrl,
+      })
+      .returning();
+
+    if (!project) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Failed when creating a project",
+      });
+    }
+
+    await ctx.db.insert(usersOnProjects).values({
+      projectId: project.id,
+      userId: ctx.session.user.id,
+      workspaceId: Number(wId),
+      role: "admin",
+      permissions: JSON.stringify(adminPermissions),
+      billableRate: selectedWorkspace?.defaultBillableRate,
+      weekCapacity: selectedWorkspace?.defaultWeekCapacity,
+      internalCost: selectedWorkspace?.defaultInternalCost,
+      fromDefault: true,
+    });
+
+    return project;
   }),
   edit: protectedProcedure.input(projectsSchema).mutation(async ({ ctx, input }) => {
     const wId = await getRecentWorkspace(ctx.session.user.id);

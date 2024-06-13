@@ -1,66 +1,19 @@
 import { TRPCError } from "@trpc/server";
 import { startOfDay } from "date-fns";
 import { and } from "drizzle-orm";
-import { number, object, string, z } from "zod";
+import { number, object, string } from "zod";
 import { LIVE_ENTRY_DURATION } from "~/lib/constants";
-import { adjustEndDate, computeDuration, secondsToHoursDecimal } from "~/lib/dates";
+import { computeDuration } from "~/lib/dates";
 import { type TimeEntry } from "~/server/db/edge-schema";
 import { type RouterOutputs } from "~/trpc/shared";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { getRecentWorkspace } from "./viewer";
+import { createTRPCRouter, protectedProcedure } from "../../trpc";
+import { getRecentWorkspace } from "../viewer";
 
 export type CustomEvent = RouterOutputs["entries"]["getByMonth"][number] & {
   temp?: boolean;
 };
 
-export const entriesRouter = createTRPCRouter({
-  getNonInvoiced: protectedProcedure
-    .input(
-      z.object({
-        projectIds: z.array(z.number()).optional(),
-        startDate: z.string().optional(),
-        endDate: z.string().optional(),
-        selection: z.enum(["all", "range", "none"]),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      const wId = await getRecentWorkspace(ctx.session.user.id);
-
-      if (input.selection === "none" || input.projectIds?.length === 0 || !wId) {
-        return [];
-      }
-
-      const entries = await ctx.db.query.timeEntries.findMany({
-        where: (t, op) =>
-          and(
-            op.eq(t.workspaceId, Number(wId)),
-            op.isNull(t.invoiceId),
-            !!input.projectIds ? op.inArray(t.projectId, input.projectIds) : undefined,
-            !!input.startDate ? op.gte(t.start, new Date(input.startDate)) : undefined,
-            !!input.endDate ? op.lte(t.start, new Date(input.endDate)) : undefined,
-          ),
-        with: {
-          project: {
-            columns: {
-              id: true,
-              color: true,
-              name: true,
-              identifier: true,
-            },
-            with: {
-              users: {
-                with: {
-                  user: true,
-                },
-              },
-            },
-          },
-        },
-      });
-
-      /* TODO: NOTE: I think that for this it's ok to manage the grouping in the client-side */
-      return entries;
-    }),
+export const baseEntriesRouter = createTRPCRouter({
   getByMonth: protectedProcedure
     .input(
       object({
@@ -221,153 +174,6 @@ export const entriesRouter = createTRPCRouter({
 
     return null;
   }),
-
-  getTotals: protectedProcedure
-    .input(
-      object({
-        from: string(),
-        to: string(),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      const wId = await getRecentWorkspace(ctx.session.user.id);
-
-      if (!wId) {
-        return null;
-      }
-
-      const summary = await ctx.db.query.timeEntries.findMany({
-        where: (t, op) =>
-          and(
-            op.eq(t.workspaceId, Number(wId)),
-            op.gte(t.start, new Date(input.from)),
-            op.lte(t.end, adjustEndDate(input.to)),
-          ),
-        with: {
-          project: {
-            columns: {
-              color: true,
-              name: true,
-              identifier: true,
-              id: true,
-            },
-            with: {
-              users: true,
-              client: true,
-            },
-          },
-          workspace: {
-            with: {
-              users: true,
-            },
-          },
-        },
-      });
-
-      const totalTime = summary.reduce((acc, entry) => {
-        acc += entry.duration;
-        return acc;
-      }, 0);
-
-      const nonBillableTime = summary.reduce((acc, entry) => {
-        if (!entry.billable) {
-          acc += entry.duration;
-        }
-
-        return acc;
-      }, 0);
-
-      const totalEarnings = summary.reduce((acc, entry) => {
-        const user = entry.workspace.users.find((u) => u.userId === entry.userId);
-
-        if (!user) {
-          return acc;
-        }
-
-        if (!acc) {
-          acc = 0;
-        }
-
-        if (!!entry.projectId && !!entry.project) {
-          const projectUser = entry.project?.users.find((u) => u.userId === entry.userId);
-
-          acc += secondsToHoursDecimal(entry.duration) * (projectUser?.billableRate ?? 1);
-          return acc;
-        }
-
-        acc += secondsToHoursDecimal(entry.duration) * user.defaultBillableRate;
-        return acc;
-      }, 0);
-
-      const totalInternalCost = summary.reduce((acc, entry) => {
-        const user = entry.workspace.users.find((u) => u.userId === entry.userId);
-
-        if (!user) {
-          return acc;
-        }
-
-        if (!acc) {
-          acc = 0;
-        }
-
-        if (!!entry.projectId && !!entry.project) {
-          const projectUser = entry.project?.users.find((u) => u.userId === entry.userId);
-
-          acc += secondsToHoursDecimal(entry.duration) * (projectUser?.internalCost ?? 0);
-          return acc;
-        }
-
-        acc += secondsToHoursDecimal(entry.duration) * user.defaultInternalCost;
-        return acc;
-      }, 0);
-
-      const groupedByProject = summary.reduce(
-        (acc, entry) => {
-          const project = entry.project;
-
-          if (!project) {
-            return acc;
-          }
-
-          if (!acc[project.id]) {
-            acc[project.id] = {
-              duration: 0,
-              project: project.name,
-              client: project.client?.name,
-              color: project.color,
-            };
-          }
-
-          acc[project.id]!.duration += entry.duration;
-
-          return acc;
-        },
-        {} as Record<
-          number,
-          {
-            duration: number;
-            project: string;
-            client?: string;
-            color: string;
-          }
-        >,
-      );
-
-      return {
-        totalTime,
-        totalEarnings,
-        totalInternalCost,
-        summary,
-        nonBillableTime,
-        groupedByProject: Object.entries(groupedByProject)
-          .map(([id, value]) => ({
-            id: id,
-            ...value,
-          }))
-          .sort((a, b) => b.duration - a.duration)
-          .slice(0, 3),
-      };
-    }),
 });
 
 interface DurationData {
