@@ -5,13 +5,8 @@ import { number, object, string } from "zod";
 import { LIVE_ENTRY_DURATION } from "~/lib/constants";
 import { computeDuration } from "~/lib/dates";
 import { type TimeEntry } from "~/server/db/edge-schema";
-import { type RouterOutputs } from "~/trpc/shared";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 import { getRecentWorkspace } from "../viewer";
-
-export type CustomEvent = RouterOutputs["entries"]["getByMonth"][number] & {
-  temp?: boolean;
-};
 
 export const baseEntriesRouter = createTRPCRouter({
   getByMonth: protectedProcedure

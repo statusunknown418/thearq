@@ -37,7 +37,7 @@ export const Overview = ({
             valueFormatter={(v) => `${secondsToHoursDecimal(v).toFixed(2)} hours`}
             index="project"
             category="duration"
-            className={`z-10 h-52`}
+            className={`z-10 h-44`}
             noDataText={`No team members tracked for this period.`}
           />
 
@@ -57,7 +57,7 @@ export const Overview = ({
             valueFormatter={(v) => `${secondsToHoursDecimal(v).toFixed(2)} hours`}
             index="name"
             category="duration"
-            className="z-10 h-52"
+            className="z-10 h-44"
             noDataText={`No team members tracked for this period.`}
           />
 
@@ -77,7 +77,7 @@ export const Overview = ({
             valueFormatter={(v) => parseLongCurrency(v)}
             index="client"
             category="amount"
-            className="z-10 h-52"
+            className="z-10 h-44"
             colors={["indigo", "violet", "blue"]}
             noDataText={`No team members tracked for this period.`}
           />

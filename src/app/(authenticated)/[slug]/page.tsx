@@ -43,8 +43,6 @@ export default function WorkspaceDashboardPage({
         <OverviewWrapperRSC />
       </Suspense>
 
-      <Divider className="my-1 text-xs">Detailed table</Divider>
-
       <Suspense fallback={<DetailedTableLoading />}>
         <DetailedTableWrapperRSC />
       </Suspense>
