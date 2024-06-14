@@ -176,24 +176,23 @@ export const baseProjectsRouter = createTRPCRouter({
       });
     }
 
-    const data = await ctx.db.transaction(async (trx) => {
-      const allowed = await trx.query.usersOnProjects.findFirst({
-        where: (t, { eq, and }) =>
-          and(eq(t.projectId, input.id!), eq(t.userId, ctx.session.user.id)),
-      });
-
-      if (!allowed?.userId) {
-        trx.rollback();
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You are not allowed to edit this project",
-        });
-      }
-
-      return await trx.update(projects).set(input).where(eq(projects.id, input.id!)).returning();
+    const allowed = await ctx.db.query.usersOnProjects.findFirst({
+      where: (t, { eq, and }) => and(eq(t.projectId, input.id!), eq(t.userId, ctx.session.user.id)),
     });
 
-    return data;
+    if (allowed?.role !== "admin") {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "You are not allowed to edit this project",
+      });
+    }
+
+    await ctx.db.update(projects).set(input).where(eq(projects.id, input.id));
+
+    return {
+      id: input.id,
+      success: true,
+    };
   }),
   delete: protectedProcedure
     .input((i) => parse(object({ id: number() }), i))

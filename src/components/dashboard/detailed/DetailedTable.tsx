@@ -41,6 +41,10 @@ export const DetailedTable = () => {
                 setSubGroup("integration");
               }
 
+              if (v === "client") {
+                setSubGroup("teammate");
+              }
+
               setMainGroup(v as MainGroup);
             }}
           >
@@ -80,7 +84,7 @@ export const DetailedTable = () => {
             </SelectTrigger>
 
             <SelectContent>
-              <SelectItem value="client">
+              <SelectItem value="client" disabled={mainGroup === "client"}>
                 <PiBuilding />
                 client
               </SelectItem>

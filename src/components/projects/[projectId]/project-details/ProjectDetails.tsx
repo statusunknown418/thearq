@@ -2,10 +2,9 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { PiSquaresFourDuotone, PiXCircle } from "react-icons/pi";
+import { PiXCircle } from "react-icons/pi";
 import { toast } from "sonner";
 import { ClientsCombobox } from "~/components/clients/ClientsCombobox";
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
   Form,
@@ -95,19 +94,31 @@ export const ProjectDetails = ({
         className="flex h-max w-full flex-col gap-5 rounded-lg border bg-secondary-background p-5"
         onSubmit={onSubmit}
       >
-        <div className="flex items-center justify-between">
-          <Badge variant={"secondary"} className="w-max tracking-wide text-muted-foreground">
-            <PiSquaresFourDuotone size={16} />
-            Project details
-          </Badge>
-
+        <div className="flex justify-between">
+          <p className="text-muted-foreground">Settings</p>
           {isLoading && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2 self-end text-xs text-muted-foreground">
               <Loader />
               <span>Saving ...</span>
             </div>
           )}
         </div>
+
+        <FormField
+          name="name"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem className="grid w-full grid-cols-5 gap-4">
+              <FormLabel>Project name</FormLabel>
+
+              <div className="col-span-4 flex items-center gap-2">
+                <FormControl>
+                  <Input {...field} placeholder={"Internal project"} value={field.value ?? ""} />
+                </FormControl>
+              </div>
+            </FormItem>
+          )}
+        />
 
         <FormField
           name="clientId"

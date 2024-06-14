@@ -34,7 +34,7 @@ export const Sidebar = ({
   const selectedSegment = useSelectedLayoutSegment();
 
   return (
-    <aside className="col-span-1 flex h-screen flex-col gap-8 overflow-y-scroll py-4 *:px-2">
+    <aside className="flex h-screen w-[210px] flex-col gap-8 overflow-y-scroll py-4 *:px-2">
       <Hotkeys />
 
       <div className="flex w-full flex-col gap-4 self-start">

@@ -55,3 +55,22 @@ export const getLatestWorkspace = async () => {
   const store = cookies();
   return store.get(RECENT_WORKSPACE_KEY)?.value;
 };
+
+export const collapseSidebar = async () => {
+  const store = cookies();
+  const prev = store.get("sidebar-state")?.value;
+
+  if (prev === "open") {
+    store.set("sidebar-state", "closed", {
+      httpOnly: true,
+      path: "/",
+      sameSite: "lax",
+    });
+  } else {
+    store.set("sidebar-state", "open", {
+      httpOnly: true,
+      path: "/",
+      sameSite: "lax",
+    });
+  }
+};
