@@ -1,6 +1,6 @@
 import { endOfDay } from "date-fns";
 import { and } from "drizzle-orm";
-import { object, string } from "zod";
+import { object, string, z } from "zod";
 import { adjustEndDate, secondsToHoursDecimal } from "~/lib/dates";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 import { getRecentWorkspace } from "../viewer";
@@ -301,6 +301,136 @@ export const entriesAccumulatesRouter = createTRPCRouter({
         hoursByProject: projectGroupArray,
         hoursByPerson: personGroupArray,
         billingByClient: billingArray,
+      };
+    }),
+
+  getGroupedTable: protectedProcedure
+    .input(
+      object({
+        from: string(),
+        to: string(),
+        mainGroup: z.enum(["project", "client", "teammate"]),
+        subGroup: z.enum(["teammate", "project", "integration"]),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const wId = await getRecentWorkspace(ctx.session.user.id);
+
+      if (!wId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No workspace selected",
+        });
+      }
+
+      const summary = await ctx.db.query.timeEntries.findMany({
+        where: (t, op) =>
+          and(
+            op.eq(t.workspaceId, Number(wId)),
+            op.gte(t.start, new Date(input.from)),
+            op.lte(t.end, adjustEndDate(input.to)),
+            input.subGroup === "integration" ? op.isNotNull(t.integrationUrl) : undefined,
+          ),
+        with: {
+          project: {
+            columns: {
+              color: true,
+              name: true,
+              identifier: true,
+              id: true,
+            },
+            with: {
+              users: true,
+              client: true,
+            },
+          },
+          workspace: {
+            with: {
+              users: true,
+            },
+          },
+        },
+      });
+
+      let tableHeaders: { id: string; name: string }[] = [];
+
+      if (input.mainGroup === "project") {
+        tableHeaders = [
+          {
+            id: "project",
+            name: "Project",
+          },
+          {
+            id: "client",
+            name: "Client",
+          },
+          {
+            id: "teammate",
+            name: "Teammate",
+          },
+          {
+            id: "billable",
+            name: "Billable",
+          },
+          {
+            id: "internal",
+            name: "Internal",
+          },
+          {
+            id: "total",
+            name: "Total",
+          },
+        ];
+      }
+
+      if (input.mainGroup === "client") {
+        tableHeaders = [
+          {
+            id: "client",
+            name: "Client",
+          },
+          {
+            id: "teammate",
+            name: "Teammate",
+          },
+          {
+            id: "billable",
+            name: "Billable",
+          },
+          {
+            id: "internal",
+            name: "Internal",
+          },
+          {
+            id: "total",
+            name: "Total",
+          },
+        ];
+      }
+
+      if (input.mainGroup === "teammate") {
+        tableHeaders = [
+          {
+            id: "teammate",
+            name: "Teammate",
+          },
+          {
+            id: "billable",
+            name: "Billable",
+          },
+          {
+            id: "internal",
+            name: "Internal",
+          },
+          {
+            id: "total",
+            name: "Total",
+          },
+        ];
+      }
+
+      return {
+        tableHeaders,
       };
     }),
 });
