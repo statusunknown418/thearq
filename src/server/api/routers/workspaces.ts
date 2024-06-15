@@ -206,10 +206,7 @@ export const workspacesRouter = createTRPCRouter({
         sameSite: "lax",
       });
 
-      await redis.set(
-        getRecentWorkspaceRedisKey(ctx.session.user.id),
-        input.workspaceId.toString(),
-      );
+      await redis.set(getRecentWorkspaceRedisKey(ctx.session.user.id), input.workspaceId);
 
       return {
         success: true,
