@@ -42,8 +42,27 @@ export const Totals = ({ initialData }: { initialData: RouterOutputs["entries"][
       </p>
 
       <section className="flex gap-4">
-        <Card decoration="left" className="flex h-48 max-w-md flex-col gap-2">
-          <p className="text-muted-foreground">Earnings</p>
+        <Card decoration="left" className="relative flex h-48 max-w-md flex-col gap-2">
+          <div className="flex justify-between">
+            <p className="text-muted-foreground">Earnings</p>
+            <p
+              className={cn(
+                "flex items-center gap-1 text-xs font-medium",
+                data.totalEarnings > data.totalInternalCost ? "text-emerald-500" : "text-red-500",
+              )}
+            >
+              {data.totalEarnings > data.totalInternalCost ? (
+                <PiTrendUpBold size={15} />
+              ) : (
+                <PiTrendDownBold size={15} />
+              )}
+
+              {`${isNaN(profitPercentage) ? "N/A" : `${parseNumber(profitPercentage)}%`} `}
+
+              {data.totalInternalCost > data.totalEarnings ? "loss" : "profit"}
+            </p>
+          </div>
+
           <div className="flex items-end gap-2">
             <h2 className="text-tremor-metric">{parseLongCurrency(revenue)}</h2>
             <h3 className="mb-1 text-muted-foreground">
@@ -68,23 +87,6 @@ export const Totals = ({ initialData }: { initialData: RouterOutputs["entries"][
                 `${parseCompactCurrency(data.totalInternalCost)} spent`,
               ]}
             />
-
-            <p
-              className={cn(
-                "flex items-center gap-1",
-                data.totalEarnings > data.totalInternalCost ? "text-emerald-500" : "text-red-500",
-              )}
-            >
-              {data.totalEarnings > data.totalInternalCost ? (
-                <PiTrendUpBold size={15} />
-              ) : (
-                <PiTrendDownBold size={15} />
-              )}
-
-              {`${isNaN(profitPercentage) ? "N/A" : `${parseNumber(profitPercentage)}%`} `}
-
-              {data.totalInternalCost > data.totalEarnings ? "loss" : "profit"}
-            </p>
           </div>
         </Card>
 
@@ -93,7 +95,7 @@ export const Totals = ({ initialData }: { initialData: RouterOutputs["entries"][
 
           <p className="flex gap-1 text-tremor-metric">
             <span>{secondsToHoursDecimal(data.totalTime)}</span>
-            <span className="self-end text-sm text-muted-foreground">hours</span>
+            <span className="mb-1 self-end text-sm text-muted-foreground">hours</span>
           </p>
 
           <CategoryBar
